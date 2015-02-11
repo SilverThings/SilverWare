@@ -72,7 +72,7 @@ public class Executor implements Microservice {
       bootHook(context);
    }
 
-   public static void bootHook(Context initialContext) throws InterruptedException {
+   public static void bootHook(final Context initialContext) throws InterruptedException {
       final Executor executor = new Executor();
       executor.initialize(initialContext);
 

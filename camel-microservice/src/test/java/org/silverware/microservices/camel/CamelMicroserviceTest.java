@@ -1,13 +1,11 @@
 package org.silverware.microservices.camel;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
-import org.silverware.microservices.Boot;
 import org.silverware.microservices.util.BootUtil;
 import org.testng.Assert;
 import org.testng.annotations.Test;
