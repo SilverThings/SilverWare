@@ -17,19 +17,37 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices;
+package org.silverware.microservices.util;
 
-import java.util.Properties;
+import org.silverware.microservices.Context;
+import org.silverware.microservices.Executor;
 
 /**
- * Simple minimalistic microservice implementation interface.
- * Upon boot, the initialize method is called. After a successful initialization, all services will be started in their
- * dedicated thread. A proper shutdown must be part of the run() method.
- *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public interface Microservice extends Runnable {
+public class BootUtil {
 
-   default void initialize(final Context context) {};
-   void run();
+   private Context context = new Context();
+
+   public Thread getMicroservicePlatform(final String packages) {
+      Thread t = new Thread(new Runnable() {
+         @Override
+         public void run() {
+            context.getProperties().put(Context.DEPLOYMENT_PACKAGES, packages);
+            try {
+               Executor.bootHook(context);
+            } catch (InterruptedException ie) {
+               // we are likely to be done
+            }
+         }
+      });
+
+      t.setName("SilverWare-boot");
+
+      return t;
+   }
+
+   public Context getContext() {
+      return context;
+   }
 }

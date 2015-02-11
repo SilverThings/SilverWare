@@ -21,9 +21,10 @@ package org.silverware.microservices;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.silverware.microservices.util.BootUtil;
+import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.util.Properties;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -31,28 +32,54 @@ import java.util.Properties;
 public class BootTest {
 
    private static final Logger log = LogManager.getLogger(BootTest.class);
+   private static boolean wasInit = false;
+   private static boolean wasRun = false;
+   private static boolean wasInterrupted = false;
+
+   @BeforeMethod
+   public void beforeMethod() {
+      wasInit = wasRun = wasInterrupted = false;
+   }
 
    @Test
-   public void testBoot() {
+   public void testLimitedBoot() throws InterruptedException {
+      final Thread platform = (new BootUtil()).getMicroservicePlatform(BootTest.class.getPackage().getName());
+      platform.start();
+      platform.join();
+
+      Assert.assertTrue(wasInit);
+      Assert.assertTrue(wasRun);
+      Assert.assertFalse(wasInterrupted);
+   }
+
+   @Test
+   public void testFullBoot() throws InterruptedException {
       Boot.main();
+
+      Assert.assertTrue(wasInit);
+      Assert.assertTrue(wasRun);
+      Assert.assertFalse(wasInterrupted);
    }
 
    public static class BootTestMicroservice implements Microservice {
 
       @Override
-      public void initialize(final Properties properties) {
+      public void initialize(final Context context) {
          log.info("init");
+         wasInit = true;
       }
 
       @Override
       public void run() {
          log.info("run");
          try {
-            Thread.sleep(2000);
+            Thread.sleep(100);
          } catch (InterruptedException e) {
             log.info("interrupted");
+            wasInterrupted = true;
          }
          log.info("done");
+         wasRun = true;
       }
 
    }

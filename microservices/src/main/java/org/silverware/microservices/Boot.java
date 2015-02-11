@@ -36,10 +36,7 @@ public final class Boot {
       log.info("=== Welcome to SilverWare ===");
 
       try {
-         final Thread bootThread = new Thread(new Executor());
-         bootThread.setName("SilverWare-boot");
-         bootThread.start();
-         bootThread.join();
+         Executor.bootHook();
       } catch (InterruptedException ie) {
          Utils.shutdownLog(log, ie);
       }

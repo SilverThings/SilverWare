@@ -1,0 +1,62 @@
+/*
+ * -----------------------------------------------------------------------\
+ * SilverWare
+ *  
+ * Copyright (C) 2010 - 2013 the original author or authors.
+ *  
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * -----------------------------------------------------------------------/
+ */
+package org.silverware.microservices.util;
+
+import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicLong;
+
+/**
+ * @author Martin Večeřa <marvenec@gmail.com>
+ */
+public class DeployStats implements Serializable {
+
+   private static final long serialVersionUID = 5176533100828970885L;
+
+   private final AtomicLong found = new AtomicLong(0);
+   private final AtomicLong skipped = new AtomicLong(0);
+   private final AtomicLong deployed = new AtomicLong(0);
+
+   public void setFound(long found) {
+      this.found.set(found);
+   }
+
+   public void incSkipped() {
+      skipped.incrementAndGet();
+   }
+
+   public void incDeployed() {
+      deployed.incrementAndGet();
+   }
+
+   public long getFound() {
+      return found.get();
+   }
+
+   public long getSkipped() {
+      return skipped.get();
+   }
+   public long getDeployed() {
+      return deployed.get();
+   }
+
+   public String toString() {
+      return String.format("found %d, deployed %d, skipped deployment %d", getFound(), getDeployed(), getSkipped());
+   }
+}

@@ -25,15 +25,15 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.silverware.microservices.Context;
 import org.silverware.microservices.Microservice;
+import org.silverware.microservices.util.DeployStats;
 import org.silverware.microservices.util.DeploymentScanner;
 import org.silverware.microservices.util.Utils;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -43,41 +43,44 @@ public class CamelMicroservice implements Microservice {
 
    private static final Logger log = LogManager.getLogger(CamelMicroservice.class);
 
-   public static final String CAMEL_CONTEXT = "silverware.camel.context";
+   public static final String CAMEL_CONTEXT = "silverware.camel.camelContext";
 
-   private final CamelContext context = new DefaultCamelContext();
-   private List<RouteBuilder> routes = new ArrayList<>();
+   private final CamelContext camelContext = new DefaultCamelContext();
+   private final List<RouteBuilder> routes = new ArrayList<>();
+   private final DeployStats stats = new DeployStats();
 
    @Override
-   public void initialize(final Properties properties) {
-      properties.put(CAMEL_CONTEXT, context);
+   public void initialize(final Context context) {
+      context.getProperties().put(CAMEL_CONTEXT, camelContext);
 
       @SuppressWarnings("unchecked")
-      final Set<Class<RouteBuilder>> routeBuilders = (Set<Class<RouteBuilder>>) DeploymentScanner.lookupSubtypes(RouteBuilder.class);
+      final Set<Class<RouteBuilder>> routeBuilders = (Set<Class<RouteBuilder>>) DeploymentScanner.getContextInstance(context).lookupSubtypes(RouteBuilder.class);
+      if (log.isDebugEnabled()) {
+         log.debug("Initializing Camel routes...");
+      }
+      stats.setFound(routeBuilders.size());
+
+      for (Class<RouteBuilder> clazz : routeBuilders) {
          if (log.isDebugEnabled()) {
-            log.debug("Initializing Camel routes...");
+            log.debug("Creating Camel route: " + clazz.getName());
          }
 
-         for (Class<RouteBuilder> clazz : routeBuilders) {
+         if (clazz.getName().equals(AdviceWithRouteBuilder.class.getName())) {
             if (log.isDebugEnabled()) {
-               log.debug("Creating Camel route: " + clazz.getName());
+               log.debug("Skipping " + clazz.getName() + ". This is an internal Camel route.");
             }
+            stats.incSkipped();
+         } else {
+            try {
+               final Constructor c = clazz.getConstructor();
+               final RouteBuilder r = (RouteBuilder) c.newInstance();
 
-            if (clazz.getName().equals(AdviceWithRouteBuilder.class.getName())) {
-               if (log.isDebugEnabled()) {
-                  log.debug("Skipping " + clazz.getName() + ". This is an internal Camel route.");
-               }
-            } else {
-               try {
-                  final Constructor c = clazz.getConstructor();
-                  final RouteBuilder r = (RouteBuilder) c.newInstance();
-
-                  routes.add(r);
-               } catch (Exception e) {
-                  log.error("Cannot initialize Camel route: " + clazz.getName(), e);
-               }
+               routes.add(r);
+            } catch (Error | Exception e) {
+               log.error("Cannot initialize Camel route: " + clazz.getName(), e);
             }
          }
+      }
    }
 
    @Override
@@ -87,10 +90,18 @@ public class CamelMicroservice implements Microservice {
             log.info("Hello from Camel microservice!");
 
             for (final RouteBuilder builder : routes) {
-               context.addRoutes(builder);
+               try {
+                  camelContext.addRoutes(builder);
+                  stats.incDeployed();
+               } catch (Exception e) {
+                  log.warn("Unable to start Camel route " + builder.getClass().getName(), e);
+                  stats.incSkipped();
+               }
             }
 
-            context.start();
+            log.info("Total Camel routes " + stats.toString() + ".");
+
+            camelContext.start();
 
             try {
                while (!Thread.currentThread().isInterrupted()) {
@@ -99,7 +110,7 @@ public class CamelMicroservice implements Microservice {
             } catch (InterruptedException ie) {
                Utils.shutdownLog(log, ie);
             } finally {
-               context.stop();
+               camelContext.stop();
             }
          } catch (Exception e) {
             log.error("Camel microservice failed: ", e);

@@ -22,6 +22,7 @@ package org.silverware.microservices.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reflections.Reflections;
+import org.silverware.microservices.Context;
 import org.silverware.microservices.Microservice;
 
 import java.lang.reflect.Constructor;
@@ -29,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -37,14 +39,48 @@ public class DeploymentScanner {
 
    private static final Logger log = LogManager.getLogger(DeploymentScanner.class);
 
-   private static final Reflections reflections = new Reflections();
+   private static DeploymentScanner defaultScanner = null;
 
-   public static Set<Class<? extends Microservice>> lookupMicroservices() {
+   private final Reflections reflections;
+
+   private DeploymentScanner() {
+      reflections = new Reflections();
+   }
+
+   private DeploymentScanner(final String... packages) {
+      reflections = new Reflections(packages);
+   }
+
+   public static synchronized DeploymentScanner getDefaultInstance() {
+      if (defaultScanner == null) {
+         defaultScanner = new DeploymentScanner();
+      }
+
+      return defaultScanner;
+   }
+
+   public static DeploymentScanner getInstance(final String... packages) {
+      return new DeploymentScanner(packages);
+   }
+
+   public static DeploymentScanner getContextInstance(final Context context) {
+      final String packages = (String) context.getProperties().get(Context.DEPLOYMENT_PACKAGES);
+      if (packages != null) {
+         if (log.isDebugEnabled()) {
+            log.debug("Limited deployment packages: " + packages);
+         }
+         return getInstance(packages.split(Pattern.quote("[ ]*,[ ]*")));
+      } else {
+         return DeploymentScanner.getDefaultInstance();
+      }
+   }
+
+   public Set<Class<? extends Microservice>> lookupMicroservices() {
       return reflections.getSubTypesOf(Microservice.class);
    }
 
    @SuppressWarnings("unchecked")
-   public static Set lookupSubtypes(final Class clazz) {
+   public Set lookupSubtypes(final Class clazz) {
       return reflections.getSubTypesOf(clazz);
    }
 

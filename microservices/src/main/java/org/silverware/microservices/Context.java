@@ -19,17 +19,29 @@
  */
 package org.silverware.microservices;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Simple minimalistic microservice implementation interface.
- * Upon boot, the initialize method is called. After a successful initialization, all services will be started in their
- * dedicated thread. A proper shutdown must be part of the run() method.
- *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public interface Microservice extends Runnable {
+public class Context {
 
-   default void initialize(final Context context) {};
-   void run();
+   public static final String MICROSERVICE_REGISTRY = "silverware.registry";
+   public static final String DEPLOYMENT_PACKAGES = "silverware.deploy.packages";
+
+   private final Map<String, Object> properties = new HashMap<>();
+
+   public Context() {
+      properties.put(MICROSERVICE_REGISTRY, new HashMap<String, Microservice>());
+   }
+
+   public Map<String, Object> getProperties() {
+      return properties;
+   }
+
+   @SuppressWarnings("unchecked")
+   public Map<String, Microservice> getRegistry() {
+      return (Map<String, Microservice>) properties.get(MICROSERVICE_REGISTRY);
+   }
 }
