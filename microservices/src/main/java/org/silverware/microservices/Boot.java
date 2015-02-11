@@ -31,10 +31,13 @@ public final class Boot {
    private static final Logger log = LogManager.getLogger(Boot.class);
 
    public static void main(final String... args) {
+      Thread.currentThread().setName("SilverWare-main");
+
       log.info("=== Welcome to SilverWare ===");
 
       try {
          final Thread bootThread = new Thread(new Executor());
+         bootThread.setName("SilverWare-boot");
          bootThread.start();
          bootThread.join();
       } catch (InterruptedException ie) {
