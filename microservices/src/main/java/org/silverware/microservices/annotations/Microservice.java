@@ -17,33 +17,21 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices;
+package org.silverware.microservices.annotations;
 
-import org.silverware.microservices.providers.MicroserviceProvider;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class Context {
-
-   public static final String MICROSERVICE_PROVIDERS_REGISTRY = "silverware.providers.registry";
-   public static final String DEPLOYMENT_PACKAGES = "silverware.deploy.packages";
-
-   private final Map<String, Object> properties = new HashMap<>();
-
-   public Context() {
-      properties.put(MICROSERVICE_PROVIDERS_REGISTRY, new HashMap<String, MicroserviceProvider>());
-   }
-
-   public Map<String, Object> getProperties() {
-      return properties;
-   }
-
-   @SuppressWarnings("unchecked")
-   public Map<String, MicroserviceProvider> getProvidersRegistry() {
-      return (Map<String, MicroserviceProvider>) properties.get(MICROSERVICE_PROVIDERS_REGISTRY);
-   }
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@Target(ElementType.TYPE)
+@interface Microservice {
 }

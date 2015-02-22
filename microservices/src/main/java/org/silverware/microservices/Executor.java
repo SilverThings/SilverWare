@@ -21,6 +21,7 @@ package org.silverware.microservices;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.util.DeployStats;
 import org.silverware.microservices.util.DeploymentScanner;
 import org.silverware.microservices.util.Utils;
@@ -38,11 +39,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class Executor implements Microservice {
+public class Executor implements MicroserviceProvider {
 
    private static final Logger log = LogManager.getLogger(Executor.class);
 
-   private final List<Microservice> instances = new ArrayList<>();
+   private final List<MicroserviceProvider> instances = new ArrayList<>();
    private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool(new DaemonThreadFactory());
    private final DeployStats stats = new DeployStats();
    private Context context = null;
@@ -56,7 +57,7 @@ public class Executor implements Microservice {
       DaemonThreadFactory() {
          SecurityManager s = System.getSecurityManager();
          group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-         namePrefix = "SilverWare-" + poolNumber.getAndIncrement() + "-microservice-";
+         namePrefix = "SilverWare-" + poolNumber.getAndIncrement() + "-microservice-provider-";
       }
 
       public Thread newThread(final Runnable r) {
@@ -82,46 +83,46 @@ public class Executor implements Microservice {
       bootThread.join();
    }
 
-   private void createInstances(final Set<Class<? extends Microservice>> microservices) {
-      log.info(String.format("Found %d microservices. Starting...", microservices.size()));
-      stats.setFound(microservices.size());
+   private void createInstances(final Set<Class<? extends MicroserviceProvider>> microserviceProviders) {
+      log.info(String.format("Found %d microservice providers. Starting...", microserviceProviders.size()));
+      stats.setFound(microserviceProviders.size());
 
-      for (Class<? extends Microservice> clazz : microservices) {
+      for (Class<? extends MicroserviceProvider> clazz : microserviceProviders) {
          if (log.isDebugEnabled()) {
-            log.debug("Creating microservice: " + clazz.getName());
+            log.debug("Creating microservice provider: " + clazz.getName());
          }
 
          if (clazz.getName().equals(this.getClass().getName())) {
             if (log.isDebugEnabled()) {
-               log.debug("Skipping myself (Executor microservice) as I am already running.");
+               log.debug("Skipping myself (Executor microservice provider) as I am already running.");
             }
             stats.incSkipped();
          } else {
             try {
                final Constructor c = clazz.getConstructor();
-               final Microservice m = (Microservice) c.newInstance();
+               final MicroserviceProvider m = (MicroserviceProvider) c.newInstance();
                m.initialize(context);
                instances.add(m);
                stats.incDeployed();
-               context.getRegistry().put(m.getClass().getName(), m);
+               context.getProvidersRegistry().put(m.getClass().getName(), m);
             } catch (Error | Exception e) {
-               log.warn(String.format("Unable to start service: %s", clazz.getName()), e);
+               log.warn(String.format("Unable to start microservice provider: %s", clazz.getName()), e);
             }
          }
       }
    }
 
    private void startInstances() {
-      log.info("Running microservices...");
+      log.info("Running microservice providers...");
 
-      for (Microservice m : instances) {
+      for (MicroserviceProvider m : instances) {
          if (log.isDebugEnabled()) {
-            log.debug("Running microservice: " + m.getClass().getName());
+            log.debug("Running microservice provider: " + m.getClass().getName());
          }
          executor.submit(m);
       }
 
-      log.info("Total microservices " + stats.toString() + ".");
+      log.info("Total microservice providers " + stats.toString() + ".");
 
       executor.shutdown();
    }
@@ -130,20 +131,20 @@ public class Executor implements Microservice {
    public void initialize(final Context context) {
       this.context = context;
 
-      context.getRegistry().put(this.getClass().getName(), this);
+      context.getProvidersRegistry().put(this.getClass().getName(), this);
    }
 
    public void run() {
-      log.info("Looking up microservices...");
+      log.info("Looking up microservice providers...");
 
-      createInstances(DeploymentScanner.getContextInstance(context).lookupMicroservices());
+      createInstances(DeploymentScanner.getContextInstance(context).lookupMicroserviceProviders());
       startInstances();
 
       try {
          int active;
          do {
             active = executor.getActiveCount();
-            log.info("Still here ;-) Microservices alive: " + active);
+            log.info("Still here ;-) Microservice providers alive: " + active);
 
             if (active > 0) {
                executor.awaitTermination(1, TimeUnit.MINUTES);

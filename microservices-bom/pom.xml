@@ -11,10 +11,17 @@
       <version.log4j>2.1</version.log4j>
       <version.testng>6.8.5</version.testng>
       <version.maven.compiler>3.2</version.maven.compiler>
+      <version.apache.camel>2.14.1</version.apache.camel>
+      <version.slf4j>1.7.7</version.slf4j>
       <java.level>1.8</java.level>
    </properties>
    <dependencyManagement>
       <dependencies>
+         <dependency>
+            <groupId>org.silverware</groupId>
+            <artifactId>microservices</artifactId>
+            <version>${project.version}</version>
+         </dependency>
          <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
@@ -31,10 +38,20 @@
             <version>${version.log4j}</version>
          </dependency>
          <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${version.slf4j}</version>
+         </dependency>
+         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>${version.testng}</version>
             <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+            <version>${version.apache.camel}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

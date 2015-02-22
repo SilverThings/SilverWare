@@ -17,7 +17,7 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.camel;
+package org.silverware.microservices.providers.camel;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
@@ -26,7 +26,7 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.Context;
-import org.silverware.microservices.Microservice;
+import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.util.DeployStats;
 import org.silverware.microservices.util.DeploymentScanner;
 import org.silverware.microservices.util.Utils;
@@ -39,9 +39,9 @@ import java.util.Set;
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class CamelMicroservice implements Microservice {
+public class CamelMicroserviceProvider implements MicroserviceProvider {
 
-   private static final Logger log = LogManager.getLogger(CamelMicroservice.class);
+   private static final Logger log = LogManager.getLogger(CamelMicroserviceProvider.class);
 
    public static final String CAMEL_CONTEXT = "silverware.camel.camelContext";
 

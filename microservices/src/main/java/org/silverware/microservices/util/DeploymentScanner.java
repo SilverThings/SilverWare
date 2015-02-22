@@ -23,7 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reflections.Reflections;
 import org.silverware.microservices.Context;
-import org.silverware.microservices.Microservice;
+import org.silverware.microservices.providers.MicroserviceProvider;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -75,8 +75,8 @@ public class DeploymentScanner {
       }
    }
 
-   public Set<Class<? extends Microservice>> lookupMicroservices() {
-      return reflections.getSubTypesOf(Microservice.class);
+   public Set<Class<? extends MicroserviceProvider>> lookupMicroserviceProviders() {
+      return reflections.getSubTypesOf(MicroserviceProvider.class);
    }
 
    @SuppressWarnings("unchecked")

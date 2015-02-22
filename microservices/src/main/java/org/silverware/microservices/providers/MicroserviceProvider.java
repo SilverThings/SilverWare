@@ -17,7 +17,9 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices;
+package org.silverware.microservices.providers;
+
+import org.silverware.microservices.Context;
 
 import java.util.Properties;
 
@@ -28,7 +30,7 @@ import java.util.Properties;
  *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public interface Microservice extends Runnable {
+public interface MicroserviceProvider extends Runnable {
 
    default void initialize(final Context context) {};
    void run();

@@ -1,4 +1,4 @@
-package org.silverware.microservices.camel;
+package org.silverware.microservices.providers.camel;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
@@ -13,12 +13,12 @@ import org.testng.annotations.Test;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-public class CamelMicroserviceTest {
+public class CamelMicroserviceProviderTest {
 
    private static final Semaphore semaphore = new Semaphore(0);
 
    @Test
-   public void camelMicroserviceTest() throws Exception {
+   public void camelMicroserviceProviderTest() throws Exception {
       final String message = "But all the clocks in the city\n"
             + "   Began to whir and chime:\n"
             + "‘O let not Time deceive you,\n"
@@ -29,7 +29,7 @@ public class CamelMicroserviceTest {
 
       Assert.assertTrue(semaphore.tryAcquire(5, TimeUnit.SECONDS), "Timed-out while waiting for the camel route deployment."); // wait for the route to be deployed
 
-      CamelContext context = (CamelContext) bootUtil.getContext().getProperties().get(CamelMicroservice.CAMEL_CONTEXT);
+      CamelContext context = (CamelContext) bootUtil.getContext().getProperties().get(CamelMicroserviceProvider.CAMEL_CONTEXT);
       Endpoint endpoint = context.getEndpoint("direct:response");
       final StringBuilder response = new StringBuilder();
       endpoint.createConsumer(new Processor() {

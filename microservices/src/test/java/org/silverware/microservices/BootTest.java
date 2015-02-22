@@ -21,6 +21,7 @@ package org.silverware.microservices;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.util.BootUtil;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -61,7 +62,7 @@ public class BootTest {
       Assert.assertFalse(wasInterrupted);
    }
 
-   public static class BootTestMicroservice implements Microservice {
+   public static class BootTestMicroservice implements MicroserviceProvider {
 
       @Override
       public void initialize(final Context context) {
