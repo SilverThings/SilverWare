@@ -26,11 +26,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by mvecera on 22.2.15.
+ * @author Martin Večeřa <marvenec@gmail.com>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Target({ ElementType.TYPE, ElementType.FIELD })
-@interface Priority {
-   int level = 1;
+public @interface Priority {
+   public int value() default 1;
 }

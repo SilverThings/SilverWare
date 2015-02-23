@@ -17,34 +17,25 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.util;
+package org.silverware.microservices.providers.cdi;
 
-import org.silverware.microservices.Context;
-import org.silverware.microservices.Executor;
+import org.silverware.microservices.util.BootUtil;
+import org.testng.annotations.Test;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class BootUtil {
+public class CdiMicroserviceProviderTest {
 
-   private Context context = new Context();
+   @Test
+   public void testCdi() throws Exception {
+      final BootUtil bootUtil = new BootUtil();
+      final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName());
+      platform.start();
 
-   public Thread getMicroservicePlatform(final String packages) {
-      Thread t = new Thread(() -> {
-         context.getProperties().put(Context.DEPLOYMENT_PACKAGES, packages);
-         try {
-            Executor.bootHook(context);
-         } catch (InterruptedException ie) {
-            // we are likely to be done
-         }
-      });
+      Thread.sleep(50000);
 
-      t.setName("SilverWare-boot");
-
-      return t;
-   }
-
-   public Context getContext() {
-      return context;
+      platform.interrupt();
+      platform.join();
    }
 }

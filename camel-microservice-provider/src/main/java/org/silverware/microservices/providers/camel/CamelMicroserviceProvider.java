@@ -87,7 +87,7 @@ public class CamelMicroserviceProvider implements MicroserviceProvider {
    public void run() {
       if (routes.size() > 0) {
          try {
-            log.info("Hello from Camel microservice!");
+            log.info("Hello from Camel microservice provider!");
 
             for (final RouteBuilder builder : routes) {
                try {
@@ -113,10 +113,10 @@ public class CamelMicroserviceProvider implements MicroserviceProvider {
                camelContext.stop();
             }
          } catch (Exception e) {
-            log.error("Camel microservice failed: ", e);
+            log.error("Camel microservice provider failed: ", e);
          }
       } else {
-         log.warn("No routes to start. Camel microservice is terminated.");
+         log.warn("No routes to start. Camel microservice provider is terminated.");
       }
    }
 }

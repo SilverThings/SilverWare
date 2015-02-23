@@ -33,5 +33,5 @@ import java.lang.annotation.Target;
 @Documented
 @Inherited
 @Target(ElementType.TYPE)
-@interface Microservice {
+public @interface Microservice {
 }
