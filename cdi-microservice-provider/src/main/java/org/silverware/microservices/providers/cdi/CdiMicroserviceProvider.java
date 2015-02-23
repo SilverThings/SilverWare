@@ -24,12 +24,14 @@ import org.apache.logging.log4j.Logger;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.silverware.microservices.Context;
+import org.silverware.microservices.annotations.Microservice;
 import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.util.Utils;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
+import javax.inject.Inject;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -74,7 +76,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider {
 
    public static final class MicroservicesExtension implements Extension {
       public <T> void initializePropertyLoading(final @Observes ProcessInjectionTarget<T> pit) {
-         log.info("Observed " + pit);
+         log.info("Observed " + pit.getInjectionTarget().toString());
       }
    }
 }

@@ -25,6 +25,9 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Stereotype;
+import javax.inject.Named;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -32,6 +35,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
+@Named
+@ApplicationScoped
+@Stereotype
 @Target(ElementType.TYPE)
 public @interface Microservice {
 }

@@ -14,6 +14,7 @@
       <version.apache.camel>2.14.1</version.apache.camel>
       <version.slf4j>1.7.7</version.slf4j>
       <version.weld>2.2.9.Final</version.weld>
+      <version.ejb.api>3.0</version.ejb.api>
       <java.level>1.8</java.level>
    </properties>
    <dependencyManagement>
@@ -58,6 +59,11 @@
             <groupId>org.jboss.weld.se</groupId>
             <artifactId>weld-se</artifactId>
             <version>${version.weld}</version>
+         </dependency>
+         <dependency>
+            <groupId>javax.ejb</groupId>
+            <artifactId>ejb-api</artifactId>
+            <version>${version.ejb.api}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
