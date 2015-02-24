@@ -34,6 +34,8 @@ import javax.annotation.PostConstruct;
 import javax.ejb.PostActivate;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.Contextual;
+import javax.enterprise.event.Event;
+import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -62,8 +64,7 @@ public class CdiMicroserviceProviderTest {
          Thread.sleep(200);
       }
 
-      final Bean<?> microserviceBBean = beanManager.resolve(beanManager.getBeans("testMicroserviceB"));
-      testMicroserviceB = (TestMicroserviceB) beanManager.getReference(microserviceBBean, TestMicroserviceB.class.getGenericSuperclass(), beanManager.createCreationalContext(microserviceBBean));
+      testMicroserviceB = (TestMicroserviceB) CdiMicroserviceProvider.getMicroservice(bootUtil.getContext(), TestMicroserviceB.class);
 
       Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
 
@@ -76,7 +77,7 @@ public class CdiMicroserviceProviderTest {
    @Microservice
    public static class TestMicroserviceA {
       public void hello() {
-         log.info("Hello from A");
+         log.info("Hello from A " + this);
       }
    }
 
@@ -86,20 +87,36 @@ public class CdiMicroserviceProviderTest {
       private TestMicroserviceA testMicroserviceA;
 
       public TestMicroserviceB() {
-         //new Throwable().printStackTrace();
          onInit();
       }
 
       //@PostActivate
       //@PostConstruct
       public void onInit() {
-         log.error("initttttt");
+         //new Throwable().printStackTrace();
+         log.error("initttttt " + this);
          semaphore.release();
       }
 
       public void hello() {
-         log.info("Hello from B");
+         log.info("Hello from B " + this);
          testMicroserviceA.hello();
+      }
+   }
+
+   @Microservice
+   public static class TestMicroserviceC {
+
+      @Inject
+      private TestMicroserviceB testMicroserviceB;
+
+      public TestMicroserviceC() {
+         log.info("Instance of C " + this);
+      }
+
+      public void eventObserver(@Observes MicroservicesStartedEvent event) {
+         log.info("Hello from C " + this);
+         testMicroserviceB.hello();
       }
    }
 }

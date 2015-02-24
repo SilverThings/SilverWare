@@ -17,20 +17,36 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.annotations;
+package org.silverware.microservices.providers.cdi;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import javax.enterprise.context.NormalScope;
+import org.jboss.weld.environment.se.WeldContainer;
+import org.silverware.microservices.Context;
+
+import javax.enterprise.inject.spi.BeanManager;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-@Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-@NormalScope
-@Inherited
-public @interface MicroserviceScoped {
+public final class MicroservicesStartedEvent {
+   private final Context context;
+   private final BeanManager beanManager;
+   private final WeldContainer weldContainer;
+
+   public Context getContext() {
+      return context;
+   }
+
+   public BeanManager getBeanManager() {
+      return beanManager;
+   }
+
+   public WeldContainer getWeldContainer() {
+      return weldContainer;
+   }
+
+   public MicroservicesStartedEvent(final Context context, final BeanManager beanManager, final WeldContainer weldContainer) {
+      this.context = context;
+      this.beanManager = beanManager;
+      this.weldContainer = weldContainer;
+   }
 }
