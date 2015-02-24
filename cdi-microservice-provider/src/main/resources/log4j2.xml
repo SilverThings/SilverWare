@@ -19,6 +19,7 @@
    <Loggers>
       <Logger name="com" level="info"/>
       <Logger name="org" level="info"/>
+      <Logger name="java" level="info"/>
       <Logger name="org.silverware" level="info"/>
       <Root level="info">
          <AppenderRef ref="ASYNC"/>

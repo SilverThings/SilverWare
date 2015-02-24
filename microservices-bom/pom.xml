@@ -10,7 +10,6 @@
       <version.reflections>0.9.9</version.reflections>
       <version.log4j>2.1</version.log4j>
       <version.testng>6.8.5</version.testng>
-      <version.maven.compiler>3.2</version.maven.compiler>
       <version.apache.camel>2.14.1</version.apache.camel>
       <version.slf4j>1.7.7</version.slf4j>
       <version.weld>2.2.9.Final</version.weld>
@@ -68,17 +67,5 @@
       </dependencies>
    </dependencyManagement>
    <build>
-      <pluginManagement>
-         <plugins>
-            <plugin>
-               <artifactId>maven-compiler-plugin</artifactId>
-               <version>${version.maven.compiler}</version>
-               <configuration>
-                  <source>${java.level}</source>
-                  <target>${java.level}</target>
-               </configuration>
-            </plugin>
-         </plugins>
-      </pluginManagement>
    </build>
 </project>

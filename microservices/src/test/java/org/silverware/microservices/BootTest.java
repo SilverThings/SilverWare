@@ -27,6 +27,9 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
@@ -36,10 +39,13 @@ public class BootTest {
    private static boolean wasInit = false;
    private static boolean wasRun = false;
    private static boolean wasInterrupted = false;
+   private static final Semaphore semaphore = new Semaphore(0);
+
 
    @BeforeMethod
    public void beforeMethod() {
       wasInit = wasRun = wasInterrupted = false;
+      semaphore.drainPermits();
    }
 
    @Test
@@ -57,6 +63,8 @@ public class BootTest {
    public void testFullBoot() throws InterruptedException {
       Boot.main();
 
+      Assert.assertTrue(semaphore.tryAcquire(50, TimeUnit.SECONDS), "Timed-out while waiting for platform startup.");
+
       Assert.assertTrue(wasInit);
       Assert.assertTrue(wasRun);
       Assert.assertFalse(wasInterrupted);
@@ -67,6 +75,7 @@ public class BootTest {
       @Override
       public void initialize(final Context context) {
          log.info("init");
+         semaphore.release();
          wasInit = true;
       }
 

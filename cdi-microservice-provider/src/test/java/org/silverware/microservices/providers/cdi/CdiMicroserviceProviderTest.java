@@ -44,7 +44,7 @@ public class CdiMicroserviceProviderTest {
    private static final Semaphore semaphore = new Semaphore(0);
 
    @Inject
-   private TestMicroserviceB microserviceB;
+   private TestMicroserviceB testMicroserviceB;
 
    @Test
    public void testCdi() throws Exception {
@@ -54,7 +54,7 @@ public class CdiMicroserviceProviderTest {
 
       Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
 
-      microserviceB.hello();
+      testMicroserviceB.hello();
 
       platform.interrupt();
       platform.join();
@@ -70,7 +70,7 @@ public class CdiMicroserviceProviderTest {
    @Microservice
    public static class TestMicroserviceB {
       @Inject
-      private TestMicroserviceA microserviceA;
+      private TestMicroserviceA testMicroserviceA;
 
       public TestMicroserviceB() {
          onInit();
@@ -85,7 +85,7 @@ public class CdiMicroserviceProviderTest {
 
       public void hello() {
          log.info("Hello from B");
-         microserviceA.hello();
+         testMicroserviceA.hello();
       }
    }
 }

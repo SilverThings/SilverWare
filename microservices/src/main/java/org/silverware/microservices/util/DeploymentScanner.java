@@ -44,7 +44,7 @@ public class DeploymentScanner {
    private final Reflections reflections;
 
    private DeploymentScanner() {
-      reflections = new Reflections();
+      reflections = new Reflections("");
    }
 
    private DeploymentScanner(final String... packages) {
@@ -76,6 +76,8 @@ public class DeploymentScanner {
    }
 
    public Set<Class<? extends MicroserviceProvider>> lookupMicroserviceProviders() {
+      log.warn(reflections.getConfiguration().getUrls());
+      log.warn(reflections.getConfiguration().getClassLoaders());
       return reflections.getSubTypesOf(MicroserviceProvider.class);
    }
 

@@ -20,6 +20,8 @@
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <java.level>1.8</java.level>
+      <version.maven.compiler>3.2</version.maven.compiler>
+      <version.maven.surefire>2.18.1</version.maven.surefire>
    </properties>
    <modules>
       <module>microservices-bom</module>
@@ -57,9 +59,17 @@
       <plugins>
          <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>${version.maven.compiler}</version>
             <configuration>
                <source>${java.level}</source>
                <target>${java.level}</target>
+            </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${version.maven.surefire}</version>
+            <configuration>
+               <forkCount>1</forkCount>
             </configuration>
          </plugin>
       </plugins>
