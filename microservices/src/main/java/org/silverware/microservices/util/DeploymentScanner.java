@@ -76,8 +76,6 @@ public class DeploymentScanner {
    }
 
    public Set<Class<? extends MicroserviceProvider>> lookupMicroserviceProviders() {
-      log.warn(reflections.getConfiguration().getUrls());
-      log.warn(reflections.getConfiguration().getClassLoaders());
       return reflections.getSubTypesOf(MicroserviceProvider.class);
    }
 

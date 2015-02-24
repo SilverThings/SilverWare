@@ -19,24 +19,16 @@
  */
 package org.silverware.microservices.annotations;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import javax.enterprise.inject.Stereotype;
-import javax.inject.Named;
+import javax.enterprise.context.NormalScope;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Inherited
-@Named
-@MicroserviceScoped
-@Stereotype
-@Target(ElementType.TYPE)
-public @interface Microservice {
+@Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+@NormalScope
+public @interface MicroserviceScoped {
 }
