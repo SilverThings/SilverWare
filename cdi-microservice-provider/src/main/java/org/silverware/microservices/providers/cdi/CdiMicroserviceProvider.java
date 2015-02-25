@@ -24,12 +24,11 @@ import org.apache.logging.log4j.Logger;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.silverware.microservices.Context;
-import org.silverware.microservices.annotations.Microservice;
 import org.silverware.microservices.providers.MicroserviceProvider;
+import org.silverware.microservices.silver.CdiSilverService;
 import org.silverware.microservices.util.Utils;
 
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.Bean;
@@ -42,19 +41,21 @@ import javax.enterprise.inject.spi.ProcessInjectionTarget;
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class CdiMicroserviceProvider implements MicroserviceProvider {
+public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverService {
 
    private static final Logger log = LogManager.getLogger(CdiMicroserviceProvider.class);
-
-   public static final String BEAN_MANAGER = "silverware.cdi.beanManager";
-   public static final String CDI_CONTAINER = "silverware.cdi.container";
 
    private Context context;
 
    @Override
    public void initialize(final Context context) {
       this.context = context;
-    //  cheatLoggerProviderToWeld();
+      //  cheatLoggerProviderToWeld();
+   }
+
+   @Override
+   public Context getContext() {
+      return context;
    }
 
    @Override

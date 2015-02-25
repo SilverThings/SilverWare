@@ -17,17 +17,28 @@
          </roles>
       </developer>
    </developers>
+   <issueManagement>
+      <url>https://github.com/px3/silverware/issues</url>
+      <system>github</system>
+   </issueManagement>
+   <organization>
+      <name>px3</name>
+      <url>http://www.silverware.org</url>
+   </organization>
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <java.level>1.8</java.level>
       <version.maven.compiler>3.2</version.maven.compiler>
       <version.maven.surefire>2.18.1</version.maven.surefire>
+      <version.maven.findbugs>3.0.0</version.maven.findbugs>
+      <version.maven.project.reports>2.7</version.maven.project.reports>
    </properties>
    <modules>
       <module>microservices-bom</module>
       <module>microservices</module>
       <module>camel-microservice-provider</module>
       <module>cdi-microservice-provider</module>
+      <module>cluster-microservice-provider</module>
    </modules>
    <dependencyManagement>
       <dependencies>
@@ -58,6 +69,11 @@
          <artifactId>testng</artifactId>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>net.sourceforge.findbugs</groupId>
+         <artifactId>annotations</artifactId>
+         <scope>provided</scope>
+      </dependency>
    </dependencies>
    <build>
       <plugins>
@@ -78,12 +94,20 @@
          </plugin>
       </plugins>
    </build>
-   <issueManagement>
-      <url>https://github.com/px3/silverware/issues</url>
-      <system>github</system>
-   </issueManagement>
-   <organization>
-      <name>px3</name>
-      <url>http://www.silverware.org</url>
-   </organization>
+   <reporting>
+      <plugins>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>${version.maven.findbugs}</version>
+         </plugin>
+         <plugin>
+            <artifactId>maven-project-info-reports-plugin</artifactId>
+            <version>${version.maven.project.reports}</version>
+            <configuration>
+               <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+            </configuration>
+         </plugin>
+      </plugins>
+   </reporting>
 </project>

@@ -17,27 +17,14 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.annotations;
+package org.silverware.microservices.silver;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import javax.annotation.ManagedBean;
-import javax.enterprise.inject.Stereotype;
-import javax.inject.Named;
+import org.silverware.microservices.Context;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Inherited
-@Named
-@MicroserviceScoped
-@Stereotype
-@Target(ElementType.TYPE)
-public @interface Microservice {
+public interface SilverService {
+
+   public Context getContext();
 }

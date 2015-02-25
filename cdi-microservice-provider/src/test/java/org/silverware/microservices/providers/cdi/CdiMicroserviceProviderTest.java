@@ -21,22 +21,14 @@ package org.silverware.microservices.providers.cdi;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jboss.weld.bean.ManagedBean;
 import org.silverware.microservices.annotations.Microservice;
 import org.silverware.microservices.util.BootUtil;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.Collections;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.PostConstruct;
-import javax.ejb.PostActivate;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 
@@ -115,7 +107,7 @@ public class CdiMicroserviceProviderTest {
       }
 
       public void eventObserver(@Observes MicroservicesStartedEvent event) {
-         log.info("Hello from C " + this);
+         log.info("Hello from C " + this + " " + testMicroserviceB);
          testMicroserviceB.hello();
       }
    }

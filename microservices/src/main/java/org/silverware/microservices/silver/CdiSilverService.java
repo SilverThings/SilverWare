@@ -17,27 +17,14 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.annotations;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import javax.annotation.ManagedBean;
-import javax.enterprise.inject.Stereotype;
-import javax.inject.Named;
+package org.silverware.microservices.silver;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Inherited
-@Named
-@MicroserviceScoped
-@Stereotype
-@Target(ElementType.TYPE)
-public @interface Microservice {
+public interface CdiSilverService extends SilverService {
+
+   public static final String BEAN_MANAGER = "silverware.cdi.beanManager";
+   public static final String CDI_CONTAINER = "silverware.cdi.container";
+
 }

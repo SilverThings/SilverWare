@@ -19,16 +19,27 @@
  */
 package org.silverware.microservices;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.util.Utils;
 
+import java.util.Map;
+
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DM_EXIT", justification = "This class is allowed to terminate the JVM.")
 public final class Boot {
 
    private static final Logger log = LogManager.getLogger(Boot.class);
+
+   private static final String PROPERTY_LETTER = "D";
 
    public static void main(final String... args) {
       Thread.currentThread().setName("SilverWare-main");
@@ -36,11 +47,38 @@ public final class Boot {
       log.info("=== Welcome to SilverWare ===");
 
       try {
-         Executor.bootHook();
+         Executor.bootHook(getInitialContext(args));
       } catch (InterruptedException ie) {
          Utils.shutdownLog(log, ie);
       }
 
       log.info("Goodbye.");
+   }
+
+   /**
+    * Creates initial context pre-filled with system properties and command line arguments.
+    * @param args Command line arguments.
+    * @return Initial context pre-filled with system properties and command line arguments.
+    */
+   @SuppressWarnings("static-access")
+   private static Context getInitialContext(final String... args) {
+      final Context context = new Context();
+      final Map<String, Object> contextProperties = context.getProperties();
+      final Options options = new Options();
+      final CommandLineParser commandLineParser = new GnuParser();
+
+      System.getProperties().forEach((key, value) -> contextProperties.put((String) key, value));
+
+      options.addOption(OptionBuilder.withArgName("property=value").hasArgs(2).withValueSeparator().withDescription("system properties").create(PROPERTY_LETTER));
+
+      try {
+         final CommandLine commandLine = commandLineParser.parse(options, args);
+         commandLine.getOptionProperties(PROPERTY_LETTER).forEach((key, value) -> contextProperties.put((String) key, value));
+      } catch (ParseException pe) {
+         log.error("Cannot parse arguments: ", pe);
+         System.exit(1);
+      }
+
+      return context;
    }
 }

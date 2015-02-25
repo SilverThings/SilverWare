@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.providers.MicroserviceProvider;
+import org.silverware.microservices.silver.CamelSilverService;
 import org.silverware.microservices.util.DeployStats;
 import org.silverware.microservices.util.DeploymentScanner;
 import org.silverware.microservices.util.Utils;
@@ -39,18 +40,18 @@ import java.util.Set;
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class CamelMicroserviceProvider implements MicroserviceProvider {
+public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSilverService {
 
    private static final Logger log = LogManager.getLogger(CamelMicroserviceProvider.class);
 
-   public static final String CAMEL_CONTEXT = "silverware.camel.camelContext";
-
+   private Context context;
    private final CamelContext camelContext = new DefaultCamelContext();
    private final List<RouteBuilder> routes = new ArrayList<>();
    private final DeployStats stats = new DeployStats();
 
    @Override
    public void initialize(final Context context) {
+      this.context = context;
       context.getProperties().put(CAMEL_CONTEXT, camelContext);
 
       @SuppressWarnings("unchecked")
@@ -81,6 +82,11 @@ public class CamelMicroserviceProvider implements MicroserviceProvider {
             }
          }
       }
+   }
+
+   @Override
+   public Context getContext() {
+      return context;
    }
 
    @Override
