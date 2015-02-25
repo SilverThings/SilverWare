@@ -32,6 +32,7 @@
       <version.maven.surefire>2.18.1</version.maven.surefire>
       <version.maven.findbugs>3.0.0</version.maven.findbugs>
       <version.maven.project.reports>2.7</version.maven.project.reports>
+      <version.maven.shade>2.3</version.maven.shade>
    </properties>
    <modules>
       <module>microservices-bom</module>
@@ -91,6 +92,22 @@
             <configuration>
                <forkCount>1</forkCount>
             </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>${version.maven.shade}</version>
+            <configuration>
+               <!-- put your configurations here -->
+            </configuration>
+            <executions>
+               <execution>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>shade</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>

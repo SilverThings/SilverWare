@@ -86,12 +86,12 @@ public class CdiMicroserviceProviderTest {
       //@PostConstruct
       public void onInit() {
          //new Throwable().printStackTrace();
-         log.error("initttttt " + this);
+         log.error("initttttt " + this.getClass().getName());
          semaphore.release();
       }
 
       public void hello() {
-         log.info("Hello from B " + this);
+         log.info("Hello from B to A " + testMicroserviceA.getClass().getName());
          testMicroserviceA.hello();
       }
    }
@@ -103,11 +103,11 @@ public class CdiMicroserviceProviderTest {
       private TestMicroserviceB testMicroserviceB;
 
       public TestMicroserviceC() {
-         log.info("Instance of C " + this);
+         log.info("Instance of C");
       }
 
       public void eventObserver(@Observes MicroservicesStartedEvent event) {
-         log.info("Hello from C " + this + " " + testMicroserviceB);
+         log.info("Hello from C to B " + testMicroserviceB.getClass().getName());
          testMicroserviceB.hello();
       }
    }

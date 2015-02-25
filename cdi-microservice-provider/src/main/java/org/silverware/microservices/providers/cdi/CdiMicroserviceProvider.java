@@ -37,6 +37,9 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessInjectionPoint;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -92,7 +95,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
    public static final class MicroservicesExtension implements Extension {
 
-      public <T> void initializePropertyLoading(final @Observes ProcessInjectionTarget<T> pit) {
+      public <T> void injectionTarget(final @Observes ProcessInjectionTarget<T> pit) {
          log.info("Observed " + pit.getInjectionTarget().toString());
       }
 
@@ -163,7 +166,14 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       public void afterBeanDiscovery(final @Observes AfterBeanDiscovery event, BeanManager manager) {
          event.addContext(new MicroserviceContext());
       }
-
    }
 
+   @Interceptor
+   public static class LoggingInterceptor {
+      @AroundInvoke
+      public Object log(final InvocationContext ic) throws Exception {
+         log.info("AroundInvoke " + ic.toString());
+         return ic.proceed();
+      }
+   }
 }
