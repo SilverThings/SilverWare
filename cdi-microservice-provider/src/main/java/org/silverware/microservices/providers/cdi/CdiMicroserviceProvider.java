@@ -24,17 +24,27 @@ import org.apache.logging.log4j.Logger;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.silverware.microservices.Context;
+import org.silverware.microservices.annotations.Microservice;
+import org.silverware.microservices.annotations.MicroserviceScoped;
 import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.CdiSilverService;
 import org.silverware.microservices.util.Utils;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Member;
+import java.lang.reflect.Type;
+import java.util.Set;
+import javax.annotation.Priority;
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.ProcessInjectionPoint;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
 import javax.interceptor.AroundInvoke;
@@ -96,70 +106,46 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
    public static final class MicroservicesExtension implements Extension {
 
       public <T> void injectionTarget(final @Observes ProcessInjectionTarget<T> pit) {
-         log.info("Observed " + pit.getInjectionTarget().toString());
-      }
+         final AnnotatedType<T> at = pit.getAnnotatedType();
 
-      public <T, X> void injectionPoint(final @Observes ProcessInjectionPoint<T, X> pip) {
-         if (log.isTraceEnabled()) {
-            final InjectionPoint injectionPoint = pip.getInjectionPoint();
-            final StringBuilder sb = new StringBuilder();
+         if(at.isAnnotationPresent(Microservice.class)) {
+            log.info("Observed " + pit.getInjectionTarget().toString());
 
-            sb.append("annotated ");
-            sb.append(injectionPoint.getAnnotated().toString());
-            sb.append("\n");
-            sb.append("bean ");
-            sb.append(injectionPoint.getBean().toString());
-            sb.append("\n");
-            sb.append("member ");
-            sb.append(injectionPoint.getMember().toString());
-            sb.append("\n");
-            sb.append("qualifiers ");
-            sb.append(injectionPoint.getQualifiers().toString());
-            sb.append("\n");
-            sb.append("type ");
-            sb.append(injectionPoint.getType().toString());
-            sb.append("\n");
-            sb.append("isDelegate ");
-            sb.append(injectionPoint.isDelegate());
-            sb.append("\n");
-            sb.append("isTransient ");
-            sb.append(injectionPoint.isTransient());
-            sb.append("\n");
+            final InjectionTarget<T> it = pit.getInjectionTarget();
+            final InjectionTarget<T> wrapper = new InjectionTarget<T>() {
+               @Override
+               public void inject(final T instance, final CreationalContext<T> ctx) {
+                  log.info("Injecting " + instance.getClass().getName() + " under context " + ctx);
+                  it.inject(instance, ctx);
+               }
 
-            Bean<?> bean = injectionPoint.getBean();
+               @Override
+               public void postConstruct(final T instance) {
+                  it.postConstruct(instance);
+               }
 
-            sb.append("bean.beanClass ");
-            sb.append(bean.getBeanClass().toString());
-            sb.append("\n");
-            //         System.out.println("bean.injectionPoints " + bean.getInjectionPoints());
-            sb.append("bean.name ");
-            sb.append(bean.getName());
-            sb.append("\n");
-            sb.append("bean.qualifiers ");
-            sb.append(bean.getQualifiers().toString());
-            sb.append("\n");
-            sb.append("bean.scope ");
-            sb.append(bean.getScope().toString());
-            sb.append("\n");
-            sb.append("bean.stereotypes ");
-            sb.append(bean.getStereotypes().toString());
-            sb.append("\n");
-            sb.append("bean.types ");
-            sb.append(bean.getTypes().toString());
-            sb.append("\n");
+               @Override
+               public void preDestroy(final T instance) {
+                  it.preDestroy(instance);
+               }
 
-            Annotated annotated = injectionPoint.getAnnotated();
-            sb.append("annotated.annotations ");
-            sb.append(annotated.getAnnotations().toString());
-            sb.append("\n");
-            sb.append("annotated.baseType ");
-            sb.append(annotated.getBaseType().toString());
-            sb.append("\n");
-            sb.append("annotated.typeClosure ");
-            sb.append(annotated.getTypeClosure().toString());
-            sb.append("\n");
+               @Override
+               public T produce(final CreationalContext<T> ctx) {
+                  return it.produce(ctx); // here we must ship our proxy
+               }
 
-            log.trace(sb.toString());
+               @Override
+               public void dispose(final T instance) {
+                  it.dispose(instance);
+               }
+
+               @Override
+               public Set<InjectionPoint> getInjectionPoints() {
+                  return it.getInjectionPoints();
+               }
+            };
+
+            pit.setInjectionTarget(wrapper);
          }
       }
 
@@ -168,8 +154,10 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   @Interceptor
+   @Interceptor()
+   @Priority(Interceptor.Priority.APPLICATION)
    public static class LoggingInterceptor {
+
       @AroundInvoke
       public Object log(final InvocationContext ic) throws Exception {
          log.info("AroundInvoke " + ic.toString());
