@@ -44,6 +44,9 @@ public class CdiMicroserviceProviderTest {
    @Inject
    private TestMicroserviceB testMicroserviceB;
 
+   @Inject
+   private TestMicro testMicroBean;
+
    @Test
    public void testCdi() throws Exception {
       final BootUtil bootUtil = new BootUtil();
@@ -61,6 +64,8 @@ public class CdiMicroserviceProviderTest {
       Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
 
       testMicroserviceB.hello();
+
+      testMicroBean.hello();
 
       platform.interrupt();
       platform.join();
@@ -109,6 +114,19 @@ public class CdiMicroserviceProviderTest {
       public void eventObserver(@Observes MicroservicesStartedEvent event) {
          log.info("Hello from C to B " + testMicroserviceB.getClass().getName());
          testMicroserviceB.hello();
+      }
+   }
+
+   public static interface TestMicro {
+      public void hello();
+   }
+
+   @Microservice
+   public static class TestMicroBean implements TestMicro {
+
+      @Override
+      public void hello() {
+         log.info("micro hello");
       }
    }
 }
