@@ -23,14 +23,14 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import javax.enterprise.context.NormalScope;
+import javax.inject.Scope;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-@NormalScope
+@Target({ ElementType.TYPE, ElementType.METHOD })
+@Scope
 @Inherited
 public @interface MicroserviceScoped {
 }
