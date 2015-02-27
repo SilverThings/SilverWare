@@ -25,27 +25,20 @@ import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.annotations.Microservice;
-import org.silverware.microservices.annotations.MicroserviceScoped;
 import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.CdiSilverService;
 import org.silverware.microservices.util.Utils;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Member;
-import java.lang.reflect.Type;
 import java.util.Set;
 import javax.annotation.Priority;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
-import javax.enterprise.inject.spi.ProcessInjectionPoint;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -108,7 +101,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       public <T> void injectionTarget(final @Observes ProcessInjectionTarget<T> pit) {
          final AnnotatedType<T> at = pit.getAnnotatedType();
 
-         if(at.isAnnotationPresent(Microservice.class)) {
+         if (at.isAnnotationPresent(Microservice.class)) {
             log.info("Observed " + pit.getInjectionTarget().toString());
 
             final InjectionTarget<T> it = pit.getInjectionTarget();
@@ -131,7 +124,8 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
                @Override
                public T produce(final CreationalContext<T> ctx) {
-                  return it.produce(ctx); // here we must ship our proxy
+                  final T t = it.produce(ctx);
+                  return MicroserviceProxy.getProxy(t);
                }
 
                @Override
