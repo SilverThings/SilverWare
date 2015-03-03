@@ -1,2 +1,2 @@
 # SilverWare
-Minimalistic, easy to use microservices
+Enterprise ready, minimalistic, easy to use Microservices implementation.
