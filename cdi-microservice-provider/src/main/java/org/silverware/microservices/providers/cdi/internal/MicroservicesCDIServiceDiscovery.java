@@ -73,7 +73,7 @@ public class MicroservicesCDIServiceDiscovery implements Extension {
 
         _beanDeploymentMetaData = new BeanDeploymentMetaData();
         _beanDeploymentMetaData.setBeanManager(beanManager);
-        //_beanDeploymentMetaData.setDeploymentClassLoader(Classes.getTCCL());
+        _beanDeploymentMetaData.setDeploymentClassLoader(Thread.currentThread().getContextClassLoader());
     }
 
     /**
