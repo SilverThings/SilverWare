@@ -24,22 +24,14 @@ import org.apache.logging.log4j.Logger;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.silverware.microservices.Context;
-import org.silverware.microservices.annotations.Microservice;
+import org.silverware.microservices.annotations.MicroserviceReference;
 import org.silverware.microservices.providers.MicroserviceProvider;
+import org.silverware.microservices.providers.cdi.internal.MicroservicesCDIExtension;
 import org.silverware.microservices.silver.CdiSilverService;
 import org.silverware.microservices.util.Utils;
 
-import java.util.Set;
 import javax.annotation.Priority;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.inject.spi.InjectionTarget;
-import javax.enterprise.inject.spi.ProcessInjectionTarget;
+import javax.enterprise.util.AnnotationLiteral;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -49,14 +41,19 @@ import javax.interceptor.InvocationContext;
  */
 public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverService {
 
+   /**
+    * Logger.
+    */
    private static final Logger log = LogManager.getLogger(CdiMicroserviceProvider.class);
 
+   /**
+    * Microservices context.
+    */
    private Context context;
 
    @Override
    public void initialize(final Context context) {
       this.context = context;
-      //  cheatLoggerProviderToWeld();
    }
 
    @Override
@@ -70,13 +67,19 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
          log.info("Hello from CDI microservice provider!");
 
          final Weld weld = new Weld();
-         weld.addExtension(new MicroservicesExtension());
+         final MicroservicesCDIExtension microservicesCDIExtension = new MicroservicesCDIExtension(context);
+         weld.addExtension(microservicesCDIExtension);
 
          final WeldContainer container = weld.initialize();
          context.getProperties().put(BEAN_MANAGER, container.getBeanManager());
          context.getProperties().put(CDI_CONTAINER, container);
 
          container.event().select(MicroservicesStartedEvent.class).fire(new MicroservicesStartedEvent(context, container.getBeanManager(), container));
+
+         log.info("Discovered the following microservice implementations:");
+         context.getMicroservices().forEach(metaData -> log.info(" - " + metaData.toString()));
+
+         log.info("Total count of discovered microservice injection points: " + microservicesCDIExtension.getInjectionPointsCount());
 
          try {
             while (!Thread.currentThread().isInterrupted()) {
@@ -93,58 +96,24 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
    }
 
    public static Object getMicroservice(final Context context, final Class clazz) {
-      return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(clazz).get();
+      return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(clazz).select(new MicroserviceReferenceLiteral("")).get();
    }
 
-   public static final class MicroservicesExtension implements Extension {
+   public static Object getMicroservice(final Context context, final Class clazz, final String beanName) {
+      return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(clazz).select(new MicroserviceReferenceLiteral(beanName)).get();
+   }
 
-      public <T> void injectionTarget(final @Observes ProcessInjectionTarget<T> pit) {
-         final AnnotatedType<T> at = pit.getAnnotatedType();
+   private static class MicroserviceReferenceLiteral extends AnnotationLiteral<MicroserviceReference> implements MicroserviceReference {
 
-         if (at.isAnnotationPresent(Microservice.class)) {
-            log.info("Observed " + pit.getInjectionTarget().toString());
+      private final String name;
 
-            final InjectionTarget<T> it = pit.getInjectionTarget();
-            final InjectionTarget<T> wrapper = new InjectionTarget<T>() {
-               @Override
-               public void inject(final T instance, final CreationalContext<T> ctx) {
-                  log.info("Injecting " + instance.getClass().getName() + " under context " + ctx);
-                  it.inject(instance, ctx);
-               }
-
-               @Override
-               public void postConstruct(final T instance) {
-                  it.postConstruct(instance);
-               }
-
-               @Override
-               public void preDestroy(final T instance) {
-                  it.preDestroy(instance);
-               }
-
-               @Override
-               public T produce(final CreationalContext<T> ctx) {
-                  final T t = it.produce(ctx);
-                  return MicroserviceProxy.getProxy(t);
-               }
-
-               @Override
-               public void dispose(final T instance) {
-                  it.dispose(instance);
-               }
-
-               @Override
-               public Set<InjectionPoint> getInjectionPoints() {
-                  return it.getInjectionPoints();
-               }
-            };
-
-            pit.setInjectionTarget(wrapper);
-         }
+      public MicroserviceReferenceLiteral(final String name) {
+         this.name = name;
       }
 
-      public void afterBeanDiscovery(final @Observes AfterBeanDiscovery event, BeanManager manager) {
-         event.addContext(new MicroserviceContext());
+      @Override
+      public String value() {
+         return name;
       }
    }
 

@@ -29,7 +29,7 @@ import javax.inject.Scope;
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE, ElementType.METHOD })
+@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
 @Scope
 @Inherited
 public @interface MicroserviceScoped {

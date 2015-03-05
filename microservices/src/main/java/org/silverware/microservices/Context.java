@@ -21,8 +21,13 @@ package org.silverware.microservices;
 
 import org.silverware.microservices.providers.MicroserviceProvider;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -31,11 +36,14 @@ public class Context {
 
    public static final String MICROSERVICE_PROVIDERS_REGISTRY = "silverware.providers.registry";
    public static final String DEPLOYMENT_PACKAGES = "silverware.deploy.packages";
+   public static final String MICROSERVICES = "silverware.microservices";
 
    private final Map<String, Object> properties = new HashMap<>();
+   private final Set<MicroserviceMetaData> microservices = new HashSet<>();
 
    public Context() {
       properties.put(MICROSERVICE_PROVIDERS_REGISTRY, new HashMap<String, MicroserviceProvider>());
+      properties.put(MICROSERVICES, microservices);
    }
 
    public Map<String, Object> getProperties() {
@@ -45,5 +53,13 @@ public class Context {
    @SuppressWarnings("unchecked")
    public Map<String, MicroserviceProvider> getProvidersRegistry() {
       return (Map<String, MicroserviceProvider>) properties.get(MICROSERVICE_PROVIDERS_REGISTRY);
+   }
+
+   public void registerMicroservice(final MicroserviceMetaData metaData) {
+      microservices.add(metaData);
+   }
+
+   public Set<MicroserviceMetaData> getMicroservices() {
+      return Collections.unmodifiableSet(microservices);
    }
 }

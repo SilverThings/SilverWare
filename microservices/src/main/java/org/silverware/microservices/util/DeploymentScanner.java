@@ -48,7 +48,7 @@ public class DeploymentScanner {
    }
 
    private DeploymentScanner(final String... packages) {
-      reflections = new Reflections(packages);
+      reflections = new Reflections((String[]) packages);
    }
 
    public static synchronized DeploymentScanner getDefaultInstance() {

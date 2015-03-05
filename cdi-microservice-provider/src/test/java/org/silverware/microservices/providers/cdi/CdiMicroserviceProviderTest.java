@@ -22,6 +22,7 @@ package org.silverware.microservices.providers.cdi;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.annotations.Microservice;
+import org.silverware.microservices.annotations.MicroserviceReference;
 import org.silverware.microservices.util.BootUtil;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -41,11 +42,7 @@ public class CdiMicroserviceProviderTest {
 
    private static final Semaphore semaphore = new Semaphore(0);
 
-   @Inject
    private TestMicroserviceB testMicroserviceB;
-
-   @Inject
-   private TestMicro testMicroBean;
 
    @Test
    public void testCdi() throws Exception {
@@ -65,8 +62,6 @@ public class CdiMicroserviceProviderTest {
 
       testMicroserviceB.hello();
 
-      testMicroBean.hello();
-
       platform.interrupt();
       platform.join();
    }
@@ -80,8 +75,14 @@ public class CdiMicroserviceProviderTest {
 
    @Microservice
    public static class TestMicroserviceB {
+
       @Inject
+      @MicroserviceReference
       private TestMicroserviceA testMicroserviceA;
+
+      @Inject
+      @MicroserviceReference
+      private TestMicro testMicroBean;
 
       public TestMicroserviceB() {
          onInit();
@@ -98,6 +99,8 @@ public class CdiMicroserviceProviderTest {
       public void hello() {
          log.info("Hello from B to A " + testMicroserviceA.getClass().getName());
          testMicroserviceA.hello();
+         log.info("Hello from B to Micro " + testMicroBean.getClass().getName());
+         testMicroBean.hello();
       }
    }
 
@@ -105,6 +108,7 @@ public class CdiMicroserviceProviderTest {
    public static class TestMicroserviceC {
 
       @Inject
+      @MicroserviceReference
       private TestMicroserviceB testMicroserviceB;
 
       public TestMicroserviceC() {
@@ -121,7 +125,7 @@ public class CdiMicroserviceProviderTest {
       public void hello();
    }
 
-   @Microservice
+   @Microservice("microBean")
    public static class TestMicroBean implements TestMicro {
 
       @Override

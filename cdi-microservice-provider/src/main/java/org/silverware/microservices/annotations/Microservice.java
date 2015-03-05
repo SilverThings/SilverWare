@@ -25,7 +25,6 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import javax.annotation.ManagedBean;
 import javax.enterprise.inject.Stereotype;
 import javax.inject.Named;
 
@@ -40,4 +39,11 @@ import javax.inject.Named;
 @Stereotype
 @Target(ElementType.TYPE)
 public @interface Microservice {
+
+   /**
+    * Gets the name of the Microservice.
+    *
+    * @return Name of the Microservice.
+    */
+   String value() default "";
 }

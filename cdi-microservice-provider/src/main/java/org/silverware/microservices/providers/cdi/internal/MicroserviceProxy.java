@@ -17,7 +17,7 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.providers.cdi;
+package org.silverware.microservices.providers.cdi.internal;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,19 +38,23 @@ public class MicroserviceProxy implements MethodHandler {
    }
 
    @SuppressWarnings("unchecked")
-   public static <T> T getProxy(T t) {
+   public static <T> T getProxy(Class<T> t) {
       try {
          ProxyFactory factory = new ProxyFactory();
-         factory.setSuperclass(t.getClass());
+         if (t.isInterface()) {
+            factory.setInterfaces(new Class[] { t });
+         } else {
+            factory.setSuperclass(t);
+         }
          return (T) factory.create(new Class[0], new Object[0], new MicroserviceProxy());
       } catch (Exception e) {
-         throw new IllegalStateException("Cannot create proxy: ", e);
+         throw new IllegalStateException("Cannot create proxy for class " + t.getClass().getName() + ": ", e);
       }
    }
 
    @Override
    public Object invoke(final Object o, final Method thisMethod, final Method proceed, final Object[] args) throws Throwable {
       log.info("Invocation of " + thisMethod + " on ");
-      return proceed.invoke(o, args);
+      return null; //proceed.invoke(o, args);
    }
 }

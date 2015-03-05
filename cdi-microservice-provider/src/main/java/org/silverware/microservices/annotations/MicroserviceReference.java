@@ -17,21 +17,33 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.providers.cdi.internal;
+package org.silverware.microservices.annotations;
 
-import java.io.Serializable;
+import javax.inject.Qualifier;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Service Descriptor.
+ * Microservice reference.
  *
- * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * Use this annotation, in conjunction with the {@link javax.inject.Inject}
+ * annotation, to inject a reference to a Microservice.
+ *
+ * @author Martin Večeřa <marvenec@gmail.com>
  */
-public interface ServiceDescriptor extends Serializable {
+@Qualifier
+@Target({TYPE, FIELD })
+@Retention(RUNTIME)
+@Documented
+public @interface MicroserviceReference {
 
     /**
-     * Get the Service name.
-     * @return The Service Name.
+     * Get the name of the Microservice that should be injected.
      */
-    String getServiceName();
-
+    String value() default "";
 }
