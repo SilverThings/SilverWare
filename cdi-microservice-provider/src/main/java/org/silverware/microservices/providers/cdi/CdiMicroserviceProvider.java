@@ -74,12 +74,12 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
          context.getProperties().put(BEAN_MANAGER, container.getBeanManager());
          context.getProperties().put(CDI_CONTAINER, container);
 
-         container.event().select(MicroservicesStartedEvent.class).fire(new MicroservicesStartedEvent(context, container.getBeanManager(), container));
-
          log.info("Discovered the following microservice implementations:");
          context.getMicroservices().forEach(metaData -> log.info(" - " + metaData.toString()));
 
          log.info("Total count of discovered microservice injection points: " + microservicesCDIExtension.getInjectionPointsCount());
+
+         container.event().select(MicroservicesStartedEvent.class).fire(new MicroservicesStartedEvent(context, container.getBeanManager(), container));
 
          try {
             while (!Thread.currentThread().isInterrupted()) {

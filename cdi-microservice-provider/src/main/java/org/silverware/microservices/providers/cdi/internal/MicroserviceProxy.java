@@ -22,6 +22,7 @@ package org.silverware.microservices.providers.cdi.internal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javassist.util.proxy.MethodHandler;
@@ -34,7 +35,18 @@ public class MicroserviceProxy implements MethodHandler {
 
    private static final Logger log = LogManager.getLogger(MicroserviceProxy.class);
 
-   private MicroserviceProxy() {
+   private final Class<?> type;
+
+   private final Object service;
+
+   private MicroserviceProxy(final Class<?> type) throws Exception {
+      this.type = type;
+      if (!type.isInterface()) {
+         service = type.getConstructor(new Class[0]).newInstance();
+      } else {
+         service = null;
+      }
+      log.info("Created service " + service);
    }
 
    @SuppressWarnings("unchecked")
@@ -46,7 +58,7 @@ public class MicroserviceProxy implements MethodHandler {
          } else {
             factory.setSuperclass(t);
          }
-         return (T) factory.create(new Class[0], new Object[0], new MicroserviceProxy());
+         return (T) factory.create(new Class[0], new Object[0], new MicroserviceProxy(t));
       } catch (Exception e) {
          throw new IllegalStateException("Cannot create proxy for class " + t.getClass().getName() + ": ", e);
       }
@@ -54,7 +66,8 @@ public class MicroserviceProxy implements MethodHandler {
 
    @Override
    public Object invoke(final Object o, final Method thisMethod, final Method proceed, final Object[] args) throws Throwable {
-      log.info("Invocation of " + thisMethod + " on ");
-      return null; //proceed.invoke(o, args);
+      log.info("Invocation of " + thisMethod + ", proceed " + proceed);
+
+      return thisMethod.invoke(service, args);
    }
 }

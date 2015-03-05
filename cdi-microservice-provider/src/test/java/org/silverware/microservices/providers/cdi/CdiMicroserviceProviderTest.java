@@ -97,10 +97,10 @@ public class CdiMicroserviceProviderTest {
       }
 
       public void hello() {
-         log.info("Hello from B to A " + testMicroserviceA.getClass().getName());
-         testMicroserviceA.hello();
-         log.info("Hello from B to Micro " + testMicroBean.getClass().getName());
-         testMicroBean.hello();
+         log.info("Hello from B to A " + (testMicroserviceA != null ? testMicroserviceA.getClass().getName() : null));
+         //testMicroserviceA.hello();
+         log.info("Hello from B to Micro ");// + testMicroBean.getClass().getName());
+         //testMicroBean.hello();
       }
    }
 

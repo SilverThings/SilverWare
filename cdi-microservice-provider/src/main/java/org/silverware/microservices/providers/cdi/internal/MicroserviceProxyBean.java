@@ -195,14 +195,4 @@ public class MicroserviceProxyBean implements Bean {
 
    }
 
-   /**
-    * Dynamic proxy {@link InvocationHandler}.
-    */
-   private class ClientProxyInvocationHandler implements InvocationHandler {
-
-      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-         return null;
-      }
-
-   }
 }
