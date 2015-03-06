@@ -99,11 +99,11 @@ public class MicroserviceProxyBean implements Bean {
       this.qualifiers.add(new AnnotationLiteral<Any>() {
       });
 
-      proxyBean = MicroserviceProxy.getProxy(serviceInterface);
+      proxyBean = MicroserviceProxy.getProxy(context, serviceInterface);
    }
 
    /**
-    * Get the name of the ESB Service being proxied to.
+    * Get the name of the proxied Microservice.
     *
     * @return The Service name.
     */

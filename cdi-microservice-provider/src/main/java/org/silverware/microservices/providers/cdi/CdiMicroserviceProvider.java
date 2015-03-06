@@ -24,13 +24,19 @@ import org.apache.logging.log4j.Logger;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.silverware.microservices.Context;
+import org.silverware.microservices.annotations.Microservice;
 import org.silverware.microservices.annotations.MicroserviceReference;
 import org.silverware.microservices.providers.MicroserviceProvider;
+import org.silverware.microservices.providers.cdi.internal.MicroserviceProxyBean;
 import org.silverware.microservices.providers.cdi.internal.MicroservicesCDIExtension;
 import org.silverware.microservices.silver.CdiSilverService;
 import org.silverware.microservices.util.Utils;
 
+import java.util.Collections;
+import java.util.Set;
 import javax.annotation.Priority;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -95,11 +101,24 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   public static Object getMicroservice(final Context context, final Class clazz) {
+   public static Object getMicroserviceInstance(final Context context, final Class clazz) {
+      final BeanManager beanManager = ((BeanManager) context.getProperties().get(BEAN_MANAGER));
+      Set<Bean<?>> beans = beanManager.getBeans(clazz);
+      for (Bean<?> bean : beans) {
+         if (bean.getBeanClass().isAnnotationPresent(Microservice.class) && !(bean instanceof MicroserviceProxyBean)) {
+            final Bean<?> theBean = beanManager.resolve(Collections.singleton(bean));
+            return beanManager.getReference(theBean, clazz, beanManager.createCreationalContext(theBean));
+         }
+      }
+
+      return null;
+   }
+
+   static Object getMicroserviceProxy(final Context context, final Class clazz) {
       return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(clazz).select(new MicroserviceReferenceLiteral("")).get();
    }
 
-   public static Object getMicroservice(final Context context, final Class clazz, final String beanName) {
+   static Object getMicroserviceProxy(final Context context, final Class clazz, final String beanName) {
       return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(clazz).select(new MicroserviceReferenceLiteral(beanName)).get();
    }
 

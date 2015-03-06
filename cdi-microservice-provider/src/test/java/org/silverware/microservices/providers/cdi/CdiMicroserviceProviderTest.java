@@ -57,15 +57,11 @@ public class CdiMicroserviceProviderTest {
          Thread.sleep(200);
       }
 
-      testMicroserviceB = (TestMicroserviceB) CdiMicroserviceProvider.getMicroservice(bootUtil.getContext(), TestMicroserviceB.class);
+      //testMicroserviceB = (TestMicroserviceB) CdiMicroserviceProvider.getMicroserviceProxy(bootUtil.getContext(), TestMicroserviceB.class);
 
       Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
 
-      testMicroserviceB.hello();
-
-      testMicroserviceA = (TestMicroserviceA) CdiMicroserviceProvider.getMicroservice(bootUtil.getContext(), TestMicroserviceA.class);
-      testMicroserviceA.hello();
-
+      //testMicroserviceB.hello();
 
       platform.interrupt();
       platform.join();
@@ -86,7 +82,7 @@ public class CdiMicroserviceProviderTest {
       private TestMicroserviceA testMicroserviceA;
 
       @Inject
-      @MicroserviceReference
+      @MicroserviceReference("microBean")
       private TestMicro testMicroBean;
 
       public TestMicroserviceB() {
@@ -96,15 +92,14 @@ public class CdiMicroserviceProviderTest {
       //@PostActivate
       //@PostConstruct
       public void onInit() {
-         //new Throwable().printStackTrace();
          log.error("initttttt " + this.getClass().getName());
          semaphore.release();
       }
 
       public void hello() {
-         log.info("Hello from B to A " + (testMicroserviceA != null ? testMicroserviceA.getClass().getName() : null));
-         //testMicroserviceA.hello();
-         log.info("Hello from B to Micro ");// + testMicroBean.getClass().getName());
+         log.info("Hello from B (" + this.toString() + ") to A " + (testMicroserviceA != null ? testMicroserviceA.getClass().getName() : null));
+         testMicroserviceA.hello();
+         log.info("Hello from B to Micro " + testMicroBean.getClass().getName());
          //testMicroBean.hello();
       }
    }
@@ -121,7 +116,7 @@ public class CdiMicroserviceProviderTest {
       }
 
       public void eventObserver(@Observes MicroservicesStartedEvent event) {
-         log.info("Hello from C to B " + testMicroserviceB.getClass().getName());
+         log.info("Hello from C (" + this.toString() + ") to B " + testMicroserviceB.getClass().getName());
          testMicroserviceB.hello();
       }
    }
@@ -138,4 +133,5 @@ public class CdiMicroserviceProviderTest {
          log.info("micro hello");
       }
    }
+
 }

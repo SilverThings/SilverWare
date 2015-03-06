@@ -21,8 +21,9 @@ package org.silverware.microservices.providers.cdi.internal;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.silverware.microservices.Context;
+import org.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javassist.util.proxy.MethodHandler;
@@ -37,20 +38,28 @@ public class MicroserviceProxy implements MethodHandler {
 
    private final Class<?> type;
 
-   private final Object service;
+   private Object service;
 
-   private MicroserviceProxy(final Class<?> type) throws Exception {
+   private Context context;
+
+   private MicroserviceProxy(final Context context, final Class<?> type) throws Exception {
+      this.context = context;
       this.type = type;
-      if (!type.isInterface()) {
-         service = type.getConstructor(new Class[0]).newInstance();
-      } else {
-         service = null;
+   }
+
+   private synchronized Object getService() {
+      if (service == null) {
+         if (!type.isInterface()) {
+            service = CdiMicroserviceProvider.getMicroserviceInstance(context, type);
+            log.info("Created service " + service);
+         }
       }
-      log.info("Created service " + service);
+
+      return service;
    }
 
    @SuppressWarnings("unchecked")
-   public static <T> T getProxy(Class<T> t) {
+   public static <T> T getProxy(final Context context, final Class<T> t) {
       try {
          ProxyFactory factory = new ProxyFactory();
          if (t.isInterface()) {
@@ -58,16 +67,30 @@ public class MicroserviceProxy implements MethodHandler {
          } else {
             factory.setSuperclass(t);
          }
-         return (T) factory.create(new Class[0], new Object[0], new MicroserviceProxy(t));
+         return (T) factory.create(new Class[0], new Object[0], new MicroserviceProxy(context, t));
       } catch (Exception e) {
-         throw new IllegalStateException("Cannot create proxy for class " + t.getClass().getName() + ": ", e);
+         throw new IllegalStateException("Cannot create proxy for class " + t.getName() + ": ", e);
       }
    }
 
    @Override
    public Object invoke(final Object o, final Method thisMethod, final Method proceed, final Object[] args) throws Throwable {
-      log.info("Invocation of " + thisMethod + ", proceed " + proceed);
+      if (thisMethod.getDeclaringClass() == Object.class) {
+         final String methodName = thisMethod.getName();
+         final int paramCount = thisMethod.getParameterTypes().length;
 
-      return thisMethod.invoke(service, args);
+         if ("toString".equals(methodName) && paramCount == 0) {
+            return "Microservices proxy for " + type.getName();
+         } else if ("equals".equals(methodName) && paramCount == 1) {
+            return this.equals(args[0]);
+         } else if ("hashCode".equals(methodName) && paramCount == 0) {
+            return this.hashCode();
+         } else if ("getClass".equals(methodName) && paramCount == 0) {
+            return type;
+         }
+      }
+
+      log.info("Invocation of " + thisMethod + ", proceed " + proceed);
+      return thisMethod.invoke(getService(), args);
    }
 }

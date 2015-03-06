@@ -20,9 +20,9 @@
       <Logger name="com" level="info"/>
       <Logger name="org" level="info"/>
       <Logger name="java" level="info"/>
-      <Logger name="org.jboss.weld" level="trace"/>
-      <Logger name="org.silverware" level="trace"/>
-      <Root level="trace">
+      <Logger name="org.jboss.weld" level="debug"/>
+      <Logger name="org.silverware" level="debug"/>
+      <Root level="debug">
          <AppenderRef ref="ASYNC"/>
       </Root>
    </Loggers>
