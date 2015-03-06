@@ -23,8 +23,6 @@ import org.silverware.microservices.Context;
 import org.silverware.microservices.annotations.MicroserviceScoped;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;

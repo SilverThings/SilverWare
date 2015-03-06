@@ -26,6 +26,7 @@ import org.jboss.weld.context.beanstore.HashMapBeanStore;
 import org.silverware.microservices.annotations.MicroserviceScoped;
 
 import java.lang.annotation.Annotation;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>

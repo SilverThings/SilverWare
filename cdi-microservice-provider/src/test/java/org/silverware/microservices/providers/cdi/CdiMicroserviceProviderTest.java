@@ -42,6 +42,7 @@ public class CdiMicroserviceProviderTest {
 
    private static final Semaphore semaphore = new Semaphore(0);
 
+   private TestMicroserviceA testMicroserviceA;
    private TestMicroserviceB testMicroserviceB;
 
    @Test
@@ -61,6 +62,10 @@ public class CdiMicroserviceProviderTest {
       Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
 
       testMicroserviceB.hello();
+
+      testMicroserviceA = (TestMicroserviceA) CdiMicroserviceProvider.getMicroservice(bootUtil.getContext(), TestMicroserviceA.class);
+      testMicroserviceA.hello();
+
 
       platform.interrupt();
       platform.join();
