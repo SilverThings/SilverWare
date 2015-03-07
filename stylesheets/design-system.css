@@ -1,0 +1,6 @@
+@font-face {
+  font-family: 'Design System';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Design System'), local('DesignSystem'), local('Design System C 500R'), url(../fonts/design-system.otf) format('opentype');
+}

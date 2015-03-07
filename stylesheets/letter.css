@@ -1,0 +1,44 @@
+@font-face {
+    font-family: 'TypeWriter';
+    src: url('urania.ttf') format('truetype');
+}
+
+body {
+	margin: 2em auto;
+	max-width: 1000px;
+}
+
+h1 {
+	text-align: center;
+}
+
+main {
+	font-family: 'TypeWriter', sans-serif; font-size: 1.5em;
+}
+
+main p {
+	text-indent: 1.5em;
+	text-align: justify;
+	padding-bottom: 1em;
+}
+
+main p#sign {
+	text-indent: 0;
+	float: right;
+}
+
+li {
+	padding-bottom: 1em;
+}
+
+img {
+	border: none;
+}
+
+footer {
+	font-size: 0.75em;
+}
+
+footer div#icons {
+	text-align: right;
+}
