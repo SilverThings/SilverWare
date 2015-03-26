@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.silverware.microservices.Context;
+import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.annotations.Microservice;
 import org.silverware.microservices.annotations.MicroserviceReference;
 import org.silverware.microservices.providers.MicroserviceProvider;
@@ -32,7 +33,10 @@ import org.silverware.microservices.providers.cdi.internal.MicroservicesCDIExten
 import org.silverware.microservices.silver.CdiSilverService;
 import org.silverware.microservices.util.Utils;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.Bean;
@@ -120,6 +124,20 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
    static Object getMicroserviceProxy(final Context context, final Class clazz, final String beanName) {
       return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(clazz).select(new MicroserviceReferenceLiteral(beanName)).get();
+   }
+
+   @Override
+   public Object lookupLocalMicroservice(final String name, final Class<?> type, final Set<Annotation> qualifiers) {
+      Set<MicroserviceMetaData> microservices = context.getMicroservices();
+      List<MicroserviceMetaData> nameMatch = new ArrayList<>();
+
+      microservices.forEach(metaData -> {
+         if (metaData.getName() != null && metaData.getName().equals(name)) {
+            nameMatch.add(metaData);
+         }
+      });
+
+      return null;
    }
 
    private static class MicroserviceReferenceLiteral extends AnnotationLiteral<MicroserviceReference> implements MicroserviceReference {

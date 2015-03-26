@@ -20,6 +20,7 @@
 package org.silverware.microservices;
 
 import org.silverware.microservices.providers.MicroserviceProvider;
+import org.silverware.microservices.silver.SilverService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,10 +40,11 @@ public class Context {
    public static final String MICROSERVICES = "silverware.microservices";
 
    private final Map<String, Object> properties = new HashMap<>();
+   private final Map<String, MicroserviceProvider> providers = new HashMap<>();
    private final Set<MicroserviceMetaData> microservices = new HashSet<>();
 
    public Context() {
-      properties.put(MICROSERVICE_PROVIDERS_REGISTRY, new HashMap<String, MicroserviceProvider>());
+      properties.put(MICROSERVICE_PROVIDERS_REGISTRY, providers);
       properties.put(MICROSERVICES, microservices);
    }
 
@@ -61,5 +63,15 @@ public class Context {
 
    public Set<MicroserviceMetaData> getMicroservices() {
       return Collections.unmodifiableSet(microservices);
+   }
+
+   public SilverService getProvider(Class<? extends SilverService> clazz) {
+      providers.forEach((name, instance) -> {
+         if (clazz.isAssignableFrom(instance.getClass()) {
+            return instance;
+         }
+      });
+
+      return null;
    }
 }

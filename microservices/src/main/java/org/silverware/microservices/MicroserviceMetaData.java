@@ -19,6 +19,11 @@
  */
 package org.silverware.microservices;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * Immutable meta-data of a discovered Microservice implementation.
  *
@@ -36,6 +41,8 @@ public class MicroserviceMetaData {
     */
    private final Class type;
 
+   private final Set<Annotation> qualifiers;
+
    /**
     * Create a representation of a discovered Microservice.
     *
@@ -43,10 +50,13 @@ public class MicroserviceMetaData {
     *       The name of the discovered Microservice.
     * @param type
     *       The type of the discovered Microservice.
+    * @param qualifiers
+    *       The qualifiers of the discovered Microservice.
     */
-   public MicroserviceMetaData(final String name, final Class type) {
+   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers) {
       this.name = name;
       this.type = type;
+      this.qualifiers = qualifiers;
 
       if (name == null || type == null) {
          throw new IllegalStateException("Name and type fields cannot be null.");
@@ -71,18 +81,30 @@ public class MicroserviceMetaData {
       return type;
    }
 
+   /**
+    * Gets the qualifiers of the discovered Microservice.
+    *
+    * @return The qualifiers of the discovered Microservice.
+    */
+   public Set<Annotation> getQualifiers() {
+      return qualifiers;
+   }
+
    @Override
    public boolean equals(final Object o) {
       if (this == o) {
          return true;
       }
-      if (o == null || getClass() != o.getClass()) {
+      if (!(o instanceof MicroserviceMetaData)) {
          return false;
       }
 
       final MicroserviceMetaData that = (MicroserviceMetaData) o;
 
       if (!name.equals(that.name)) {
+         return false;
+      }
+      if (qualifiers != null ? !qualifiers.equals(that.qualifiers) : that.qualifiers != null) {
          return false;
       }
       if (!type.equals(that.type)) {
@@ -96,11 +118,12 @@ public class MicroserviceMetaData {
    public int hashCode() {
       int result = name.hashCode();
       result = 31 * result + type.hashCode();
+      result = 31 * result + (qualifiers != null ? qualifiers.hashCode() : 0);
       return result;
    }
 
    @Override
    public String toString() {
-      return "microservice " + name + " of type " + type.getCanonicalName();
+      return "microservice " + name + " of type " + type.getCanonicalName() + " with qualifiers " + Arrays.toString(qualifiers.toArray());
    }
 }
