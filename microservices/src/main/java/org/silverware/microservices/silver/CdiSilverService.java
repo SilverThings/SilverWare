@@ -19,16 +19,11 @@
  */
 package org.silverware.microservices.silver;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
-
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public interface CdiSilverService extends SilverService {
 
-   public static final String BEAN_MANAGER = "silverware.cdi.beanManager";
-   public static final String CDI_CONTAINER = "silverware.cdi.container";
-
-   public Object lookupLocalMicroservice(final String name, final Class<?> type, final Set<Annotation> qualifiers);
+   String BEAN_MANAGER = "silverware.cdi.beanManager";
+   String CDI_CONTAINER = "silverware.cdi.container";
 }

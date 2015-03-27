@@ -26,5 +26,5 @@ import org.silverware.microservices.Context;
  */
 public interface SilverService {
 
-   public Context getContext();
+   Context getContext();
 }

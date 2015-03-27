@@ -20,6 +20,7 @@
 package org.silverware.microservices.providers.cdi.internal;
 
 import org.silverware.microservices.Context;
+import org.silverware.microservices.annotations.MicroserviceReference;
 import org.silverware.microservices.annotations.MicroserviceScoped;
 
 import java.lang.annotation.Annotation;
@@ -87,7 +88,7 @@ public class MicroserviceProxyBean implements Bean {
       this.serviceInterface = proxyInterface;
       this.context = context;
 
-      this.qualifiers = new HashSet<Annotation>();
+      this.qualifiers = new HashSet<>();
       this.qualifiers.addAll(qualifiers);
       this.qualifiers.add(new AnnotationLiteral<Default>() {
       });

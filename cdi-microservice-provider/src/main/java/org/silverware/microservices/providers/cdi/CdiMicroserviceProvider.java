@@ -105,13 +105,13 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   public static Object getMicroserviceInstance(final Context context, final Class clazz) {
+   public static Object getMicroserviceInstance(final Context context, final String name, final Class<?> type, final Set<Annotation> qualifiers) {
       final BeanManager beanManager = ((BeanManager) context.getProperties().get(BEAN_MANAGER));
-      Set<Bean<?>> beans = beanManager.getBeans(clazz);
+      Set<Bean<?>> beans = beanManager.getBeans(type, qualifiers.toArray(new Annotation[qualifiers.size()]));
       for (Bean<?> bean : beans) {
          if (bean.getBeanClass().isAnnotationPresent(Microservice.class) && !(bean instanceof MicroserviceProxyBean)) {
             final Bean<?> theBean = beanManager.resolve(Collections.singleton(bean));
-            return beanManager.getReference(theBean, clazz, beanManager.createCreationalContext(theBean));
+            return beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean));
          }
       }
 
@@ -126,8 +126,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(clazz).select(new MicroserviceReferenceLiteral(beanName)).get();
    }
 
-   @Override
-   public Object lookupLocalMicroservice(final String name, final Class<?> type, final Set<Annotation> qualifiers) {
+   public static Object lookupLocalMicroservice(final Context context, final String name, final Class<?> type, final Set<Annotation> qualifiers) {
       Set<MicroserviceMetaData> microservices = context.getMicroservices();
       List<MicroserviceMetaData> nameMatch = new ArrayList<>();
       List<MicroserviceMetaData> typeMatch = new ArrayList<>();
