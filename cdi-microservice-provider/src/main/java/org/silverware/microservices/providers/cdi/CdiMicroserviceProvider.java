@@ -130,10 +130,17 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
    public Object lookupLocalMicroservice(final String name, final Class<?> type, final Set<Annotation> qualifiers) {
       Set<MicroserviceMetaData> microservices = context.getMicroservices();
       List<MicroserviceMetaData> nameMatch = new ArrayList<>();
+      List<MicroserviceMetaData> typeMatch = new ArrayList<>();
 
       microservices.forEach(metaData -> {
-         if (metaData.getName() != null && metaData.getName().equals(name)) {
-            nameMatch.add(metaData);
+         if (name != null) {
+            if (metaData.getName() != null && metaData.getName().equals(name)) {
+               nameMatch.add(metaData);
+            }
+         }
+
+         if (type.isAssignableFrom(metaData.getType())) {
+            typeMatch.add(metaData);
          }
       });
 

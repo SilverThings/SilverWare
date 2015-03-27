@@ -54,11 +54,6 @@ public class MicroserviceProxyBean implements Bean {
    private final Context context;
 
    /**
-    * Target service reference.
-    */
-   //private ServiceReference _service;
-
-   /**
     * The bean proxy Interface {@link Class} of the bean being proxied.  This class
     * must be one of the Service
     * interfaces implemented by the actual Service bean component.
@@ -99,7 +94,7 @@ public class MicroserviceProxyBean implements Bean {
       this.qualifiers.add(new AnnotationLiteral<Any>() {
       });
 
-      proxyBean = MicroserviceProxy.getProxy(context, serviceInterface);
+      proxyBean = MicroserviceProxy.getProxy(this);
    }
 
    /**
@@ -191,6 +186,15 @@ public class MicroserviceProxyBean implements Bean {
    @Override
    public void destroy(final Object instance, final CreationalContext creationalContext) {
 
+   }
+
+   /**
+    * Gets Microservices context.
+    *
+    * @return The Microservices context.
+    */
+   public Context getContext() {
+      return context;
    }
 
 }

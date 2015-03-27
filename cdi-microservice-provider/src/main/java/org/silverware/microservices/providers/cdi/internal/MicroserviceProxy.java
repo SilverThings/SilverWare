@@ -36,21 +36,18 @@ public class MicroserviceProxy implements MethodHandler {
 
    private static final Logger log = LogManager.getLogger(MicroserviceProxy.class);
 
-   private final Class<?> type;
-
    private Object service;
 
-   private Context context;
+   private MicroserviceProxyBean parentBean;
 
-   private MicroserviceProxy(final Context context, final Class<?> type) throws Exception {
-      this.context = context;
-      this.type = type;
+   private MicroserviceProxy(final MicroserviceProxyBean parentBean) throws Exception {
+      this.parentBean = parentBean;
    }
 
    private synchronized Object getService() {
       if (service == null) {
-         if (!type.isInterface()) {
-            service = CdiMicroserviceProvider.getMicroserviceInstance(context, type);
+         if (!parentBean.getServiceInterface().isInterface()) {
+            service = CdiMicroserviceProvider.getMicroserviceInstance(parentBean.getContext(), parentBean.getServiceInterface());
             log.info("Created service " + service);
          }
       }
@@ -59,17 +56,17 @@ public class MicroserviceProxy implements MethodHandler {
    }
 
    @SuppressWarnings("unchecked")
-   public static <T> T getProxy(final Context context, final Class<T> t) {
+   public static <T> T getProxy(final MicroserviceProxyBean parentBean) {
       try {
          ProxyFactory factory = new ProxyFactory();
-         if (t.isInterface()) {
-            factory.setInterfaces(new Class[] { t });
+         if (parentBean.getServiceInterface().isInterface()) {
+            factory.setInterfaces(new Class[] { parentBean.getServiceInterface() });
          } else {
-            factory.setSuperclass(t);
+            factory.setSuperclass(parentBean.getServiceInterface());
          }
-         return (T) factory.create(new Class[0], new Object[0], new MicroserviceProxy(context, t));
+         return (T) factory.create(new Class[0], new Object[0], new MicroserviceProxy(parentBean));
       } catch (Exception e) {
-         throw new IllegalStateException("Cannot create proxy for class " + t.getName() + ": ", e);
+         throw new IllegalStateException("Cannot create proxy for class " + parentBean.getServiceInterface().getName() + ": ", e);
       }
    }
 
@@ -80,13 +77,13 @@ public class MicroserviceProxy implements MethodHandler {
          final int paramCount = thisMethod.getParameterTypes().length;
 
          if ("toString".equals(methodName) && paramCount == 0) {
-            return "Microservices proxy for " + type.getName();
+            return "Microservices proxy for " + parentBean.getServiceInterface().getName();
          } else if ("equals".equals(methodName) && paramCount == 1) {
             return this.equals(args[0]);
          } else if ("hashCode".equals(methodName) && paramCount == 0) {
             return this.hashCode();
          } else if ("getClass".equals(methodName) && paramCount == 0) {
-            return type;
+            return parentBean.getServiceInterface();
          }
       }
 

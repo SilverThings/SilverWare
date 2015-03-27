@@ -66,11 +66,11 @@ public class Context {
    }
 
    public SilverService getProvider(Class<? extends SilverService> clazz) {
-      providers.forEach((name, instance) -> {
-         if (clazz.isAssignableFrom(instance.getClass()) {
-            return instance;
+      for (Map.Entry<String, MicroserviceProvider> entry : providers.entrySet()) {
+         if (clazz.isAssignableFrom(entry.getValue().getClass())) {
+            return (SilverService) entry.getValue();
          }
-      });
+      }
 
       return null;
    }
