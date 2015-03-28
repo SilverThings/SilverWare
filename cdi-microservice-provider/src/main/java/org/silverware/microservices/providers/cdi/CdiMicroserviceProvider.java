@@ -111,9 +111,9 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       for (Bean<?> bean : beans) {
          if (bean.getBeanClass().isAnnotationPresent(Microservice.class) && !(bean instanceof MicroserviceProxyBean)) {
             final Bean<?> theBean = beanManager.resolve(Collections.singleton(bean));
-            //if (theBean.getName().equals(name)) {
+            if (theBean.getName().equals(name)) {
                return beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean));
-            //}
+            }
          }
       }
 

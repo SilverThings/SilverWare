@@ -152,7 +152,8 @@ public class MicroservicesCDIExtension implements Extension {
       if (microserviceReference.value().length() > 0) {
          serviceName = microserviceReference.value();
       } else {
-         serviceName = injectionPointField.getType().getSimpleName();
+         String tmpName = injectionPointField.getType().getSimpleName();
+         serviceName = tmpName.substring(0, 1).toLowerCase() + tmpName.substring(1);
       }
 
       addClientProxyBean(serviceName, injectionPointField.getType(), qualifiers);
