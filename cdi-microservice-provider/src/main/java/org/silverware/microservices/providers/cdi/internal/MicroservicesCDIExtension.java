@@ -102,10 +102,13 @@ public class MicroservicesCDIExtension implements Extension {
 
       // Create a registry of Microservices
       if (bean.getBeanClass().isAnnotationPresent(Microservice.class)) {
-         Microservice annotation = bean.getBeanClass().getAnnotation(Microservice.class);
-         final String microserviceName = annotation.value().length() > 0 ? annotation.value() : bean.getBeanClass().getSimpleName();
+         // we do not want to register the injection points
+         if (bean.getQualifiers().stream().filter(qualifier -> qualifier.annotationType().isAssignableFrom(MicroserviceReference.class)).count() == 0) {
+            Microservice annotation = bean.getBeanClass().getAnnotation(Microservice.class);
+            final String microserviceName = annotation.value().length() > 0 ? annotation.value() : bean.getBeanClass().getSimpleName();
 
-         context.registerMicroservice(new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers()));
+            context.registerMicroservice(new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers()));
+         }
       }
 
       // Create proxies for the corresponding injection points

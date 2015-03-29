@@ -20,7 +20,6 @@
 package org.silverware.microservices.providers.cdi.internal;
 
 import org.silverware.microservices.Context;
-import org.silverware.microservices.annotations.MicroserviceReference;
 import org.silverware.microservices.annotations.MicroserviceScoped;
 
 import java.lang.annotation.Annotation;

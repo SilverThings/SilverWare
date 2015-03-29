@@ -21,7 +21,6 @@ package org.silverware.microservices.providers.cdi.internal;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.silverware.microservices.Context;
 import org.silverware.microservices.annotations.MicroserviceReference;
 import org.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
 
@@ -50,17 +49,15 @@ public class MicroserviceProxy implements MethodHandler {
 
    private synchronized Object getService() {
       if (service == null) {
-         if (!parentBean.getServiceInterface().isInterface()) {
-            Set<Annotation> qualifiers = new HashSet<>();
-            for (final Annotation qualifier : parentBean.getQualifiers()) {
-               if (!qualifier.annotationType().getName().equals(MicroserviceReference.class.getName())) {
-                  qualifiers.add(qualifier);
-               }
+         Set<Annotation> qualifiers = new HashSet<>();
+         for (final Annotation qualifier : parentBean.getQualifiers()) {
+            if (!qualifier.annotationType().getName().equals(MicroserviceReference.class.getName())) {
+               qualifiers.add(qualifier);
             }
-
-            service = CdiMicroserviceProvider.getMicroserviceInstance(parentBean.getContext(), parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers);
-            log.info("Created service " + service);
          }
+
+         service = CdiMicroserviceProvider.getMicroserviceInstance(parentBean.getContext(), parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers);
+         log.info("Created service " + service);
       }
 
       return service;

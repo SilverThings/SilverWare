@@ -29,6 +29,7 @@ import org.testng.annotations.Test;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.PostConstruct;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -57,11 +58,11 @@ public class CdiMicroserviceProviderTest {
          Thread.sleep(200);
       }
 
-      //testMicroserviceB = (TestMicroserviceB) CdiMicroserviceProvider.getMicroserviceProxy(bootUtil.getContext(), TestMicroserviceB.class);
+      testMicroserviceB = (TestMicroserviceB) CdiMicroserviceProvider.getMicroserviceProxy(bootUtil.getContext(), TestMicroserviceB.class);
 
-      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
+      Assert.assertTrue(semaphore.tryAcquire(10, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
 
-      //testMicroserviceB.hello();
+      testMicroserviceB.hello();
 
       platform.interrupt();
       platform.join();
@@ -86,21 +87,20 @@ public class CdiMicroserviceProviderTest {
       private TestMicro testMicroBean;
 
       public TestMicroserviceB() {
-         onInit();
+         log.info("MicroServiceB constructor");
       }
 
-      //@PostActivate
-      //@PostConstruct
+      @PostConstruct
       public void onInit() {
-         log.error("initttttt " + this.getClass().getName());
-         semaphore.release();
+         log.info("MicroServiceB PostConstruct " + this.getClass().getName());
       }
 
       public void hello() {
          log.info("Hello from B (" + this.toString() + ") to A " + (testMicroserviceA != null ? testMicroserviceA.getClass().getName() : null));
          testMicroserviceA.hello();
          log.info("Hello from B to Micro " + testMicroBean.getClass().getName());
-         //testMicroBean.hello();
+         testMicroBean.hello();
+         semaphore.release();
       }
    }
 
@@ -121,8 +121,8 @@ public class CdiMicroserviceProviderTest {
       }
    }
 
-   public static interface TestMicro {
-      public void hello();
+   public interface TestMicro {
+      void hello();
    }
 
    @Microservice("microBean")
