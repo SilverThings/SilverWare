@@ -115,15 +115,6 @@ public class MicroserviceProxyBean implements Bean {
       return serviceInterface;
    }
 
-   /**
-    * Set the service reference for the target Service.
-    *
-    * @param service
-    *       The target service.
-    */
-/*    public void setService(ServiceReference service) {
-        this._service = service;
-    }*/
    @Override
    public Set<Type> getTypes() {
       final Set<Type> types = new HashSet<Type>();

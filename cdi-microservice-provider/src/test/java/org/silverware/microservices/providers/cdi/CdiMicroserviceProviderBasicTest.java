@@ -37,14 +37,15 @@ import javax.inject.Inject;
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class CdiMicroserviceProviderTest {
+public class CdiMicroserviceProviderBasicTest {
 
-   private static final Logger log = LogManager.getLogger(CdiMicroserviceProviderTest.class);
+   private static final Logger log = LogManager.getLogger(CdiMicroserviceProviderBasicTest.class);
 
    private static final Semaphore semaphore = new Semaphore(0);
 
-   private TestMicroserviceA testMicroserviceA;
    private TestMicroserviceB testMicroserviceB;
+
+   private static boolean postConstructCalled = false;
 
    @Test
    public void testCdi() throws Exception {
@@ -58,11 +59,11 @@ public class CdiMicroserviceProviderTest {
          Thread.sleep(200);
       }
 
-      testMicroserviceB = (TestMicroserviceB) CdiMicroserviceProvider.getMicroserviceProxy(bootUtil.getContext(), TestMicroserviceB.class);
+      //testMicroserviceB = (TestMicroserviceB) CdiMicroserviceProvider.getMicroserviceProxy(bootUtil.getContext(), TestMicroserviceB.class);
 
       Assert.assertTrue(semaphore.tryAcquire(10, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
 
-      testMicroserviceB.hello();
+      Assert.assertTrue(postConstructCalled);
 
       platform.interrupt();
       platform.join();
@@ -86,6 +87,10 @@ public class CdiMicroserviceProviderTest {
       @MicroserviceReference("microBean")
       private TestMicro testMicroBean;
 
+      @Inject
+      @MicroserviceReference
+      private TestMicro noNameMicroBean;
+
       public TestMicroserviceB() {
          log.info("MicroServiceB constructor");
       }
@@ -93,6 +98,7 @@ public class CdiMicroserviceProviderTest {
       @PostConstruct
       public void onInit() {
          log.info("MicroServiceB PostConstruct " + this.getClass().getName());
+         postConstructCalled = true;
       }
 
       public void hello() {
@@ -100,7 +106,7 @@ public class CdiMicroserviceProviderTest {
          testMicroserviceA.hello();
          log.info("Hello from B to Micro " + testMicroBean.getClass().getName());
          testMicroBean.hello();
-         semaphore.release();
+         noNameMicroBean.hello();
       }
    }
 
@@ -131,6 +137,16 @@ public class CdiMicroserviceProviderTest {
       @Override
       public void hello() {
          log.info("micro hello");
+         semaphore.release();
+      }
+   }
+
+   @Microservice
+   public static class NoNameMicroBean implements TestMicro {
+
+      @Override
+      public void hello() {
+         log.info("noname hello");
       }
    }
 
