@@ -137,7 +137,6 @@ public class CdiMicroserviceProviderBasicTest {
       @Override
       public void hello() {
          log.info("micro hello");
-         semaphore.release();
       }
    }
 
@@ -147,6 +146,7 @@ public class CdiMicroserviceProviderBasicTest {
       @Override
       public void hello() {
          log.info("noname hello");
+         semaphore.release();
       }
    }
 

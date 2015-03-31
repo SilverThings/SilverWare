@@ -152,11 +152,16 @@ public class MicroservicesCDIExtension implements Extension {
    private void addInjectableClientProxyBean(final Field injectionPointField, final MicroserviceReference microserviceReference, final Set<Annotation> qualifiers, final BeanManager beanManager) {
       final String serviceName;
 
+      // first try to use a user defined service name
       if (microserviceReference.value().length() > 0) {
          serviceName = microserviceReference.value();
       } else {
-         String tmpName = injectionPointField.getType().getSimpleName();
-         serviceName = tmpName.substring(0, 1).toLowerCase() + tmpName.substring(1);
+         if (injectionPointField.getType().isInterface()) { // in case of interface use the property name
+            serviceName = injectionPointField.getName();
+         } else { // else use the type name as does CDI
+            final String tmpName = injectionPointField.getType().getSimpleName();
+            serviceName = tmpName.substring(0, 1).toLowerCase() + tmpName.substring(1);
+         }
       }
 
       addClientProxyBean(serviceName, injectionPointField.getType(), qualifiers);
