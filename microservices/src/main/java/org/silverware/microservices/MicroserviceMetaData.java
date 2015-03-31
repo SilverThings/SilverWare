@@ -31,6 +31,11 @@ import java.util.Set;
  */
 public class MicroserviceMetaData {
 
+   public enum ServiceLocation {
+      LOCAL,
+      REMOTE;
+   }
+
    /**
     * Name of the Microservice.
     */
@@ -42,6 +47,16 @@ public class MicroserviceMetaData {
    private final Class type;
 
    private final Set<Annotation> qualifiers;
+
+   /**
+    * Whether the service is local or remote.
+    */
+   private final ServiceLocation serviceLocation = ServiceLocation.LOCAL;
+
+   /**
+    * Remote address of the service in case {@link #serviceLocation} is set to {@link org.silverware.microservices.MicroserviceMetaData.ServiceLocation.REMOTE}.
+    */
+   private final String serviceAddress = null;
 
    /**
     * Create a representation of a discovered Microservice.

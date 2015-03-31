@@ -21,6 +21,7 @@ package org.silverware.microservices.providers.cdi.internal;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.annotations.MicroserviceReference;
 import org.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
 
@@ -28,6 +29,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
@@ -49,15 +51,17 @@ public class MicroserviceProxy implements MethodHandler {
 
    private synchronized Object getService() {
       if (service == null) {
-         Set<Annotation> qualifiers = new HashSet<>();
-         for (final Annotation qualifier : parentBean.getQualifiers()) {
-            if (!qualifier.annotationType().getName().equals(MicroserviceReference.class.getName())) {
-               qualifiers.add(qualifier);
-            }
-         }
+         Set<Annotation> qualifiers = parentBean.getQualifiers().stream().filter(qualifier -> !qualifier.annotationType().getName().equals(MicroserviceReference.class.getName())).collect(Collectors.toSet());
 
          service = CdiMicroserviceProvider.getMicroserviceInstance(parentBean.getContext(), parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers);
-         log.info("Created service " + service);
+
+         if (log.isDebugEnabled()) {
+            log.info(String.format("Proxy %s matched with service implementation %s.", this.toString(), service.toString()));
+         }
+
+         if (service == null) {
+            throw new IllegalStateException(String.format("Cannot lookup any implementation for microservice %s.", new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers)));
+         }
       }
 
       return service;
