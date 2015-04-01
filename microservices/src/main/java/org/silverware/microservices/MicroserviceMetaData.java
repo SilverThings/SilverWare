@@ -21,7 +21,6 @@ package org.silverware.microservices;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -46,6 +45,9 @@ public class MicroserviceMetaData {
     */
    private final Class type;
 
+   /**
+    * Qualifiers of the Microservice.
+    */
    private final Set<Annotation> qualifiers;
 
    /**
@@ -54,9 +56,9 @@ public class MicroserviceMetaData {
    private final ServiceLocation serviceLocation = ServiceLocation.LOCAL;
 
    /**
-    * Remote address of the service in case {@link #serviceLocation} is set to {@link org.silverware.microservices.MicroserviceMetaData.ServiceLocation.REMOTE}.
+    * Object representing the Microservice implementation - can be a CDI Bean, remote proxy...
     */
-   private final String serviceAddress = null;
+   private transient Object implementation;
 
    /**
     * Create a representation of a discovered Microservice.
@@ -68,10 +70,11 @@ public class MicroserviceMetaData {
     * @param qualifiers
     *       The qualifiers of the discovered Microservice.
     */
-   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers) {
+   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers, final Object implementation) {
       this.name = name;
       this.type = type;
       this.qualifiers = qualifiers;
+      this.implementation = implementation;
 
       if (name == null || type == null) {
          throw new IllegalStateException("Name and type fields cannot be null.");
@@ -103,6 +106,22 @@ public class MicroserviceMetaData {
     */
    public Set<Annotation> getQualifiers() {
       return qualifiers;
+   }
+
+   /**
+    * Gets the service location. Either local or remote.
+    * @return Location of the service.
+    */
+   public ServiceLocation getServiceLocation() {
+      return serviceLocation;
+   }
+
+   /**
+    * Gets the object representing the service implementation.
+    * @return The object representing the service implementation.
+    */
+   public Object getImplementation() {
+      return implementation;
    }
 
    @Override

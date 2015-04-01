@@ -60,7 +60,7 @@ public class MicroserviceProxy implements MethodHandler {
          }
 
          if (service == null) {
-            throw new IllegalStateException(String.format("Cannot lookup any implementation for microservice %s.", new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers)));
+            throw new IllegalStateException(String.format("Cannot lookup any implementation for microservice %s.", new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers, null)));
          }
       }
 
