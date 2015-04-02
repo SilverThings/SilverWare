@@ -107,7 +107,7 @@ public class MicroservicesCDIExtension implements Extension {
             Microservice annotation = bean.getBeanClass().getAnnotation(Microservice.class);
             final String microserviceName = annotation.value().length() > 0 ? annotation.value() : bean.getBeanClass().getSimpleName();
 
-            context.registerMicroservice(new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers(), bean));
+            context.registerMicroservice(getMicroserviceMetaData(microserviceName, bean));
          }
       }
 
@@ -187,5 +187,15 @@ public class MicroservicesCDIExtension implements Extension {
     */
    public long getInjectionPointsCount() {
       return injectionPointsCount;
+   }
+
+   /**
+    * Gets a new {@link MicroserviceMetaData} descriptor based on the provided CDI bean.
+    * @param microserviceName The Microservice name.
+    * @param bean The CDI Bean.
+    * @return Microservice meta-data.
+    */
+   private MicroserviceMetaData getMicroserviceMetaData(final String microserviceName, final Bean<?> bean) {
+      return new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers(), bean);
    }
 }

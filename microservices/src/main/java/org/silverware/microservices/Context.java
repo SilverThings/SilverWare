@@ -22,6 +22,7 @@ package org.silverware.microservices;
 import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.SilverService;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,7 +66,15 @@ public class Context {
       return Collections.unmodifiableSet(microservices);
    }
 
-   public SilverService getProvider(Class<? extends SilverService> clazz) {
+   public Set<Object> lookupMicroservice(final String name, final Class<?> type, final Set<Annotation> qualifiers) {
+      return null;
+   }
+
+   public Object lookupLocalMicroservice(final String name, final Class<?> type, final Set<Annotation> qualifiers) {
+      return null;
+   }
+
+   public SilverService getProvider(final Class<? extends SilverService> clazz) {
       for (Map.Entry<String, MicroserviceProvider> entry : providers.entrySet()) {
          if (clazz.isAssignableFrom(entry.getValue().getClass())) {
             return (SilverService) entry.getValue();
