@@ -21,8 +21,6 @@ package org.silverware.microservices.providers;
 
 import org.silverware.microservices.Context;
 
-import java.util.Properties;
-
 /**
  * Simple minimalistic microservice implementation interface.
  * Upon boot, the initialize method is called. After a successful initialization, all services will be started in their
@@ -32,6 +30,8 @@ import java.util.Properties;
  */
 public interface MicroserviceProvider extends Runnable {
 
-   default void initialize(final Context context) {};
+   default void initialize(final Context context) {
+   }
+
    void run();
 }
