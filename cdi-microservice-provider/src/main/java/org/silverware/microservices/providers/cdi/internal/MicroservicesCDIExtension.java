@@ -33,8 +33,10 @@ import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -156,12 +158,12 @@ public class MicroservicesCDIExtension implements Extension {
       if (microserviceReference.value().length() > 0) {
          serviceName = microserviceReference.value();
       } else {
-         if (injectionPointField.getType().isInterface()) { // in case of interface use the property name
+         /*if (injectionPointField.getType().isInterface()) { // in case of interface use the property name
             serviceName = injectionPointField.getName();
-         } else { // else use the type name as does CDI
+         } else { // else use the type name as does CDI*/
             final String tmpName = injectionPointField.getType().getSimpleName();
             serviceName = tmpName.substring(0, 1).toLowerCase() + tmpName.substring(1);
-         }
+         //}
       }
 
       addClientProxyBean(serviceName, injectionPointField.getType(), qualifiers);
@@ -171,8 +173,16 @@ public class MicroservicesCDIExtension implements Extension {
       // Do we already have a proxy with this service name and type?
       for (MicroserviceProxyBean microserviceProxyBean : microserviceProxyBeans) {
          if (microserviceName.equals(microserviceProxyBean.getMicroserviceName()) && beanClass == microserviceProxyBean.getBeanClass()) {
-            // Yes, we have it!
-            return;
+            List<String> required = qualifiers.stream().map(q -> q.annotationType().getName()).collect(Collectors.toList());
+            required.add(Any.class.getName());
+            List<String> available = microserviceProxyBean.getQualifiers().stream().map(q -> q.annotationType().getName()).collect(Collectors.toList());
+
+            required.forEach(available::remove);
+
+            if (available.size() == 0) {
+               // Yes, we have it!
+               return;
+            }
          }
       }
 

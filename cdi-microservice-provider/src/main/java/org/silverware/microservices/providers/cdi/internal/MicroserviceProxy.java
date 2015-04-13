@@ -56,7 +56,7 @@ public class MicroserviceProxy implements MethodHandler {
          service = CdiMicroserviceProvider.getMicroserviceInstance(parentBean.getContext(), parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers);
 
          if (log.isDebugEnabled()) {
-            log.info(String.format("Proxy %s matched with service implementation %s.", this.toString(), service.toString()));
+            log.info(String.format("Proxy %s matched with service implementation %s.", this.toString(), service));
          }
 
          if (service == null) {

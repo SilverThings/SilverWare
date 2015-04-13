@@ -89,8 +89,10 @@ public class MicroserviceProxyBean implements Bean {
 
       this.qualifiers = new HashSet<>();
       this.qualifiers.addAll(qualifiers);
-      this.qualifiers.add(new AnnotationLiteral<Default>() {
-      });
+      if (qualifiers.size() < 2) {
+         this.qualifiers.add(new AnnotationLiteral<Default>() {
+         });
+      }
       this.qualifiers.add(new AnnotationLiteral<Any>() {
       });
 
@@ -188,4 +190,14 @@ public class MicroserviceProxyBean implements Bean {
       return context;
    }
 
+   @Override
+   public String toString() {
+      return "MicroserviceProxyBean{" +
+            "microserviceName='" + microserviceName + '\'' +
+            ", context=" + context +
+            ", serviceInterface=" + serviceInterface +
+            ", qualifiers=" + qualifiers +
+            ", proxyBean=" + proxyBean +
+            '}';
+   }
 }

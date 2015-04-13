@@ -120,6 +120,10 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
             if (name == null || (microserviceAnnotation.value().isEmpty() && name.equals(theBean.getName())) ||
                   (!microserviceAnnotation.value().isEmpty() && name.equals(microserviceAnnotation.value()))) {
                return beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean));
+            } else if (type.isInterface() && !name.equals(theBean.getName())) {
+               if (qualifiers.stream().filter(q -> q.annotationType().getName().equals("Default")).count() == 0) { // we have a qualifier match
+                  return beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean));
+               }
             }
          }
       }
