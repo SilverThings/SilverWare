@@ -17,12 +17,14 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.providers.cdi;
+package org.silverware.microservices.providers.cdi.qualifiers;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.annotations.Microservice;
 import org.silverware.microservices.annotations.MicroserviceReference;
+import org.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
+import org.silverware.microservices.providers.cdi.MicroservicesStartedEvent;
 import org.silverware.microservices.util.BootUtil;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -34,16 +36,15 @@ import java.lang.annotation.Target;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Stereotype;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.inject.Qualifier;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class CdiMicroserviceProviderAlternativesTest {
+public class CdiMicroserviceProviderQualifiersTest {
 
-   private static final Logger log = LogManager.getLogger(CdiMicroserviceProviderAlternativesTest.class);
+   private static final Logger log = LogManager.getLogger(CdiMicroserviceProviderQualifiersTest.class);
 
    private static final Semaphore semaphore = new Semaphore(0);
 
@@ -66,62 +67,48 @@ public class CdiMicroserviceProviderAlternativesTest {
    }
 
    @Microservice
-   public static class TestAlternateMicroservice {
-
-      @MicroserviceReference("microAlternateBean")
-      private AlternateMicro alternateMicroBean;
+   public static class TestQualifierMicroservice {
 
       @MicroserviceReference
-      private AlternateNoNameMicroBean micro1;
+      private QualifierMicro micro1;
 
       @MicroserviceReference
       @Mock
-      private AlternateNoNameMicroBean micro2;
+      private QualifierMicro micro2;
 
       public void eventObserver(@Observes MicroservicesStartedEvent event) {
-         alternateMicroBean.hello();
-         micro1.hello();
-         micro2.hello();
+         String ret = micro1.hello();
+         ret += micro2.hello();
+         log.info(ret);
 
          semaphore.release();
       }
    }
 
-   public interface AlternateMicro {
-      void hello();
+   public interface QualifierMicro {
+      String hello();
    }
 
-   @Microservice("microAlternateBean")
-   public static class AlternateMicroBean implements AlternateMicro {
+   @Microservice
+   public static class QualifierMicroBean implements QualifierMicro {
 
       @Override
-      public void hello() {
-         log.info("micro hello");
+      public String hello() {
+         return "normal";
       }
    }
 
    @Microservice
-   public static class AlternateNoNameMicroBean implements AlternateMicro {
+   public static class MockQualifierMicroBean implements QualifierMicro {
 
       @Override
-      public void hello() {
-         log.info("noname hello");
+      public String hello() {
+         return "mock";
       }
    }
 
-   @Mock
-   @Microservice
-   public static class MockMicroBeanAlternate extends AlternateNoNameMicroBean {
-
-      @Override
-      public void hello() {
-         log.info("mock hello");
-      }
-   }
-
-   @Alternative
-   @Stereotype
-   @Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
+   @Qualifier
+   @Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER })
    @Retention(RetentionPolicy.RUNTIME)
    public @interface Mock {
    }
