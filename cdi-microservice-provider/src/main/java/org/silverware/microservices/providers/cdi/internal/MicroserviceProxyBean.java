@@ -87,14 +87,7 @@ public class MicroserviceProxyBean implements Bean {
       this.serviceInterface = proxyInterface;
       this.context = context;
 
-      this.qualifiers = new HashSet<>();
-      this.qualifiers.addAll(qualifiers);
-      if (qualifiers.size() < 2) {
-         this.qualifiers.add(new AnnotationLiteral<Default>() {
-         });
-      }
-      this.qualifiers.add(new AnnotationLiteral<Any>() {
-      });
+      this.qualifiers = new HashSet<>(qualifiers);
 
       proxyBean = MicroserviceProxy.getProxy(this);
    }

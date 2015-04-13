@@ -31,12 +31,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -44,6 +47,7 @@ import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessBean;
+import javax.enterprise.util.AnnotationLiteral;
 
 /**
  * CDI Extension for Microservices.
@@ -122,11 +126,30 @@ public class MicroservicesCDIExtension implements Extension {
                if (log.isTraceEnabled()) {
                   log.trace("Creating proxy bean for injection point: " + injectionPoint.toString());
                }
-               addInjectableClientProxyBean((Field) member, (MicroserviceReference) qualifier, injectionPoint.getQualifiers(), beanManager);
+               addInjectableClientProxyBean((Field) member, (MicroserviceReference) qualifier, preProcessQualifiers(injectionPoint.getQualifiers()), beanManager);
                injectionPointsCount = injectionPointsCount + 1;
             }
          });
       }
+   }
+
+   private Set<Annotation> preProcessQualifiers(final Set<Annotation> qualifiers) {
+      Set<Annotation> processed = new HashSet<>(qualifiers);
+      List<String> current = qualifiers.stream().map(q -> q.annotationType().getName()).collect(Collectors.toList());
+
+
+      if (!current.contains(Any.class.getName())) {
+         processed.add(new AnnotationLiteral<Any>() {
+         });
+         current.add(Any.class.getName());
+      }
+
+      if (current.size() < 3) {
+         processed.add(new AnnotationLiteral<Default>() {
+         });
+      }
+
+      return processed;
    }
 
    /**
@@ -174,7 +197,6 @@ public class MicroservicesCDIExtension implements Extension {
       for (MicroserviceProxyBean microserviceProxyBean : microserviceProxyBeans) {
          if (microserviceName.equals(microserviceProxyBean.getMicroserviceName()) && beanClass == microserviceProxyBean.getBeanClass()) {
             List<String> required = qualifiers.stream().map(q -> q.annotationType().getName()).collect(Collectors.toList());
-            required.add(Any.class.getName());
             List<String> available = microserviceProxyBean.getQualifiers().stream().map(q -> q.annotationType().getName()).collect(Collectors.toList());
 
             required.forEach(available::remove);
