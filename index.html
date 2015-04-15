@@ -1,104 +1,290 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
+<!--
+	Escape Velocity by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
 <html>
+	<head>
+		<title>SilverWare: Microservices</title>
+	    <meta charset='utf-8'>
+	    <meta name="description" content="SilverWare : Enterprise ready, minimalistic, easy to use Microservices implementation">
+    	<meta name="keywords" content="silverware, microservices, services, middleware">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
+		<script src="js/jquery.min.js"></script>
+		<script src="js/jquery.dropotron.min.js"></script>
+		<script src="js/skel.min.js"></script>
+		<script src="js/skel-layers.min.js"></script>
+		<script src="js/init.js"></script>
+		<link rel="stylesheet" href="css/hl/github.css">
+		<script src="js/highlight.pack.js"></script>
+		<script>hljs.initHighlightingOnLoad({style: 'github'});</script>
+		<noscript>
+			<link rel="stylesheet" href="css/skel.css" />
+			<link rel="stylesheet" href="css/style.css" />
+			<link rel="stylesheet" href="css/style-desktop.css" />
+		</noscript>
+		<!--[if lte IE 8]><link rel="stylesheet" href="css/ie/v8.css" /><![endif]-->
+	</head>
+	<body class="homepage">
 
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="SilverWare : Enterprise ready, minimalistic, easy to use Microservices implementation">
-    <meta name="keywords" content="silverware, microservices, services, middleware">
+		<!-- Header -->
+			<div id="header-wrapper" class="wrapper">
+				<div id="header">
+					
+					<!-- Logo -->
+						<div id="logo">
+							<h1><a href="index.html">SilverWare.io</a></h1>
+							<p>Command your fleet of Internet of Things!</p>
+						</div>
+					
+					<!-- Nav -->
+						<nav id="nav">
+							<ul>
+								<li class="current"><a href="index.html">Home</a></li>
+								<li><a href="#intro-wrapper">The Introduction</a></li>
+								<li><a href="#main">The Details</a></li>
+								<li><a href="#highlights">The Endorsments</a></li>
+								<li><a href="#footer">The Contact</a></li>
+							</ul>
+						</nav>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/urania.css">
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/design-system.css">
-    <!--link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"-->
+				</div>
+			</div>
+		
+		<!-- Intro -->
+			<div id="intro-wrapper" class="wrapper style1">
+				<div class="title">The Introduction</div>
+				<section id="intro" class="container">
+					<p class="style1">So in case you were wondering what this is all about ...</p>
+					<p class="style2">
+					    Enterprise ready, minimalistic, easy to use Microservices implementation.
+					</p>
+					<p class="style3">
+						<strong>SilverWare.io</strong> is a minimalistic, yet powerful, modularized, highly configurable and <strong>container-free</strong>. Builds on technologies you are familiar with. 
+						Start creating the <strong>Internet of Things</strong> today!
+					<ul class="actions">
+						<li><a href="#main" class="button style3 big">Proceed</a></li>
+					</ul>
+				</section>
+			</div>
+		
+		<!-- Main -->
+			<div class="wrapper style2">
+				<div class="title">The Details</div>
+				<div id="main" class="container">
+					
+					<!-- Image -->
+						<a href="#" class="image featured">
+							<img src="images/162H.jpg" alt="Decide the way you go" />
+						</a>
+					
+					<!-- Features -->
+						<section id="features">
+							<header class="style1">
+								<h2>SilverWare.io Features</h2>
+								<p>Experience the future of Microservices development</p>
+							</header>
+							<div class="feature-list">
+								<div class="row">
+									<div class="6u">
+										<section>
+											<h3 class="icon fa-smile-o">Easy to use</h3>
+											<p>SilwerWare builds on top of existing technologies and frameworks you are familiar with (REST, CDI (Weld), Camel, Vert.x, NoSQL, ActiveMQ, Amazon SQS, Hystrix...).</p>
+										</section>
+									</div>
+									<div class="6u">
+										<section>
+											<h3 class="icon fa-cube">Modularized</h3>
+											<p>SilverWare is modularized, highy configurable and container-free. Your deployments only carry the minimum code to run independently. 
+											A developer picks up individual components that they need for their Microservices.</p>
+										</section>
+									</div>
+								</div>
+								<div class="row">
+									<div class="6u">
+										<section>
+											<h3 class="icon fa-refresh">Reuse existing services</h3>
+											<p>You can immediately deploy any of your existing services written in those frameworks with SilverWare. Or you can start developing new services in a language of your taste including Java, Jython, jRuby, Scala, Ceylon, Kolin, Clojure...</p>
+										</section>
+									</div>
+									<div class="6u">
+										<section>
+											<h3 class="icon fa-ship">Start the future now!</h3>
+											<pre><code class="java">@Microservice
+public class HelloMicroservice implements HelloService {
+	public String greet(final String whom) {
+		return "Hello " + whom;
+	}
+}</code></pre>
+										</section>
+									</div>
+								</div>
+								<div class="row">
+									<div class="6u">
+										<section>
+											<h3 class="icon fa-wrench">Rock-solid grounds</h3>
+											<p>We recommend checking the underlying IoT Platform <a href="http://slverspoon.io" targer="#_top">Silverspoon.io</a>.</p>
+											<p>Performance guaranteed by <a href="https://www.perfcake.org" targer="#_top">PerfCake</a>.</p>
+										</section>
+									</div>
+									<div class="6u">
+										<section>
+											<h3 class="icon fa-check">Make the world a better place</h3>
+											<p>We believe there is no such implementation with all these attributes. This is why our team (<a href="https://github.com/marvec" target="#_top">@marvec</a>, <a href="https://github.com/pmacik" target="#_top">@pmacik</a>, <a href="https://github.com/sbunciak" target="#_top">@sbunciak</a>, <a href="https://github.com/ppecka" target="#_top">@ppecka</a>) aims on creating it.</p>
+										</section>
+									</div>
+								</div>
+							</div>
+							<ul class="actions actions-centered">
+								<li><a href="#highlights" class="button style1 big">Get Started</a></li>
+								<li><a href="#footer" class="button style2 big">More Info</a></li>
+							</ul>
+						</section>
+				
+				</div>
+			</div>
+		
+		<!-- Highlights -->
+			<div class="wrapper style3">
+				<div class="title">The Endorsements</div>
+				<div id="highlights" class="container">
+					<div class="row 150%">
+						<div class="4u">
+							<section class="highlight">
+								<a href="#" class="image featured"><img src="images/184V.jpg" alt="" /></a>
+								<h3><a href="#">Internet of Things</a></h3>
+								<p>Success stories, examples and demonstrations comming soon!</p>
+								<ul class="actions">
+									<li><a href="#" class="button style1">Learn More</a></li>
+								</ul>
+							</section>
+						</div>
+						<div class="4u">
+							<section class="highlight">
+								<a href="#" class="image featured"><img src="images/117V.jpg" alt="" /></a>
+								<h3><a href="#">Monitoring &amp; Management</a></h3>
+								<p>Success stories, examples and demonstrations comming soon!</p>
+								<ul class="actions">
+									<li><a href="#" class="button style1">Learn More</a></li>
+								</ul>
+							</section>
+						</div>
+						<div class="4u">
+							<section class="highlight">
+								<a href="#" class="image featured"><img src="images/msg-flowV.jpg" alt="" /></a>
+								<h3><a href="#">Message flow</a></h3>
+								<p>Success stories, examples and demonstrations comming soon!</p>
+								<ul class="actions">
+									<li><a href="#" class="button style1">Learn More</a></li>
+								</ul>
+							</section>
+						</div>
+					</div>
+				</div>
+			</div>
 
-    <title>SilverWare: Microservices</title>
-  </head>
+		<!-- Footer -->
+			<div id="footer-wrapper" class="wrapper">
+				<div class="title">The Partnership</div>
+				<div id="footer" class="container">
+					<header class="style1">
+						<h2>Would you like to get more?</h2>
+						<p>
+							More information, more explanation, more support &ndash; we can definitely help you!
+						</p>
+					</header>
+					<hr />
+					<div class="row 150%">
+						<div class="6u">
 
-  <body>
+							<!-- Contact Form -->
+								<section>
+									<form method="post" action="http://formspree.io/support&at;silverware.io">
+										<div class="row 50%">
+											<div class="6u">
+												<input type="text" name="name" id="contact-name" placeholder="Name" />
+											</div>
+											<div class="6u">
+												<input type="email" name="_replyto" id="contact-email" placeholder="Email" />
+											</div>
+										</div>
+										<div class="row 50%">
+											<div class="12u">
+												<textarea name="message" id="contact-message" placeholder="Message" rows="4"></textarea>
+											</div>
+										</div>
+										<div class="row">
+											<div class="12u">
+												<ul class="actions">
+													<li><input type="submit" class="style1" value="Send" /></li>
+												</ul>
+											</div>
+										</div>
+									</form>
+								</section>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/px3/SilverWare">View on GitHub</a>
+						</div>
+						<div class="6u">
+						
+							<!-- Contact -->
+								<section class="feature-list small">
+									<div class="row">
+										<div class="6u">
+											<section>
+												<h3 class="icon fa-envelope">Email</h3>
+												<p>
+													<a href="#">support@silverware.io</a>
+												</p>
+											</section>
+										</div>
+										<div class="6u">
+											<section>
+												<h3 class="icon fa-comment">Social</h3>
+												<p>
+											        <a href="http://silverwareio.blogspot.com" target="#_top"><img class="blogger" src="images/blogger-32.png" /></a>
+											        <a href="http://twitter.com/silverwareio" target="#_top"><img class="twitter" src="images/twitter-32.png" /></a>
+          											<a href="http://www.seethestats.com/site/silverware.io" target="#_top"><img class="seethestats" src="images/seethestats-32.png" /></a>
+												</p>
+											</section>
+										</div>
+									</div>
+									<div class="row">
+										<div class="6u">
+											<section>
+												<h3 class="icon fa-github">Source Code</h3>
+												<p>
+													The source code is <a target="#_top" href="https://github.com/px3/SilverWare">available on Git Hub</a>.<br />
+												</p>
+												<p>
+													SilverWare.io has:
+													<a id="issues"><span class="badge">0 Open Issues</span></a>
+												</p>
+											</section>
+										</div>
+										<div class="6u">
+											<section>
+												<h3 class="icon fa-download">Download</h3>
+												<p>
+													<a href="https://github.com/px3/SilverWare/zipball/devel">ZIP</a> /
+													<a href="https://github.com/px3/SilverWare/tarball/devel">TAR.GZ</a>
+												</p>
+											</section>
+										</div>
+									</div>
+								</section>
+								
+						</div>
+					</div>
+					<hr />
+				</div>
+				<div id="copyright">
+					<ul>
+						<li>&copy; SilverWare.io 2014-now</li><li>Credits: <a target="#_top" href="http://html5up.net">HTML5 UP</a>, <a target="#_top" href="mailto:krraaa@yahoo.com">Urania</a></li>
+					</ul>
+				</div>
+			</div>
 
-          <h1 id="project_title">SilverWare</h1>
-          <h2 id="project_tagline">Enterprise ready, minimalistic, easy to use Microservices implementation</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/px3/SilverWare/zipball/devel">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/px3/SilverWare/tarball/devel">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-
-<blockquote>Would you believe that Microservices can be easy to use? Why don't you just give it a try <em>now</em>?<br />It takes 5 minutes and it is <a href="#">simple</a>.</blockquote>
-
-<h3><a id="welcome-to-silverware" class="anchor" href="#welcome-to-silverware" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to SilverWare</h3>
-
-<p>SilverWare is a minimalistic, yet powerful, and easy-to-use implemetation of the Microservices <a href="http://martinfowler.com/articles/microservices.html" target="#_top">paradigm</a> and <a href="http://jaxenter.com/cracking-microservices-practices-107924.html" target="#_top">practices</a>.</p>
-<p>SilwerWare builds on top of existing technologies and frameworks you are familiar with: REST, CDI (Weld), Camel, Vert.x, NoSQL, ActiveMQ, Amazon SQS, Hystrix. You can immediately deploy any of your existing services written in those frameworks with SilverWare. Or you can start developing new services in a language of your taste including Java, Jython, jRuby, Scala, Ceylon, Kolin, Clojure...</p>
-<p>SilverWare is modularized, highy configurable and container-free. Your deployments only carry the minimum code to run independently.</p>
-<p>Start creating the Internet of Things <a href="#">today</a>!</p>
-
-<h4><a id="motivation" class="anchor" href="#motivation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Motivation</h4>
-
-<p>We want the world to be a better place to live. Where there is life there is hope.</p>
-
-<h4><a id="goals" class="anchor" href="#goals" aria-hidden="true"><span class="octicon octicon-link"></span></a>Goals</h4>
-
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
-
-
-<h3><a id="examples-and-docs" class="anchor" href="#examples-and-docs" aria-hidden="true"><span class="octicon octicon-link"></span></a>Examples &amp; Documentation</h3>
-
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
-
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
-
-<h3><a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors &amp; Contributors</h3>
-
-<p>You can see the authors - <a href="https://github.com/marvec" class="user-mention">@marvec</a>, <a href="https://github.com/pmacik" class="user-mention">@pmacik</a>, <a href="https://github.com/sbunciak" class="user-mention">@sbunciak</a>, <a href="https://github.com/ppecka" class="user-mention">@ppecka</a> - at GitHub.</p>
-<p>We run nightly builds on Jenkins CI. You can submit pull requests. We are tricking issues at GitHub.</p>
-<p>We recommend checking the underlying IoT Platform <a href="http://slverspoon.io" targer="#_top">Silverspoon.io</a>.</p>
-
-<h3><a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble? Check out the documentation at <a href="#">COMING SOON</a> or contact <a href="mailto:support@silverware.io">support@silverware.io</a> us.</p>
-      </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <div class="right">
-          <a href="http://silverwareio.blogspot.com" target="#_top"><img class="blogger" src="images/blogger-32.png" /></a>
-          <a href="http://twitter.com/silverwareio" target="#_top"><img class="twitter" src="images/twitter-32.png" /></a>
-          <a href="http://www.seethestats.com/site/silverware.io" target="#_top"><img class="seethestats" src="images/seethestats-32.png" /></a>
-        </div>
-        <p class="copyright">Silverware by <a href="https://github.com/px3">px3</a><br />
-        <small>Credits: Urania Czech font by <a href="mailto:krraaa@yahoo.com">Lukáš Krákora</a>.</small></p>
-      </footer>
-    </div>
-
-              <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-60335641-1");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
-
-
-  </body>
+	</body>
 </html>
