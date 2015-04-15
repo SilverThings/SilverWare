@@ -90,4 +90,9 @@
  		$("#issues .badge")[0].innerHTML = data.length + ' Open Issues';
     });
 
+
 })(jQuery);
+
+$(document).ready(function() {
+    $('a').smoothScroll();
+});
