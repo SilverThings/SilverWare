@@ -56,11 +56,6 @@ public class MicroserviceMetaData {
    private final ServiceLocation serviceLocation = ServiceLocation.LOCAL;
 
    /**
-    * Object representing the Microservice implementation - can be a CDI Bean, remote proxy...
-    */
-   private transient Object implementation;
-
-   /**
     * Create a representation of a discovered Microservice.
     *
     * @param name
@@ -70,11 +65,10 @@ public class MicroserviceMetaData {
     * @param qualifiers
     *       The qualifiers of the discovered Microservice.
     */
-   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers, final Object implementation) {
+   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers) {
       this.name = name;
       this.type = type;
       this.qualifiers = qualifiers;
-      this.implementation = implementation;
 
       if (name == null || type == null) {
          throw new IllegalStateException("Name and type fields cannot be null.");
@@ -114,14 +108,6 @@ public class MicroserviceMetaData {
     */
    public ServiceLocation getServiceLocation() {
       return serviceLocation;
-   }
-
-   /**
-    * Gets the object representing the service implementation.
-    * @return The object representing the service implementation.
-    */
-   public Object getImplementation() {
-      return implementation;
    }
 
    @Override

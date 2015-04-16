@@ -34,9 +34,7 @@ import org.silverware.microservices.silver.CdiSilverService;
 import org.silverware.microservices.util.Utils;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.Bean;
@@ -105,7 +103,11 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   public static Object getMicroserviceInstance(final Context context, final String name, final Class<?> type, final Set<Annotation> qualifiers) {
+   public static Object getMicroserviceInstance(final Context context, final MicroserviceMetaData microserviceMetaData) {
+      final String name = microserviceMetaData.getName();
+      final Class<?> type = microserviceMetaData.getType();
+      final Set<Annotation> qualifiers = microserviceMetaData.getQualifiers();
+
       final BeanManager beanManager = ((BeanManager) context.getProperties().get(BEAN_MANAGER));
       Set<Bean<?>> beans = beanManager.getBeans(type, qualifiers.toArray(new Annotation[qualifiers.size()]));
       for (Bean<?> bean : beans) {
@@ -137,26 +139,6 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
    static Object getMicroserviceProxy(final Context context, final Class clazz, final String beanName) {
       return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(clazz).select(new MicroserviceReferenceLiteral(beanName)).get();
-   }
-
-   public static Object lookupLocalMicroservice(final Context context, final String name, final Class<?> type, final Set<Annotation> qualifiers) {
-      Set<MicroserviceMetaData> microservices = context.getMicroservices();
-      List<MicroserviceMetaData> nameMatch = new ArrayList<>();
-      List<MicroserviceMetaData> typeMatch = new ArrayList<>();
-
-      microservices.forEach(metaData -> {
-         if (name != null) {
-            if (metaData.getName() != null && metaData.getName().equals(name)) {
-               nameMatch.add(metaData);
-            }
-         }
-
-         if (type.isAssignableFrom(metaData.getType())) {
-            typeMatch.add(metaData);
-         }
-      });
-
-      return null;
    }
 
    private static class MicroserviceReferenceLiteral extends AnnotationLiteral<MicroserviceReference> implements MicroserviceReference {

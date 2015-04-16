@@ -228,6 +228,6 @@ public class MicroservicesCDIExtension implements Extension {
     * @return Microservice meta-data.
     */
    private MicroserviceMetaData getMicroserviceMetaData(final String microserviceName, final Bean<?> bean) {
-      return new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers(), bean);
+      return new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers());
    }
 }
