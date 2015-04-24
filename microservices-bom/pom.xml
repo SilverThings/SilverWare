@@ -20,6 +20,7 @@
       <version.findbugs>1.3.2</version.findbugs>
       <version.javassist>3.19.0-GA</version.javassist>
       <version.undertow>1.2.0.Beta10</version.undertow>
+      <version.jolokia>1.2.3</version.jolokia>
       <java.level>1.8</java.level>
    </properties>
    <dependencyManagement>
@@ -120,6 +121,22 @@
             <groupId>io.undertow</groupId>
             <artifactId>undertow-servlet</artifactId>
             <version>${version.undertow}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jolokia</groupId>
+            <artifactId>jolokia-core</artifactId>
+            <version>${version.jolokia}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jolokia</groupId>
+            <artifactId>jolokia-jsr160</artifactId>
+            <version>${version.jolokia}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jolokia</groupId>
+            <artifactId>jolokia-war</artifactId>
+            <type>war</type>
+            <version>${version.jolokia}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

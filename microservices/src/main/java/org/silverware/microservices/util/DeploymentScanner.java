@@ -22,15 +22,22 @@ package org.silverware.microservices.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reflections.Reflections;
+import org.reflections.vfs.SystemDir;
+import org.reflections.vfs.Vfs;
+import org.reflections.vfs.ZipDir;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.providers.MicroserviceProvider;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.jar.JarFile;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -43,12 +50,16 @@ public class DeploymentScanner {
 
    private final Reflections reflections;
 
+   static {
+      Vfs.addDefaultURLTypes(new WarUrlType());
+   }
+
    private DeploymentScanner() {
       reflections = new Reflections("");
    }
 
    private DeploymentScanner(final String... packages) {
-      reflections = new Reflections((String[]) packages);
+      reflections = new Reflections((Object[]) packages);
    }
 
    public static synchronized DeploymentScanner getDefaultInstance() {
@@ -69,7 +80,7 @@ public class DeploymentScanner {
          if (log.isDebugEnabled()) {
             log.debug("Limited deployment packages: " + packages);
          }
-         return getInstance(packages.split(Pattern.quote("[ ]*,[ ]*")));
+         return getInstance(packages.split("[ ]*,[ ]*"));
       } else {
          return DeploymentScanner.getDefaultInstance();
       }
@@ -101,5 +112,23 @@ public class DeploymentScanner {
       }
 
       return instances;
+   }
+
+   public static class WarUrlType implements Vfs.UrlType {
+
+      @Override
+      public boolean matches(final URL url) {
+         return url.getProtocol().equals("file") && url.toExternalForm().endsWith(".war");
+      }
+
+      @Override
+      public Vfs.Dir createDir(final URL url) throws IOException, URISyntaxException {
+         final File file = new File(url.toURI());
+         if (file.isDirectory()) {
+            return new SystemDir(file);
+         } else {
+            return new ZipDir(new JarFile(file));
+         }
+      }
    }
 }

@@ -19,12 +19,23 @@
  */
 package org.silverware.microservices.util;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Scanner;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public class Utils {
+
+   private static final Logger log = LogManager.getLogger(Utils.class);
+
+   private static final int MAX_HTTP_TRIES = 60;
 
    public static void shutdownLog(final Logger log, final InterruptedException ie) {
       log.info("Execution interrupted, exiting.");
@@ -32,4 +43,35 @@ public class Utils {
          log.trace("Interrupted from: ", ie);
       }
    }
+
+   public static boolean waitForHttp(String urlString, int code) throws Exception {
+      final URL url = new URL(urlString);
+      int lastCode = -1;
+
+      for (int i = 0; i < MAX_HTTP_TRIES; ++i) {
+         try {
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.connect();
+
+            lastCode = conn.getResponseCode();
+
+            if (lastCode == code) {
+               conn.disconnect();
+               return true;
+            }
+            conn.disconnect();
+         } catch (IOException x) {
+            // Continue waiting
+         }
+
+         Thread.sleep(1000);
+      }
+
+      return false;
+   }
+
+   public static String readFromUrl(String urlString) throws IOException {
+      return new Scanner(new URL(urlString).openStream(), "UTF-8").useDelimiter("\\A").next();
+   }
+
 }

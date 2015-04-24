@@ -17,40 +17,34 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.util;
+package org.silverware.microservices.providers.http;
 
-import org.silverware.microservices.Context;
-import org.silverware.microservices.Executor;
+import org.silverware.microservices.util.BootUtil;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
-import java.util.Arrays;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class BootUtil {
+public class HttpServerMicroserviceProviderTest {
 
-   private Context context = new Context();
+   private static final Semaphore semaphore = new Semaphore(0);
 
-   public Thread getMicroservicePlatform(final String... packages) {
-      return getMicroservicePlatform(String.join(",", packages));
+   @Test
+   public void httpServerMicroserviceProviderTest() throws Exception {
+      final BootUtil bootUtil = new BootUtil();
+      final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName());
+      platform.start();
+
+      Thread.sleep(10000);
+
+      //Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for the camel route deployment."); // wait for the route to be deployed
+
+      platform.interrupt();
+      platform.join();
    }
 
-   public Thread getMicroservicePlatform(final String packages) {
-      Thread t = new Thread(() -> {
-         context.getProperties().put(Context.DEPLOYMENT_PACKAGES, packages);
-         try {
-            Executor.bootHook(context);
-         } catch (InterruptedException ie) {
-            // we are likely to be done
-         }
-      });
-
-      t.setName("SilverWare-boot");
-
-      return t;
-   }
-
-   public Context getContext() {
-      return context;
-   }
 }

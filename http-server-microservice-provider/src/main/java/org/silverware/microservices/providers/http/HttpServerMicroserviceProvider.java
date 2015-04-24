@@ -78,13 +78,15 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
                                               .setClassLoader(this.getClass().getClassLoader())
                                               .setContextPath(contextPath)
                                               .setDeploymentName(deploymentName);
-      servletDescriptors.forEach(servletDescriptor -> {
-         ServletInfo servletInfo = Servlets.servlet(servletDescriptor.getName(), (Class<Servlet>) servletDescriptor.getServletClass());
-         servletInfo.addMapping(servletDescriptor.getMapping());
-         servletDescriptor.getProperties().forEach((key, value) -> servletInfo.addInitParam((String) key, (String) value));
+      if (servletDescriptors != null) {
+         servletDescriptors.forEach(servletDescriptor -> {
+            ServletInfo servletInfo = Servlets.servlet(servletDescriptor.getName(), (Class<Servlet>) servletDescriptor.getServletClass());
+            servletInfo.addMapping(servletDescriptor.getMapping());
+            servletDescriptor.getProperties().forEach((key, value) -> servletInfo.addInitParam((String) key, (String) value));
 
-         servletBuilder.addServlet(servletInfo);
-      });
+            servletBuilder.addServlet(servletInfo);
+         });
+      }
 
       DeploymentManager manager = Servlets.defaultContainer().addDeployment(servletBuilder);
       manager.deploy();

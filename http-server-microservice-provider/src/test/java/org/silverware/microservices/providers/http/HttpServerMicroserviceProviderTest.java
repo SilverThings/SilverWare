@@ -19,12 +19,27 @@
  */
 package org.silverware.microservices.providers.http;
 
+import org.silverware.microservices.silver.HttpServerSilverService;
+import org.silverware.microservices.silver.http.ServletDescriptor;
 import org.silverware.microservices.util.BootUtil;
+import org.silverware.microservices.util.Utils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -36,15 +51,37 @@ public class HttpServerMicroserviceProviderTest {
    @Test
    public void httpServerMicroserviceProviderTest() throws Exception {
       final BootUtil bootUtil = new BootUtil();
+      final Map<String, Object> platformProperties = bootUtil.getContext().getProperties();
       final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName());
       platform.start();
 
-      Thread.sleep(10000);
+      final Properties servletProperties = new Properties();
+      servletProperties.setProperty("greeting", "Mr. Wolf");
 
-      //Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for the camel route deployment."); // wait for the route to be deployed
+      int tries = 0;
+      HttpServerSilverService http = null;
+      while (http == null && tries < 600) {
+         http = (HttpServerSilverService) bootUtil.getContext().getProvider(HttpServerSilverService.class);
+         Thread.sleep(100);
+         tries++;
+      }
+
+      Assert.assertNotNull(http, "Unable to obtain Http Server Silverservice.");
+
+      http.deployServlet("test", "", Collections.singletonList(new ServletDescriptor("test", HttpTestServlet.class, "/", servletProperties)));
+
+      Assert.assertEquals(Utils.readFromUrl("http://" + platformProperties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" +
+            platformProperties.get(HttpServerSilverService.HTTP_SERVER_PORT) + "/test/"), "Hello Mr. Wolf");
 
       platform.interrupt();
       platform.join();
    }
 
+   public static class HttpTestServlet extends HttpServlet {
+
+      @Override
+      protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+         resp.getWriter().append("Hello " + getInitParameter("greeting"));
+      }
+   }
 }

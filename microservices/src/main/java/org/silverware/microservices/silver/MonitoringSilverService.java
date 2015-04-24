@@ -17,40 +17,13 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.util;
-
-import org.silverware.microservices.Context;
-import org.silverware.microservices.Executor;
-
-import java.util.Arrays;
+package org.silverware.microservices.silver;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class BootUtil {
+public interface MonitoringSilverService extends SilverService {
 
-   private Context context = new Context();
+   String MONITORING_URL = "silverware.monitoring.url";
 
-   public Thread getMicroservicePlatform(final String... packages) {
-      return getMicroservicePlatform(String.join(",", packages));
-   }
-
-   public Thread getMicroservicePlatform(final String packages) {
-      Thread t = new Thread(() -> {
-         context.getProperties().put(Context.DEPLOYMENT_PACKAGES, packages);
-         try {
-            Executor.bootHook(context);
-         } catch (InterruptedException ie) {
-            // we are likely to be done
-         }
-      });
-
-      t.setName("SilverWare-boot");
-
-      return t;
-   }
-
-   public Context getContext() {
-      return context;
-   }
 }

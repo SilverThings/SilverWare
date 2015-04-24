@@ -53,14 +53,14 @@ public class MicroserviceProxy implements MethodHandler {
       if (service == null) {
          Set<Annotation> qualifiers = parentBean.getQualifiers().stream().filter(qualifier -> !qualifier.annotationType().getName().equals(MicroserviceReference.class.getName())).collect(Collectors.toSet());
 
-         service = CdiMicroserviceProvider.getMicroserviceInstance(parentBean.getContext(), parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers);
+         service = CdiMicroserviceProvider.getMicroserviceInstance(parentBean.getContext(), new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers));
 
          if (log.isDebugEnabled()) {
             log.info(String.format("Proxy %s matched with service implementation %s.", this.toString(), service));
          }
 
          if (service == null) {
-            throw new IllegalStateException(String.format("Cannot lookup any implementation for microservice %s.", new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers, null)));
+            throw new IllegalStateException(String.format("Cannot lookup any implementation for microservice %s.", new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers)));
          }
       }
 
