@@ -131,13 +131,12 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
 
    @Override
    public Object lookupMicroservice(final MicroserviceMetaData metaData) {
-      String className = metaData.getType().getName();
-      if (className.equals(Route.class.getName())) {
+      if (Route.class.isAssignableFrom(metaData.getType())) {
          return camelContext.getRoute(metaData.getName());
-      } else if (className.equals(Endpoint.class.getName())) {
+      } else if (Endpoint.class.isAssignableFrom(metaData.getType())) {
          return camelContext.getEndpoint(metaData.getName());
       }
-      
+
       return null;
    }
 }

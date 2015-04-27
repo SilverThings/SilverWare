@@ -42,6 +42,7 @@
       <module>cluster-microservice-provider</module>
       <module>http-server-microservice-provider</module>
       <module>monitoring-microservice-provider</module>
+      <module>http-invoker-microservice-provider</module>
    </modules>
    <dependencyManagement>
       <dependencies>

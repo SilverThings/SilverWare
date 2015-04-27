@@ -23,13 +23,12 @@ import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.SilverService;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -82,5 +81,9 @@ public class Context {
       }
 
       return null;
+   }
+
+   public Set<SilverService> getAllProviders(final Class<? extends SilverService> clazz) {
+      return providers.entrySet().stream().filter(entry -> clazz.isAssignableFrom(entry.getValue().getClass())).map(entry -> (SilverService) entry.getValue()).collect(Collectors.toSet());
    }
 }
