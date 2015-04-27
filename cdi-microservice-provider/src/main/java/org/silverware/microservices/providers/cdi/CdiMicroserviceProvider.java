@@ -103,7 +103,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   public static Object getMicroserviceInstance(final Context context, final MicroserviceMetaData microserviceMetaData) {
+   public Object lookupMicroservice(final MicroserviceMetaData microserviceMetaData) {
       final String name = microserviceMetaData.getName();
       final Class<?> type = microserviceMetaData.getType();
       final Set<Annotation> qualifiers = microserviceMetaData.getQualifiers();

@@ -27,7 +27,6 @@ import org.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,7 +52,7 @@ public class MicroserviceProxy implements MethodHandler {
       if (service == null) {
          Set<Annotation> qualifiers = parentBean.getQualifiers().stream().filter(qualifier -> !qualifier.annotationType().getName().equals(MicroserviceReference.class.getName())).collect(Collectors.toSet());
 
-         service = CdiMicroserviceProvider.getMicroserviceInstance(parentBean.getContext(), new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers));
+         service = CdiMicroserviceProvider.lookupMicroservice(parentBean.getContext(), new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers));
 
          if (log.isDebugEnabled()) {
             log.info(String.format("Proxy %s matched with service implementation %s.", this.toString(), service));

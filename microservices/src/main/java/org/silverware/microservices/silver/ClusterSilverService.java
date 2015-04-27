@@ -24,7 +24,7 @@ package org.silverware.microservices.silver;
  */
 public interface ClusterSilverService extends SilverService {
 
-   public static final String CLUSTER_GROUP = "silverware.cluster.group";
-   public static final String CLUSTER_CONFIGURATION = "silverware.cluster.configuration";
+   String CLUSTER_GROUP = "silverware.cluster.group";
+   String CLUSTER_CONFIGURATION = "silverware.cluster.configuration";
 
 }

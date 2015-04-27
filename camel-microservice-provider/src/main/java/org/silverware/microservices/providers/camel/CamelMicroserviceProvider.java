@@ -20,12 +20,15 @@
 package org.silverware.microservices.providers.camel;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Endpoint;
+import org.apache.camel.Route;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.Context;
+import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.CamelSilverService;
 import org.silverware.microservices.util.DeployStats;
@@ -124,5 +127,17 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
       } else {
          log.warn("No routes to start. Camel microservice provider is terminated.");
       }
+   }
+
+   @Override
+   public Object lookupMicroservice(final MicroserviceMetaData metaData) {
+      String className = metaData.getType().getName();
+      if (className.equals(Route.class.getName())) {
+         return camelContext.getRoute(metaData.getName());
+      } else if (className.equals(Endpoint.class.getName())) {
+         return camelContext.getEndpoint(metaData.getName());
+      }
+      
+      return null;
    }
 }

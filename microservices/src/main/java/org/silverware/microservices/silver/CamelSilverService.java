@@ -22,7 +22,7 @@ package org.silverware.microservices.silver;
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public interface CamelSilverService extends SilverService {
+public interface CamelSilverService extends ProvidingSilverService {
 
-   public static final String CAMEL_CONTEXT = "silverware.camel.camelContext";
+   String CAMEL_CONTEXT = "silverware.camel.camelContext";
 }

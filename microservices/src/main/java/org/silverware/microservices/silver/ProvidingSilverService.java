@@ -19,11 +19,14 @@
  */
 package org.silverware.microservices.silver;
 
+import org.silverware.microservices.MicroserviceMetaData;
+
 /**
+ * SilverService that is able to provide Microservices.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public interface CdiSilverService extends ProvidingSilverService {
+public interface ProvidingSilverService extends SilverService {
 
-   String BEAN_MANAGER = "silverware.cdi.beanManager";
-   String CDI_CONTAINER = "silverware.cdi.container";
+   Object lookupMicroservice(final MicroserviceMetaData metaData);
 }
