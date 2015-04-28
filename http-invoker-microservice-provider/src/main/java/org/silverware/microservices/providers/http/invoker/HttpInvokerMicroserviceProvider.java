@@ -23,8 +23,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.providers.MicroserviceProvider;
+import org.silverware.microservices.silver.HttpInvokerSilverService;
 import org.silverware.microservices.silver.HttpServerSilverService;
-import org.silverware.microservices.silver.MonitoringSilverService;
 import org.silverware.microservices.silver.http.ServletDescriptor;
 import org.silverware.microservices.util.Utils;
 
@@ -82,10 +82,10 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
                            context.getProperties().get(INVOKER_URL) + "/";
 
                      if (log.isTraceEnabled()) {
-                        log.trace("Waiting for invoker to appear at {}", monitorUrl);
+                        log.trace("Waiting for invoker to appear at {}", invokerUrl);
                      }
 
-                     if (!Utils.waitForHttp(monitorUrl, 200)) {
+                     if (!Utils.waitForHttp(invokerUrl, 200)) {
                         throw new InterruptedException("Unable to start Http Invoker.");
                      }
                   }
@@ -104,7 +104,6 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
 
    private ServletDescriptor getServletDescriptor() {
       final Properties properties = new Properties();
-      properties.setProperty("dispatcherClasses", org.jolokia.jsr160.Jsr160RequestDispatcher.class.getName());
       properties.setProperty("debug", "false");
       properties.setProperty("historyMaxEntries", "10");
       properties.setProperty("debugMaxEntries", "100");

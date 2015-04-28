@@ -6,7 +6,7 @@
       <artifactId>silverware-parent</artifactId>
       <version>1.0-SNAPSHOT</version>
    </parent>
-   <artifactId>http-invoker-provider</artifactId>
+   <artifactId>http-invoker-microservice-provider</artifactId>
    <packaging>jar</packaging>
    <name>Http Invoker Microservices Provider</name>
    <dependencies>
@@ -23,6 +23,10 @@
       <dependency>
          <groupId>org.apache.logging.log4j</groupId>
          <artifactId>log4j-slf4j-impl</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.codehaus.jackson</groupId>
+         <artifactId>jackson-mapper-asl</artifactId>
       </dependency>
    </dependencies>
    <build>
