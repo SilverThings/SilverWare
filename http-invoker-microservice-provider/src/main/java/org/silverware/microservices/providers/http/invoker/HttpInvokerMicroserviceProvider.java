@@ -22,14 +22,27 @@ package org.silverware.microservices.providers.http.invoker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.Context;
+import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.providers.MicroserviceProvider;
+import org.silverware.microservices.silver.CdiSilverService;
 import org.silverware.microservices.silver.HttpInvokerSilverService;
 import org.silverware.microservices.silver.HttpServerSilverService;
+import org.silverware.microservices.silver.ProvidingSilverService;
+import org.silverware.microservices.silver.SilverService;
+import org.silverware.microservices.silver.cluster.ServiceHandle;
 import org.silverware.microservices.silver.http.ServletDescriptor;
 import org.silverware.microservices.util.Utils;
 
+import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -40,6 +53,7 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
 
    private Context context;
    private HttpServerSilverService http;
+   private Set<ProvidingSilverService> microserviceProviders = new HashSet<>();
 
    @Override
    public void initialize(final Context context) {
@@ -57,6 +71,7 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
    public void run() {
       try {
          log.info("Hello from Http Invoker microservice provider!");
+         context.getAllProviders(ProvidingSilverService.class).stream().forEach(silverService -> microserviceProviders.add((ProvidingSilverService) silverService));
 
          try {
             if (log.isDebugEnabled()) {
@@ -117,5 +132,25 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
       properties.setProperty("discoveryEnabled", "true");
 
       return null; //new ServletDescriptor("jolokia-agent", org.jolokia.http.AgentServlet.class, "/", properties);
+   }
+
+   protected Set<ServiceHandle> searchQuery(final MicroserviceMetaData metaData) {
+      Set<Object> microservices = microserviceProviders.stream().map(providingSilverService -> providingSilverService.lookupMicroservice(metaData)).collect(Collectors.toSet());
+      //microservices.stream().map(microservice -> new ServiceHandle())
+      // TODO Move to Cluster
+      return null;
+   }
+
+   /**
+    * @author Martin Večeřa <marvenec@gmail.com>
+    */
+   public static class HttpInvokerServlet extends HttpServlet {
+
+
+      @Override
+      protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+         req.getContextPath();
+         super.doPost(req, resp);
+      }
    }
 }
