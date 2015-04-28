@@ -30,11 +30,6 @@ import java.util.Set;
  */
 public class MicroserviceMetaData {
 
-   public enum ServiceLocation {
-      LOCAL,
-      REMOTE;
-   }
-
    /**
     * Name of the Microservice.
     */
@@ -45,15 +40,10 @@ public class MicroserviceMetaData {
     */
    private final Class type;
 
-   /**
+   /**s
     * Qualifiers of the Microservice.
     */
    private final Set<Annotation> qualifiers;
-
-   /**
-    * Whether the service is local or remote.
-    */
-   private final ServiceLocation serviceLocation = ServiceLocation.LOCAL;
 
    /**
     * Create a representation of a discovered Microservice.
@@ -100,14 +90,6 @@ public class MicroserviceMetaData {
     */
    public Set<Annotation> getQualifiers() {
       return qualifiers;
-   }
-
-   /**
-    * Gets the service location. Either local or remote.
-    * @return Location of the service.
-    */
-   public ServiceLocation getServiceLocation() {
-      return serviceLocation;
    }
 
    @Override

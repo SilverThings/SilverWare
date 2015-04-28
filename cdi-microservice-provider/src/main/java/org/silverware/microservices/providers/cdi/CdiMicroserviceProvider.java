@@ -133,6 +133,11 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       return null;
    }
 
+   @Override
+   public Object lookupLocalMicroservice(final MicroserviceMetaData metaData) {
+      return lookupMicroservice(metaData);
+   }
+
    static Object getMicroserviceProxy(final Context context, final Class clazz) {
       return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(clazz).select(new MicroserviceReferenceLiteral("")).get();
    }

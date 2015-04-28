@@ -23,8 +23,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.annotations.MicroserviceReference;
-import org.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
-import org.silverware.microservices.silver.CdiSilverService;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -41,32 +39,30 @@ public class MicroserviceProxy implements MethodHandler {
 
    private static final Logger log = LogManager.getLogger(MicroserviceProxy.class);
 
-   private Object service;
+   private Set<Object> service;
 
    private MicroserviceProxyBean parentBean;
-   private CdiMicroserviceProvider cdiMicroserviceProvider;
 
    private MicroserviceProxy(final MicroserviceProxyBean parentBean) throws Exception {
       this.parentBean = parentBean;
-      this.cdiMicroserviceProvider = (CdiMicroserviceProvider) parentBean.getContext().getProvider(CdiSilverService.class);
    }
 
    private synchronized Object getService() {
       if (service == null) {
          Set<Annotation> qualifiers = parentBean.getQualifiers().stream().filter(qualifier -> !qualifier.annotationType().getName().equals(MicroserviceReference.class.getName())).collect(Collectors.toSet());
 
-         service = cdiMicroserviceProvider.lookupMicroservice(new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers));
+         service = parentBean.getContext().lookupMicroservice(new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers));
 
          if (log.isDebugEnabled()) {
             log.info(String.format("Proxy %s matched with service implementation %s.", this.toString(), service));
          }
 
-         if (service == null) {
+         if (service == null || service.size() == 0) {
             throw new IllegalStateException(String.format("Cannot lookup any implementation for microservice %s.", new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers)));
          }
       }
 
-      return service;
+      return service.iterator().next();
    }
 
    @SuppressWarnings("unchecked")

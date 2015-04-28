@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ServiceHandle implements Serializable {
 
-   final static private AtomicInteger handleSource = new AtomicInteger(0);
+   final static transient private AtomicInteger handleSource = new AtomicInteger(0);
 
    final private int handle;
 
@@ -37,10 +37,13 @@ public class ServiceHandle implements Serializable {
 
    final private MicroserviceMetaData query;
 
-   public ServiceHandle(final String host, final MicroserviceMetaData query) {
+   final private Object service;
+
+   public ServiceHandle(final String host, final MicroserviceMetaData query, final Object service) {
       this.handle = handleSource.getAndIncrement();
       this.host = host;
       this.query = query;
+      this.service = service;
    }
 
    public int getHandle() {
@@ -69,18 +72,22 @@ public class ServiceHandle implements Serializable {
       if (handle != that.handle) {
          return false;
       }
-      if (!host.equals(that.host)) {
+      if (host != null ? !host.equals(that.host) : that.host != null) {
          return false;
       }
-      return query.equals(that.query);
+      if (!query.equals(that.query)) {
+         return false;
+      }
+      return !(service != null ? !service.equals(that.service) : that.service != null);
 
    }
 
    @Override
    public int hashCode() {
       int result = handle;
-      result = 31 * result + host.hashCode();
+      result = 31 * result + (host != null ? host.hashCode() : 0);
       result = 31 * result + query.hashCode();
+      result = 31 * result + (service != null ? service.hashCode() : 0);
       return result;
    }
 
@@ -90,6 +97,7 @@ public class ServiceHandle implements Serializable {
             "handle=" + handle +
             ", host='" + host + '\'' +
             ", query=" + query +
+            ", service=" + service +
             '}';
    }
 }

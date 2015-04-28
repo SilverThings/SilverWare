@@ -21,21 +21,22 @@ package org.silverware.microservices.providers.http.invoker;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.providers.MicroserviceProvider;
-import org.silverware.microservices.silver.CdiSilverService;
 import org.silverware.microservices.silver.HttpInvokerSilverService;
 import org.silverware.microservices.silver.HttpServerSilverService;
 import org.silverware.microservices.silver.ProvidingSilverService;
-import org.silverware.microservices.silver.SilverService;
 import org.silverware.microservices.silver.cluster.ServiceHandle;
 import org.silverware.microservices.silver.http.ServletDescriptor;
 import org.silverware.microservices.util.Utils;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,6 +55,7 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
    private Context context;
    private HttpServerSilverService http;
    private Set<ProvidingSilverService> microserviceProviders = new HashSet<>();
+   private Map<Integer, ServiceHandle> inboundHandles = new HashMap<>();
 
    @Override
    public void initialize(final Context context) {
@@ -144,12 +146,22 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
    /**
     * @author Martin Večeřa <marvenec@gmail.com>
     */
-   public static class HttpInvokerServlet extends HttpServlet {
+   public class HttpInvokerServlet extends HttpServlet {
+
+      private ObjectMapper mapper = new ObjectMapper();
+
 
 
       @Override
       protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-         req.getContextPath();
+         if (req.getContextPath().endsWith("query")) {
+            MicroserviceMetaData metaData = mapper.readValue(req.getInputStream(), MicroserviceMetaData.class);
+
+            context.lookupLocalMicroservice(metaData);
+
+            // TODO create inboundHandles, return them to response
+            //mapper.writeValue(resp.getWriter(), inboundHandles);
+         }
          super.doPost(req, resp);
       }
    }
