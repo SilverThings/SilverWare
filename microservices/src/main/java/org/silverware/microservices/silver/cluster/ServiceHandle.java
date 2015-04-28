@@ -37,7 +37,7 @@ public class ServiceHandle implements Serializable {
 
    final private MicroserviceMetaData query;
 
-   final private Object service;
+   final private transient Object service;
 
    public ServiceHandle(final String host, final MicroserviceMetaData query, final Object service) {
       this.handle = handleSource.getAndIncrement();
@@ -56,6 +56,10 @@ public class ServiceHandle implements Serializable {
 
    public MicroserviceMetaData getQuery() {
       return query;
+   }
+
+   public Object getService() {
+      return service;
    }
 
    @Override

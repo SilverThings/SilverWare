@@ -72,7 +72,7 @@ public class Context {
             .collect(Collectors.toSet());
    }
 
-   public Object lookupLocalMicroservice(final MicroserviceMetaData metaData) {
+   public Set<Object> lookupLocalMicroservice(final MicroserviceMetaData metaData) {
       return getAllProviders(ProvidingSilverService.class).stream()
             .map(providingSilverService -> ((ProvidingSilverService) providingSilverService).lookupLocalMicroservice(metaData))
             .collect(Collectors.toSet());

@@ -33,9 +33,11 @@ import org.silverware.microservices.silver.http.ServletDescriptor;
 import org.silverware.microservices.util.Utils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -55,7 +57,7 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
    private Context context;
    private HttpServerSilverService http;
    private Set<ProvidingSilverService> microserviceProviders = new HashSet<>();
-   private Map<Integer, ServiceHandle> inboundHandles = new HashMap<>();
+   private List<ServiceHandle> inboundHandles = new ArrayList<>();
 
    @Override
    public void initialize(final Context context) {
@@ -136,11 +138,19 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
       return null; //new ServletDescriptor("jolokia-agent", org.jolokia.http.AgentServlet.class, "/", properties);
    }
 
-   protected Set<ServiceHandle> searchQuery(final MicroserviceMetaData metaData) {
-      Set<Object> microservices = microserviceProviders.stream().map(providingSilverService -> providingSilverService.lookupMicroservice(metaData)).collect(Collectors.toSet());
-      //microservices.stream().map(microservice -> new ServiceHandle())
-      // TODO Move to Cluster
-      return null;
+   protected List<ServiceHandle> assureHandles(final MicroserviceMetaData metaData) {
+      List<ServiceHandle> result = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getQuery().equals(metaData)).collect(Collectors.toList());
+      Set<Object> microservices = context.lookupLocalMicroservice(metaData);//.stream().map(service -> new ServiceHandle((String) context.getProperties().get(HttpServerSilverService.HTTP_SERVER_ADDRESS), metaData, service)).collect(Collectors.toSet());
+      Set<Object> haveHandles = result.stream().map(ServiceHandle::getService).collect(Collectors.toSet());
+      microservices.removeAll(haveHandles);
+
+      microservices.forEach(microservice -> {
+         final ServiceHandle handle = new ServiceHandle((String) context.getProperties().get(HttpServerSilverService.HTTP_SERVER_ADDRESS), metaData, microservice);
+         result.add(handle);
+         inboundHandles.add(handle);
+      });
+
+      return result;
    }
 
    /**
@@ -150,17 +160,12 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
 
       private ObjectMapper mapper = new ObjectMapper();
 
-
-
       @Override
       protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
          if (req.getContextPath().endsWith("query")) {
             MicroserviceMetaData metaData = mapper.readValue(req.getInputStream(), MicroserviceMetaData.class);
-
-            context.lookupLocalMicroservice(metaData);
-
-            // TODO create inboundHandles, return them to response
-            //mapper.writeValue(resp.getWriter(), inboundHandles);
+            List<ServiceHandle> handles = assureHandles(metaData);
+            mapper.writeValue(resp.getWriter(), handles);
          }
          super.doPost(req, resp);
       }
