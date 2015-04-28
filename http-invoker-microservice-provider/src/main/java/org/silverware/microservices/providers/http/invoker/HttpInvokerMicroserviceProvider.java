@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.MicroserviceMetaData;
+import org.silverware.microservices.SilverWareException;
 import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.HttpInvokerSilverService;
 import org.silverware.microservices.silver.HttpServerSilverService;
@@ -33,6 +34,7 @@ import org.silverware.microservices.silver.http.ServletDescriptor;
 import org.silverware.microservices.util.Utils;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -140,7 +142,7 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
 
    protected List<ServiceHandle> assureHandles(final MicroserviceMetaData metaData) {
       List<ServiceHandle> result = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getQuery().equals(metaData)).collect(Collectors.toList());
-      Set<Object> microservices = context.lookupLocalMicroservice(metaData);//.stream().map(service -> new ServiceHandle((String) context.getProperties().get(HttpServerSilverService.HTTP_SERVER_ADDRESS), metaData, service)).collect(Collectors.toSet());
+      Set<Object> microservices = context.lookupLocalMicroservice(metaData);
       Set<Object> haveHandles = result.stream().map(ServiceHandle::getService).collect(Collectors.toSet());
       microservices.removeAll(haveHandles);
 
@@ -153,6 +155,26 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
       return result;
    }
 
+   protected Object invoke(final Invocation invocation) throws Exception {
+      if (log.isTraceEnabled()) {
+         log.trace("Invoking Microservice with invocation {}.", invocation.toString());
+      }
+
+      final ServiceHandle handle = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getHandle() == invocation.getHandle()).findFirst().get();
+
+      if (handle == null) {
+         throw new SilverWareException(String.format("Handle no. %d. No such handle found.", invocation.getHandle()));
+      }
+
+      final Class[] paramTypes = new Class[invocation.getParams().length];
+      for (int i = 0; i < invocation.getParams().length; i++) {
+         paramTypes[i] = invocation.getParams()[i].getClass();
+      }
+
+      final Method method = handle.getService().getClass().getDeclaredMethod(invocation.getMethod(), paramTypes);
+      return method.invoke(handle.getService(), invocation.getParams());
+   }
+
    /**
     * @author Martin Večeřa <marvenec@gmail.com>
     */
@@ -163,10 +185,18 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
       @Override
       protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
          if (req.getContextPath().endsWith("query")) {
-            MicroserviceMetaData metaData = mapper.readValue(req.getInputStream(), MicroserviceMetaData.class);
-            List<ServiceHandle> handles = assureHandles(metaData);
+            final MicroserviceMetaData metaData = mapper.readValue(req.getInputStream(), MicroserviceMetaData.class);
+            final List<ServiceHandle> handles = assureHandles(metaData);
             mapper.writeValue(resp.getWriter(), handles);
+         } else if (req.getContextPath().endsWith("invoke")) {
+            final Invocation invocation = mapper.readValue(req.getInputStream(), Invocation.class);
+            try {
+               mapper.writeValue(resp.getWriter(), invoke(invocation));
+            } catch (Exception e) {
+               throw new IOException(String.format("Unable to invoke Microservice using invocation %s: ", invocation.toString()), e);
+            }
          }
+
          super.doPost(req, resp);
       }
    }
