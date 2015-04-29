@@ -21,29 +21,22 @@ package org.silverware.microservices.providers.http.invoker;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.silverware.microservices.Context;
-import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.providers.MicroserviceProvider;
+import org.silverware.microservices.providers.http.invoker.internal.HttpInvokerServlet;
 import org.silverware.microservices.silver.HttpInvokerSilverService;
 import org.silverware.microservices.silver.HttpServerSilverService;
 import org.silverware.microservices.silver.ProvidingSilverService;
-import org.silverware.microservices.silver.cluster.Invocation;
 import org.silverware.microservices.silver.cluster.ServiceHandle;
 import org.silverware.microservices.silver.http.ServletDescriptor;
 import org.silverware.microservices.util.Utils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -55,11 +48,11 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
    private Context context;
    private HttpServerSilverService http;
    private Set<ProvidingSilverService> microserviceProviders = new HashSet<>();
-   private List<ServiceHandle> inboundHandles = new ArrayList<>();
 
    @Override
    public void initialize(final Context context) {
       this.context = context;
+      HttpInvokerServlet.setContext(context);
 
       context.getProperties().putIfAbsent(INVOKER_URL, "invoker");
    }
@@ -102,7 +95,7 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
                         log.trace("Waiting for invoker to appear at {}", invokerUrl);
                      }
 
-                     if (!Utils.waitForHttp(invokerUrl, 200)) {
+                     if (!Utils.waitForHttp(invokerUrl, 204)) {
                         throw new InterruptedException("Unable to start Http Invoker.");
                      }
                   }
@@ -125,29 +118,4 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
       return new ServletDescriptor("http-invoker", HttpInvokerServlet.class, "/", properties);
    }
 
-   /**
-    * @author Martin Večeřa <marvenec@gmail.com>
-    */
-   public class HttpInvokerServlet extends HttpServlet {
-
-      private ObjectMapper mapper = new ObjectMapper();
-
-      @Override
-      protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-         if (req.getContextPath().endsWith("query")) {
-            final MicroserviceMetaData metaData = mapper.readValue(req.getInputStream(), MicroserviceMetaData.class);
-            final List<ServiceHandle> handles = context.assureHandles(metaData);
-            mapper.writeValue(resp.getWriter(), handles);
-         } else if (req.getContextPath().endsWith("invoke")) {
-            final Invocation invocation = mapper.readValue(req.getInputStream(), Invocation.class);
-            try {
-               mapper.writeValue(resp.getWriter(), context.invoke(invocation));
-            } catch (Exception e) {
-               throw new IOException(String.format("Unable to invoke Microservice using invocation %s: ", invocation.toString()), e);
-            }
-         }
-
-         resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unsupported operation.");
-      }
-   }
 }
