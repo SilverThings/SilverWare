@@ -1,5 +1,7 @@
 package org.silverware.microservices.providers.http.invoker;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.annotations.Microservice;
 import org.silverware.microservices.annotations.MicroserviceReference;
 import org.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
@@ -12,6 +14,9 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Collections;
 import java.util.Map;
 import javax.enterprise.inject.Alternative;
 
@@ -21,6 +26,7 @@ import javax.enterprise.inject.Alternative;
 public class HttpInvokerMicroserviceProviderTest {
 
    private HttpInvokerSilverService httpInvokerSilverService = null;
+   private ObjectMapper mapper = new ObjectMapper();
 
    @Test
    public void testHttpInvoker() throws Exception {
@@ -34,9 +40,22 @@ public class HttpInvokerMicroserviceProviderTest {
          Thread.sleep(200);
       }
 
-      Assert.assertTrue(Utils.waitForHttp("http://" + platformProperties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" +
+      String urlBase = "http://" + platformProperties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" +
             platformProperties.get(HttpServerSilverService.HTTP_SERVER_PORT) + "/" +
-            platformProperties.get(HttpInvokerSilverService.INVOKER_URL) + "/", 204));
+            platformProperties.get(HttpInvokerSilverService.INVOKER_URL) + "/";
+
+      Assert.assertTrue(Utils.waitForHttp(urlBase, 204));
+
+      HttpURLConnection con = (HttpURLConnection) new URL(urlBase + "query").openConnection();
+      con.setRequestMethod("POST");
+      con.setDoInput(true);
+      con.setDoOutput(true);
+      con.connect();
+
+      MicroserviceMetaData metaData = new MicroserviceMetaData("sumService", SumService.class, Collections.emptySet());
+      mapper.writeValue(con.getOutputStream(), metaData);
+
+      System.out.println(con.getResponseMessage());
 
       Thread.sleep(10000);
 
@@ -46,9 +65,6 @@ public class HttpInvokerMicroserviceProviderTest {
 
    @Microservice
    public static class SumService {
-
-      @MicroserviceReference
-      private Serializable test;
 
       public long sum(short a, int b) {
          return a + b;
