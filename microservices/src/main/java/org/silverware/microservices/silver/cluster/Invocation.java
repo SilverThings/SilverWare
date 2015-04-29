@@ -17,7 +17,7 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.providers.http.invoker;
+package org.silverware.microservices.silver.cluster;
 
 import java.util.Arrays;
 

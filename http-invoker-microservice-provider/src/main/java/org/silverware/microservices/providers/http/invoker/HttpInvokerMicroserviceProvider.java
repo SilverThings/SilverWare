@@ -24,26 +24,22 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.MicroserviceMetaData;
-import org.silverware.microservices.SilverWareException;
 import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.HttpInvokerSilverService;
 import org.silverware.microservices.silver.HttpServerSilverService;
 import org.silverware.microservices.silver.ProvidingSilverService;
+import org.silverware.microservices.silver.cluster.Invocation;
 import org.silverware.microservices.silver.cluster.ServiceHandle;
 import org.silverware.microservices.silver.http.ServletDescriptor;
 import org.silverware.microservices.util.Utils;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -125,54 +121,8 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
 
    private ServletDescriptor getServletDescriptor() {
       final Properties properties = new Properties();
-      properties.setProperty("debug", "false");
-      properties.setProperty("historyMaxEntries", "10");
-      properties.setProperty("debugMaxEntries", "100");
-      properties.setProperty("maxDepth", "15");
-      properties.setProperty("maxCollectionSize", "1000");
-      properties.setProperty("maxObjects", "0");
-      properties.setProperty("detectorOptions", "{}");
-      properties.setProperty("canonicalNaming", "true");
-      properties.setProperty("includeStackTrace", "true");
-      properties.setProperty("serializeException", "false");
-      properties.setProperty("discoveryEnabled", "true");
 
-      return null; //new ServletDescriptor("jolokia-agent", org.jolokia.http.AgentServlet.class, "/", properties);
-   }
-
-   protected List<ServiceHandle> assureHandles(final MicroserviceMetaData metaData) {
-      List<ServiceHandle> result = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getQuery().equals(metaData)).collect(Collectors.toList());
-      Set<Object> microservices = context.lookupLocalMicroservice(metaData);
-      Set<Object> haveHandles = result.stream().map(ServiceHandle::getService).collect(Collectors.toSet());
-      microservices.removeAll(haveHandles);
-
-      microservices.forEach(microservice -> {
-         final ServiceHandle handle = new ServiceHandle((String) context.getProperties().get(HttpServerSilverService.HTTP_SERVER_ADDRESS), metaData, microservice);
-         result.add(handle);
-         inboundHandles.add(handle);
-      });
-
-      return result;
-   }
-
-   protected Object invoke(final Invocation invocation) throws Exception {
-      if (log.isTraceEnabled()) {
-         log.trace("Invoking Microservice with invocation {}.", invocation.toString());
-      }
-
-      final ServiceHandle handle = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getHandle() == invocation.getHandle()).findFirst().get();
-
-      if (handle == null) {
-         throw new SilverWareException(String.format("Handle no. %d. No such handle found.", invocation.getHandle()));
-      }
-
-      final Class[] paramTypes = new Class[invocation.getParams().length];
-      for (int i = 0; i < invocation.getParams().length; i++) {
-         paramTypes[i] = invocation.getParams()[i].getClass();
-      }
-
-      final Method method = handle.getService().getClass().getDeclaredMethod(invocation.getMethod(), paramTypes);
-      return method.invoke(handle.getService(), invocation.getParams());
+      return new ServletDescriptor("http-invoker", HttpInvokerServlet.class, "/", properties);
    }
 
    /**
@@ -186,18 +136,18 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
       protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
          if (req.getContextPath().endsWith("query")) {
             final MicroserviceMetaData metaData = mapper.readValue(req.getInputStream(), MicroserviceMetaData.class);
-            final List<ServiceHandle> handles = assureHandles(metaData);
+            final List<ServiceHandle> handles = context.assureHandles(metaData);
             mapper.writeValue(resp.getWriter(), handles);
          } else if (req.getContextPath().endsWith("invoke")) {
             final Invocation invocation = mapper.readValue(req.getInputStream(), Invocation.class);
             try {
-               mapper.writeValue(resp.getWriter(), invoke(invocation));
+               mapper.writeValue(resp.getWriter(), context.invoke(invocation));
             } catch (Exception e) {
                throw new IOException(String.format("Unable to invoke Microservice using invocation %s: ", invocation.toString()), e);
             }
          }
 
-         super.doPost(req, resp);
+         resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unsupported operation.");
       }
    }
 }
