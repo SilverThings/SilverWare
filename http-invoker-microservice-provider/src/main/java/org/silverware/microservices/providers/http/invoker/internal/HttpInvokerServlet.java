@@ -52,11 +52,11 @@ public class HttpInvokerServlet extends HttpServlet {
 
    @Override
    protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-      if (req.getContextPath().endsWith("query")) {
+      if (req.getRequestURI().endsWith("query")) {
          final MicroserviceMetaData metaData = mapper.readValue(req.getInputStream(), MicroserviceMetaData.class);
          final List<ServiceHandle> handles = context.assureHandles(metaData);
          mapper.writeValue(resp.getWriter(), handles);
-      } else if (req.getContextPath().endsWith("invoke")) {
+      } else if (req.getRequestURI().endsWith("invoke")) {
          final Invocation invocation = mapper.readValue(req.getInputStream(), Invocation.class);
          try {
             mapper.writeValue(resp.getWriter(), context.invoke(invocation));
