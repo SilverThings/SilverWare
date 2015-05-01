@@ -25,10 +25,8 @@ import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.HttpServerSilverService;
 import org.silverware.microservices.silver.ProvidingSilverService;
 import org.silverware.microservices.silver.SilverService;
-import org.silverware.microservices.silver.cluster.Invocation;
 import org.silverware.microservices.silver.cluster.ServiceHandle;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -118,24 +116,7 @@ public class Context {
       return result;
    }
 
-   public Object invoke(final Invocation invocation) throws Exception {
-      if (log.isTraceEnabled()) {
-         log.trace("Invoking Microservice with invocation {}.", invocation.toString());
-      }
-
-      final ServiceHandle handle = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getHandle() == invocation.getHandle()).findFirst().get();
-
-      if (handle == null) {
-         throw new SilverWareException(String.format("Handle no. %d. No such handle found.", invocation.getHandle()));
-      }
-
-      final Class[] paramTypes = new Class[invocation.getParams().length];
-      for (int i = 0; i < invocation.getParams().length; i++) {
-         paramTypes[i] = invocation.getParams()[i].getClass();
-      }
-
-      final Method method = handle.getService().getClass().getDeclaredMethod(invocation.getMethod(), paramTypes);
-      return method.invoke(handle.getService(), invocation.getParams());
+   public ServiceHandle getInboundServiceHandle(final int handle) {
+      return inboundHandles.stream().filter(serviceHandle -> serviceHandle.getHandle() == handle).findFirst().get();
    }
-
 }

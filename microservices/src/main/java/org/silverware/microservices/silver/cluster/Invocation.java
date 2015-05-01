@@ -19,12 +19,20 @@
  */
 package org.silverware.microservices.silver.cluster;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.silverware.microservices.Context;
+import org.silverware.microservices.SilverWareException;
+
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public class Invocation {
+
+   private static Logger log = LogManager.getLogger(Invocation.class);
 
    private final int handle;
 
@@ -88,4 +96,27 @@ public class Invocation {
             ", params=" + Arrays.toString(params) +
             '}';
    }
+
+   public Object invoke(final Context context) throws Exception {
+      if (log.isTraceEnabled()) {
+         log.trace("Invoking Microservice with invocation {}.", toString());
+      }
+
+      final ServiceHandle serviceHandle = context.getInboundServiceHandle(handle);
+
+      if (serviceHandle == null) {
+         throw new SilverWareException(String.format("Handle no. %d. No such handle found.", getHandle()));
+      }
+
+      final Class[] paramTypes = new Class[params.length];
+      for (int i = 0; i < params.length; i++) {
+         paramTypes[i] = params[i].getClass();
+      }
+
+      final Method method = serviceHandle.getService().getClass().getDeclaredMethod(getMethod(), paramTypes);
+      return method.invoke(serviceHandle.getService(), params);
+   }
+
+
 }
+
