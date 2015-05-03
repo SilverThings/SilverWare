@@ -19,6 +19,7 @@
  */
 package org.silverware.microservices.silver.cluster;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.silverware.microservices.MicroserviceMetaData;
 
 import java.io.Serializable;
@@ -39,7 +40,7 @@ public class ServiceHandle implements Serializable {
 
    final private transient Object service;
 
-   public ServiceHandle(final String host, final MicroserviceMetaData query, final Object service) {
+   public ServiceHandle(@JsonProperty("host") final String host, @JsonProperty("query") final MicroserviceMetaData query, @JsonProperty("service") final Object service) {
       this.handle = handleSource.getAndIncrement();
       this.host = host;
       this.query = query;

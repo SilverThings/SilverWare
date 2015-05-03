@@ -27,14 +27,11 @@ import org.silverware.microservices.providers.http.invoker.internal.HttpInvokerS
 import org.silverware.microservices.silver.HttpInvokerSilverService;
 import org.silverware.microservices.silver.HttpServerSilverService;
 import org.silverware.microservices.silver.ProvidingSilverService;
-import org.silverware.microservices.silver.cluster.ServiceHandle;
 import org.silverware.microservices.silver.http.ServletDescriptor;
 import org.silverware.microservices.util.Utils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 

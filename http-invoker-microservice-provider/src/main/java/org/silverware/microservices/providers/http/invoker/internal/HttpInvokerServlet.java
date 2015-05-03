@@ -19,7 +19,7 @@
  */
 package org.silverware.microservices.providers.http.invoker.internal;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.silver.cluster.Invocation;
@@ -63,8 +63,8 @@ public class HttpInvokerServlet extends HttpServlet {
          } catch (Exception e) {
             throw new IOException(String.format("Unable to invoke Microservice using invocation %s: ", invocation.toString()), e);
          }
+      } else {
+         resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unsupported operation.");
       }
-
-      resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unsupported operation.");
    }
 }

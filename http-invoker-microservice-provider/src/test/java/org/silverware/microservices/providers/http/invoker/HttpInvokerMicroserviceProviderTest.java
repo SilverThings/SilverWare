@@ -1,24 +1,26 @@
 package org.silverware.microservices.providers.http.invoker;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.annotations.Microservice;
-import org.silverware.microservices.annotations.MicroserviceReference;
 import org.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
 import org.silverware.microservices.providers.http.HttpServerMicroserviceProvider;
+import org.silverware.microservices.silver.CdiSilverService;
 import org.silverware.microservices.silver.HttpInvokerSilverService;
 import org.silverware.microservices.silver.HttpServerSilverService;
+import org.silverware.microservices.silver.cluster.ServiceHandle;
 import org.silverware.microservices.util.BootUtil;
 import org.silverware.microservices.util.Utils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.io.Serializable;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import javax.enterprise.inject.Alternative;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -32,11 +34,15 @@ public class HttpInvokerMicroserviceProviderTest {
    public void testHttpInvoker() throws Exception {
       final BootUtil bootUtil = new BootUtil();
       final Map<String, Object> platformProperties = bootUtil.getContext().getProperties();
-      final Thread platform = bootUtil.getMicroservicePlatform(); //this.getClass().getPackage().getName(), HttpServerMicroserviceProvider.class.getPackage().getName(), CdiMicroserviceProvider.class.getPackage().getName());
+      final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName(), HttpServerMicroserviceProvider.class.getPackage().getName(), CdiMicroserviceProvider.class.getPackage().getName());
       platform.start();
 
       while (httpInvokerSilverService == null) {
          httpInvokerSilverService = (HttpInvokerSilverService) bootUtil.getContext().getProvider(HttpInvokerSilverService.class);
+         Thread.sleep(200);
+      }
+
+      while (bootUtil.getContext().getProperties().get(CdiSilverService.BEAN_MANAGER) == null) {
          Thread.sleep(200);
       }
 
@@ -56,7 +62,13 @@ public class HttpInvokerMicroserviceProviderTest {
       mapper.writeValue(con.getOutputStream(), metaData);
 
       System.out.println(con.getResponseMessage());
-
+      List<ServiceHandle> handles = mapper.readValue(con.getInputStream(), mapper.getTypeFactory().constructCollectionType(List.class, ServiceHandle.class));
+      System.out.println(handles);
+      /*w BufferedReader(new InputStreamReader(con.getInputStream()));
+          String s = "";
+          while ((s = buffer.readLine()) != null) {
+            System.out.print(s);
+          }*/
       Thread.sleep(10000);
 
       platform.interrupt();
