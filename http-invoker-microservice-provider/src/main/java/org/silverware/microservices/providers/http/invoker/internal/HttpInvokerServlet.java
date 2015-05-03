@@ -59,7 +59,7 @@ public class HttpInvokerServlet extends HttpServlet {
       } else if (req.getRequestURI().endsWith("invoke")) {
          final Invocation invocation = mapper.readValue(req.getInputStream(), Invocation.class);
          try {
-            mapper.writeValue(resp.getWriter(), context.invoke(invocation));
+            mapper.writeValue(resp.getWriter(), invocation.invoke(context));
          } catch (Exception e) {
             throw new IOException(String.format("Unable to invoke Microservice using invocation %s: ", invocation.toString()), e);
          }
