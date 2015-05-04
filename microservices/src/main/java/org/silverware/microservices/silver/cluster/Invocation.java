@@ -19,6 +19,7 @@
  */
 package org.silverware.microservices.silver.cluster;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.Context;
@@ -38,11 +39,14 @@ public class Invocation {
 
    private final String method;
 
+   private final Class[] paramTypes;
+
    private final Object[] params;
 
-   public Invocation(final int handle, final String method, final Object[] params) {
+   public Invocation(@JsonProperty("handle") final int handle, @JsonProperty("method") final String method, @JsonProperty("paramTypes") final Class[] paramTypes, @JsonProperty("params") final Object[] params) {
       this.handle = handle;
       this.method = method;
+      this.paramTypes = paramTypes;
       this.params = params;
    }
 
@@ -52,6 +56,10 @@ public class Invocation {
 
    public String getMethod() {
       return method;
+   }
+
+   public Class[] getParamTypes() {
+      return paramTypes;
    }
 
    public Object[] getParams() {
@@ -72,7 +80,11 @@ public class Invocation {
       if (handle != that.handle) {
          return false;
       }
-      if (method != null ? !method.equals(that.method) : that.method != null) {
+      if (!method.equals(that.method)) {
+         return false;
+      }
+      // Probably incorrect - comparing Object[] arrays with Arrays.equals
+      if (!Arrays.equals(paramTypes, that.paramTypes)) {
          return false;
       }
       // Probably incorrect - comparing Object[] arrays with Arrays.equals
@@ -83,8 +95,9 @@ public class Invocation {
    @Override
    public int hashCode() {
       int result = handle;
-      result = 31 * result + (method != null ? method.hashCode() : 0);
-      result = 31 * result + (params != null ? Arrays.hashCode(params) : 0);
+      result = 31 * result + method.hashCode();
+      result = 31 * result + Arrays.hashCode(paramTypes);
+      result = 31 * result + Arrays.hashCode(params);
       return result;
    }
 
@@ -93,6 +106,7 @@ public class Invocation {
       return "Invocation{" +
             "handle=" + handle +
             ", method='" + method + '\'' +
+            ", paramTypes=" + Arrays.toString(paramTypes) +
             ", params=" + Arrays.toString(params) +
             '}';
    }
@@ -108,13 +122,19 @@ public class Invocation {
          throw new SilverWareException(String.format("Handle no. %d. No such handle found.", getHandle()));
       }
 
-      final Class[] paramTypes = new Class[params.length];
-      for (int i = 0; i < params.length; i++) {
-         paramTypes[i] = params[i].getClass();
+      final Object[] realParams = new Object[params.length];
+      for (int i = 0; i < realParams.length; i++) {
+         if (paramTypes[i].getName().equals("short")) {
+            realParams[i] = (short) ((Integer) params[i]).intValue();
+         } else if (paramTypes[i].getName().equals("int")) {
+            realParams[i] = (Integer) params[i];
+         } else {
+            realParams[i] = paramTypes[i].cast(params[i]);
+         }
       }
 
       final Method method = serviceHandle.getService().getClass().getDeclaredMethod(getMethod(), paramTypes);
-      return method.invoke(serviceHandle.getService(), params);
+      return method.invoke(serviceHandle.getService(), realParams);
    }
 
 

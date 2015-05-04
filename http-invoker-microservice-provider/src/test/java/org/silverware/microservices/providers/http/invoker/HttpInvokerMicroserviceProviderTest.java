@@ -8,6 +8,7 @@ import org.silverware.microservices.providers.http.HttpServerMicroserviceProvide
 import org.silverware.microservices.silver.CdiSilverService;
 import org.silverware.microservices.silver.HttpInvokerSilverService;
 import org.silverware.microservices.silver.HttpServerSilverService;
+import org.silverware.microservices.silver.cluster.Invocation;
 import org.silverware.microservices.silver.cluster.ServiceHandle;
 import org.silverware.microservices.util.BootUtil;
 import org.silverware.microservices.util.Utils;
@@ -58,17 +59,27 @@ public class HttpInvokerMicroserviceProviderTest {
       con.setDoOutput(true);
       con.connect();
 
-      MicroserviceMetaData metaData = new MicroserviceMetaData("sumService", SumService.class, Collections.emptySet());
+      final MicroserviceMetaData metaData = new MicroserviceMetaData("sumService", SumService.class, Collections.emptySet());
       mapper.writeValue(con.getOutputStream(), metaData);
 
-      System.out.println(con.getResponseMessage());
-      List<ServiceHandle> handles = mapper.readValue(con.getInputStream(), mapper.getTypeFactory().constructCollectionType(List.class, ServiceHandle.class));
-      System.out.println(handles);
-      /*w BufferedReader(new InputStreamReader(con.getInputStream()));
-          String s = "";
-          while ((s = buffer.readLine()) != null) {
-            System.out.print(s);
-          }*/
+      Assert.assertEquals(con.getResponseMessage(), "OK");
+      final List<ServiceHandle> handles = mapper.readValue(con.getInputStream(), mapper.getTypeFactory().constructCollectionType(List.class, ServiceHandle.class));
+      Assert.assertEquals(handles.size(), 1);
+
+      con.disconnect();
+
+      con = (HttpURLConnection) new URL(urlBase + "invoke").openConnection();
+      con.setRequestMethod("POST");
+      con.setDoInput(true);
+      con.setDoOutput(true);
+      con.connect();
+
+      final Invocation invocation = new Invocation(handles.get(0).getHandle(), "sum", new Class[] { short.class, int.class }, new Object[] { (short) 3, 4 });
+      mapper.writeValue(con.getOutputStream(), invocation);
+      final Object response = mapper.readValue(con.getInputStream(), Long.class);
+
+      Assert.assertEquals(response, 7L);
+
       Thread.sleep(10000);
 
       platform.interrupt();
