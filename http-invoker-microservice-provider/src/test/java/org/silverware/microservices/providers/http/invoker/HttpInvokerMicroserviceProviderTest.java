@@ -18,8 +18,12 @@ import org.testng.annotations.Test;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
@@ -84,6 +88,21 @@ public class HttpInvokerMicroserviceProviderTest {
 
       platform.interrupt();
       platform.join();
+   }
+
+   @Test
+   public void testIpAddresses() throws Exception {
+      Enumeration e = NetworkInterface.getNetworkInterfaces();
+      while(e.hasMoreElements())
+      {
+         NetworkInterface n = (NetworkInterface) e.nextElement();
+         Enumeration ee = n.getInetAddresses();
+         while (ee.hasMoreElements())
+         {
+            InetAddress i = (InetAddress) ee.nextElement();
+            System.out.println(i.isLoopbackAddress() + " - " + (i instanceof Inet4Address) + " " + i.getHostAddress());
+         }
+      }
    }
 
    @Microservice
