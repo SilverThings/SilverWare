@@ -29,5 +29,8 @@ import org.silverware.microservices.MicroserviceMetaData;
 public interface ProvidingSilverService extends SilverService {
 
    Object lookupMicroservice(final MicroserviceMetaData metaData);
-   Object lookupLocalMicroservice(final MicroserviceMetaData metaData);
+
+   default Object lookupLocalMicroservice(final MicroserviceMetaData metaData) {
+      return lookupMicroservice(metaData);
+   }
 }

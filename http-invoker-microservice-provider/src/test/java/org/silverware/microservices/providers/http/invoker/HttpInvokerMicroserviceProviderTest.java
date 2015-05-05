@@ -1,6 +1,7 @@
 package org.silverware.microservices.providers.http.invoker;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.annotations.Microservice;
 import org.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
@@ -15,8 +16,7 @@ import org.silverware.microservices.util.Utils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -33,7 +33,6 @@ import java.util.Map;
 public class HttpInvokerMicroserviceProviderTest {
 
    private HttpInvokerSilverService httpInvokerSilverService = null;
-   private ObjectMapper mapper = new ObjectMapper();
 
    @Test
    public void testHttpInvoker() throws Exception {
@@ -64,10 +63,12 @@ public class HttpInvokerMicroserviceProviderTest {
       con.connect();
 
       final MicroserviceMetaData metaData = new MicroserviceMetaData("sumService", SumService.class, Collections.emptySet());
-      mapper.writeValue(con.getOutputStream(), metaData);
+      JsonWriter jsonWriter = new JsonWriter(con.getOutputStream());
+      jsonWriter.write(metaData);
 
       Assert.assertEquals(con.getResponseMessage(), "OK");
-      final List<ServiceHandle> handles = mapper.readValue(con.getInputStream(), mapper.getTypeFactory().constructCollectionType(List.class, ServiceHandle.class));
+      JsonReader jsonReader = new JsonReader(con.getInputStream());
+      final List<ServiceHandle> handles = (List<ServiceHandle>) jsonReader.readObject();
       Assert.assertEquals(handles.size(), 1);
 
       con.disconnect();
@@ -78,11 +79,74 @@ public class HttpInvokerMicroserviceProviderTest {
       con.setDoOutput(true);
       con.connect();
 
-      final Invocation invocation = new Invocation(handles.get(0).getHandle(), "sum", new Class[] { short.class, int.class }, new Object[] { (short) 3, 4 });
-      mapper.writeValue(con.getOutputStream(), invocation);
-      final Object response = mapper.readValue(con.getInputStream(), Long.class);
+      Invocation invocation = new Invocation(handles.get(0).getHandle(), "sum", new Class[] { short.class, int.class }, new Object[] { (short) 3, 4 });
+      jsonWriter = new JsonWriter(con.getOutputStream());
+      jsonWriter.write(invocation);
+      jsonReader = new JsonReader(con.getInputStream());
+      Object response = jsonReader.readObject();
 
       Assert.assertEquals(response, 7L);
+
+      con.disconnect();
+
+      con = (HttpURLConnection) new URL(urlBase + "invoke").openConnection();
+      con.setRequestMethod("POST");
+      con.setDoInput(true);
+      con.setDoOutput(true);
+      con.connect();
+
+      invocation = new Invocation(handles.get(0).getHandle(), "allTypes",
+            new Class[] { byte.class, short.class, int.class, long.class, float.class, double.class, boolean.class, char.class },
+            new Object[] { Byte.MAX_VALUE, Short.MAX_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE, Float.MIN_VALUE, Double.MIN_VALUE, true, 'c' });
+
+      jsonWriter = new JsonWriter(con.getOutputStream());
+      jsonWriter.write(invocation);
+      jsonReader = new JsonReader(con.getInputStream());
+      response = jsonReader.readObject();
+
+      Assert.assertEquals(response, "9.223372036854776E18truec");
+
+      con.disconnect();
+
+
+      con = (HttpURLConnection) new URL(urlBase + "invoke").openConnection();
+      con.setRequestMethod("POST");
+      con.setDoInput(true);
+      con.setDoOutput(true);
+      con.connect();
+
+      invocation = new Invocation(handles.get(0).getHandle(), "allTypes2",
+            new Class[] { Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, Boolean.class, Character.class },
+            new Object[] { Byte.MAX_VALUE, Short.MAX_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE, Float.MIN_VALUE, Double.MIN_VALUE, true, 'c' });
+
+      jsonWriter = new JsonWriter(con.getOutputStream());
+      jsonWriter.write(invocation);
+      jsonReader = new JsonReader(con.getInputStream());
+      response = jsonReader.readObject();
+
+      Assert.assertEquals(response, "9.223372036854776E18truec");
+
+      con.disconnect();
+
+      con = (HttpURLConnection) new URL(urlBase + "invoke").openConnection();
+      con.setRequestMethod("POST");
+      con.setDoInput(true);
+      con.setDoOutput(true);
+      con.connect();
+
+      MagicBox box = new MagicBox();
+
+      invocation = new Invocation(handles.get(0).getHandle(), "doMagic", new Class[] { MagicBox.class }, new Object[] { box });
+
+      jsonWriter = new JsonWriter(con.getOutputStream());
+      jsonWriter.write(invocation);
+      jsonReader = new JsonReader(con.getInputStream());
+      response = jsonReader.readObject();
+
+      //Assert.assertEquals(response, "9.223372036854776E18truec");
+      System.out.println(response);
+
+      con.disconnect();
 
       Thread.sleep(10000);
 
@@ -105,11 +169,52 @@ public class HttpInvokerMicroserviceProviderTest {
       }
    }
 
+   public static class MagicBox implements Serializable {
+      private Short s = Short.MAX_VALUE;
+      private Float f = Float.MAX_VALUE;
+
+      public Short getS() {
+         return s;
+      }
+
+      public void setS(final Short s) {
+         this.s = s;
+      }
+
+      public Float getF() {
+         return f;
+      }
+
+      public void setF(final Float f) {
+         this.f = f;
+      }
+
+      @Override
+      public String toString() {
+         return "MagicBox{" +
+               "s=" + s +
+               ", f=" + f +
+               '}';
+      }
+   }
+
    @Microservice
    public static class SumService {
 
       public long sum(short a, int b) {
          return a + b;
+      }
+
+      public String allTypes(final byte b, short s, int i, long l, float f, double d, boolean o, char c) {
+         return (b + s + i + l + f + d) + String.valueOf(o) + c;
+      }
+
+      public String allTypes2(Byte b, Short s, Integer i, Long l, Float f, Double d, Boolean o, Character c) {
+         return (b + s + i + l + f + d) + String.valueOf(o) + c;
+      }
+
+      public MagicBox doMagic(final MagicBox box) {
+         return box;
       }
    }
 

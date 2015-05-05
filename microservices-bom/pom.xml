@@ -22,6 +22,7 @@
       <version.undertow>1.2.0.Beta10</version.undertow>
       <version.jolokia>1.2.3</version.jolokia>
       <version.jackson>2.5.3</version.jackson>
+      <version.jsonio>3.0.2</version.jsonio>
       <java.level>1.8</java.level>
    </properties>
    <dependencyManagement>
@@ -153,6 +154,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>${version.jackson}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.cedarsoftware</groupId>
+            <artifactId>json-io</artifactId>
+            <version>${version.jsonio}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

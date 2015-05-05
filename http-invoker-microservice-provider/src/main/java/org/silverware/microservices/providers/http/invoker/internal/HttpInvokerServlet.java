@@ -19,7 +19,8 @@
  */
 package org.silverware.microservices.providers.http.invoker.internal;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.silver.cluster.Invocation;
@@ -37,7 +38,6 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class HttpInvokerServlet extends HttpServlet {
 
-   private ObjectMapper mapper = new ObjectMapper();
    private static Context context;
 
    public static void setContext(final Context ctx) {
@@ -53,13 +53,17 @@ public class HttpInvokerServlet extends HttpServlet {
    @Override
    protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
       if (req.getRequestURI().endsWith("query")) {
-         final MicroserviceMetaData metaData = mapper.readValue(req.getInputStream(), MicroserviceMetaData.class);
+         final JsonReader jsonReader = new JsonReader(req.getInputStream());
+         final MicroserviceMetaData metaData = (MicroserviceMetaData) jsonReader.readObject();
          final List<ServiceHandle> handles = context.assureHandles(metaData);
-         mapper.writeValue(resp.getWriter(), handles);
+         final JsonWriter jsonWriter = new JsonWriter(resp.getOutputStream());
+         jsonWriter.write(handles);
       } else if (req.getRequestURI().endsWith("invoke")) {
-         final Invocation invocation = mapper.readValue(req.getInputStream(), Invocation.class);
+         final JsonReader jsonReader = new JsonReader(req.getInputStream());
+         final Invocation invocation = (Invocation) jsonReader.readObject();
          try {
-            mapper.writeValue(resp.getWriter(), invocation.invoke(context));
+            final JsonWriter jsonWriter = new JsonWriter(resp.getOutputStream());
+            jsonWriter.write(invocation.invoke(context));
          } catch (Exception e) {
             throw new IOException(String.format("Unable to invoke Microservice using invocation %s: ", invocation.toString()), e);
          }

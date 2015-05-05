@@ -19,7 +19,6 @@
  */
 package org.silverware.microservices.silver.cluster;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.Context;
@@ -43,7 +42,7 @@ public class Invocation {
 
    private final Object[] params;
 
-   public Invocation(@JsonProperty("handle") final int handle, @JsonProperty("method") final String method, @JsonProperty("paramTypes") final Class[] paramTypes, @JsonProperty("params") final Object[] params) {
+   public Invocation(final int handle, final String method, final Class[] paramTypes, final Object[] params) {
       this.handle = handle;
       this.method = method;
       this.paramTypes = paramTypes;
@@ -122,27 +121,8 @@ public class Invocation {
          throw new SilverWareException(String.format("Handle no. %d. No such handle found.", getHandle()));
       }
 
-      final Object[] realParams = new Object[params.length];
-      for (int i = 0; i < realParams.length; i++) {
-         if (paramTypes[i].getName().equals("short")) {
-            realParams[i] = (short) ((Integer) params[i]).intValue();
-         } else if (paramTypes[i].getName().equals("long")) {
-            realParams[i] = (long) ((Integer) params[i]).longValue();
-         } else if (paramTypes[i].getName().equals("byte")) {
-            realParams[i] = (byte) ((Integer) params[i]).intValue();
-         } else if (paramTypes[i].getName().equals("float")) {
-            realParams[i] = (float) ((Double) params[i]).doubleValue();
-         } else if (paramTypes[i].getName().equals("int")) {
-            realParams[i] = (Integer) params[i];
-         } else if (paramTypes[i].getName().equals("double")) {
-            realParams[i] = (Double) params[i];
-         } else {
-            realParams[i] = paramTypes[i].cast(params[i]);
-         }
-      }
-
       final Method method = serviceHandle.getService().getClass().getDeclaredMethod(getMethod(), paramTypes);
-      return method.invoke(serviceHandle.getService(), realParams);
+      return method.invoke(serviceHandle.getService(), params);
    }
 
 

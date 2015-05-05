@@ -140,8 +140,4 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
       return null;
    }
 
-   @Override
-   public Object lookupLocalMicroservice(final MicroserviceMetaData metaData) {
-      return lookupMicroservice(metaData);
-   }
 }
