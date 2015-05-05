@@ -126,8 +126,16 @@ public class Invocation {
       for (int i = 0; i < realParams.length; i++) {
          if (paramTypes[i].getName().equals("short")) {
             realParams[i] = (short) ((Integer) params[i]).intValue();
+         } else if (paramTypes[i].getName().equals("long")) {
+            realParams[i] = (long) ((Integer) params[i]).longValue();
+         } else if (paramTypes[i].getName().equals("byte")) {
+            realParams[i] = (byte) ((Integer) params[i]).intValue();
+         } else if (paramTypes[i].getName().equals("float")) {
+            realParams[i] = (float) ((Double) params[i]).doubleValue();
          } else if (paramTypes[i].getName().equals("int")) {
             realParams[i] = (Integer) params[i];
+         } else if (paramTypes[i].getName().equals("double")) {
+            realParams[i] = (Double) params[i];
          } else {
             realParams[i] = paramTypes[i].cast(params[i]);
          }
