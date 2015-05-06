@@ -23,6 +23,7 @@ import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.MicroserviceMetaData;
+import org.silverware.microservices.silver.HttpInvokerSilverService;
 import org.silverware.microservices.silver.cluster.Invocation;
 import org.silverware.microservices.silver.cluster.ServiceHandle;
 
@@ -52,13 +53,13 @@ public class HttpInvokerServlet extends HttpServlet {
 
    @Override
    protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-      if (req.getRequestURI().endsWith("query")) {
+      if (req.getRequestURI().endsWith(HttpInvokerSilverService.QUERY_COMMAND)) {
          final JsonReader jsonReader = new JsonReader(req.getInputStream());
          final MicroserviceMetaData metaData = (MicroserviceMetaData) jsonReader.readObject();
          final List<ServiceHandle> handles = context.assureHandles(metaData);
          final JsonWriter jsonWriter = new JsonWriter(resp.getOutputStream());
          jsonWriter.write(handles);
-      } else if (req.getRequestURI().endsWith("invoke")) {
+      } else if (req.getRequestURI().endsWith(HttpInvokerSilverService.INVOKE_COMMAND)) {
          final JsonReader jsonReader = new JsonReader(req.getInputStream());
          final Invocation invocation = (Invocation) jsonReader.readObject();
          try {

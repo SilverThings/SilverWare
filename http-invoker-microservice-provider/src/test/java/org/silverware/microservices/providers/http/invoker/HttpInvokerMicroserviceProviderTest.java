@@ -73,6 +73,10 @@ public class HttpInvokerMicroserviceProviderTest {
 
       con.disconnect();
 
+      final ServiceHandle handle = handles.get(0);
+      long l = (Long) handle.invoke(bootUtil.getContext(), "sum", new Class[] { short.class, int.class }, new Object[] { (short) 3, 4 });
+      Assert.assertEquals(l, 7L);
+
       con = (HttpURLConnection) new URL(urlBase + "invoke").openConnection();
       con.setRequestMethod("POST");
       con.setDoInput(true);

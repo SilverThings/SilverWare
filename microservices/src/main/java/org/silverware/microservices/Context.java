@@ -22,6 +22,7 @@ package org.silverware.microservices;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.providers.MicroserviceProvider;
+import org.silverware.microservices.silver.HttpInvokerSilverService;
 import org.silverware.microservices.silver.HttpServerSilverService;
 import org.silverware.microservices.silver.ProvidingSilverService;
 import org.silverware.microservices.silver.SilverService;
@@ -108,7 +109,8 @@ public class Context {
       microservices.removeAll(haveHandles);
 
       microservices.forEach(microservice -> {
-         final ServiceHandle handle = new ServiceHandle((String) properties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS), metaData, microservice);
+         final String host = properties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" + properties.get(HttpServerSilverService.HTTP_SERVER_PORT);
+         final ServiceHandle handle = new ServiceHandle(host, metaData, microservice);
          result.add(handle);
          inboundHandles.add(handle);
       });

@@ -19,8 +19,6 @@
  */
 package org.silverware.microservices;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Set;
@@ -57,7 +55,7 @@ public class MicroserviceMetaData {
     * @param qualifiers
     *       The qualifiers of the discovered Microservice.
     */
-   public MicroserviceMetaData(@JsonProperty("name") final String name, @JsonProperty("type") final Class type, @JsonProperty("qualifiers") final Set<Annotation> qualifiers) {
+   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers) {
       this.name = name;
       this.type = type;
       this.qualifiers = qualifiers;

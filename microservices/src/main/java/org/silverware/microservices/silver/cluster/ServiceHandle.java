@@ -19,10 +19,15 @@
  */
 package org.silverware.microservices.silver.cluster;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
+import org.silverware.microservices.Context;
 import org.silverware.microservices.MicroserviceMetaData;
+import org.silverware.microservices.silver.HttpInvokerSilverService;
 
 import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -40,7 +45,7 @@ public class ServiceHandle implements Serializable {
 
    final private transient Object service;
 
-   public ServiceHandle(@JsonProperty("host") final String host, @JsonProperty("query") final MicroserviceMetaData query, @JsonProperty("service") final Object service) {
+   public ServiceHandle(final String host, final MicroserviceMetaData query, final Object service) {
       this.handle = handleSource.getAndIncrement();
       this.host = host;
       this.query = query;
@@ -104,5 +109,25 @@ public class ServiceHandle implements Serializable {
             ", query=" + query +
             ", service=" + service +
             '}';
+   }
+
+   public Object invoke(final Context context, final String method, final Class[] paramTypes, final Object[] params) throws Exception {
+      String urlBase = "http://" + host + "/" + context.getProperties().get(HttpInvokerSilverService.INVOKER_URL) + "/invoke";
+
+      HttpURLConnection con = (HttpURLConnection) new URL(urlBase).openConnection();
+      con.setRequestMethod("POST");
+      con.setDoInput(true);
+      con.setDoOutput(true);
+      con.connect();
+
+      Invocation invocation = new Invocation(handle, method, paramTypes, params);
+      JsonWriter jsonWriter = new JsonWriter(con.getOutputStream());
+      jsonWriter.write(invocation);
+      JsonReader jsonReader = new JsonReader(con.getInputStream());
+      Object response = jsonReader.readObject();
+
+      con.disconnect();
+
+      return response;
    }
 }

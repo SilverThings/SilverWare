@@ -26,4 +26,7 @@ public interface HttpInvokerSilverService extends SilverService {
 
    String INVOKER_URL = "silverware.http-invoker.url";
 
+   String INVOKE_COMMAND = "invoke";
+   String QUERY_COMMAND = "query";
+
 }
