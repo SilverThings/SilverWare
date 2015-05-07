@@ -31,6 +31,11 @@ import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * Holds a handle to a microservice implementation.
+ * Can keep a reference to real Microservice implementation in the case of a local Microservice,
+ * otherwise it holds a remote proxy.
+ * Can act as a Http Invoker client to invoke the remote Microservice.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public class ServiceHandle implements Serializable {

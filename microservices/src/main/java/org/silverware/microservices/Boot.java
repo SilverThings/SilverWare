@@ -32,6 +32,8 @@ import org.silverware.microservices.util.Utils;
 import java.util.Map;
 
 /**
+ * Main class to boot the Microservices platforms.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DM_EXIT", justification = "This class is allowed to terminate the JVM.")
@@ -41,6 +43,13 @@ public final class Boot {
 
    private static final String PROPERTY_LETTER = "D";
 
+   /**
+    * Starts the Microservices platform.
+    *
+    * Uses Executor Microservice Provider as a boot hook.
+    *
+    * @param args Any additional properties can be specified at the command line via -Dprop=value.
+    */
    public static void main(final String... args) {
       Thread.currentThread().setName("SilverWare-main");
 

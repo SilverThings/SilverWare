@@ -20,11 +20,21 @@
 package org.silverware.microservices.silver;
 
 /**
+ * Makes it possible for the platforms to discover each other in a cluster.
+ * Can lookup services on other instances. Kepps handles to remote services.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public interface ClusterSilverService extends SilverService {
 
+   /**
+    * Property with the cluster group name.
+    */
    String CLUSTER_GROUP = "silverware.cluster.group";
+
+   /**
+    * Property with the cluster configuration name.
+    */
    String CLUSTER_CONFIGURATION = "silverware.cluster.configuration";
 
 }

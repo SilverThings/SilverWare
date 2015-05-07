@@ -28,8 +28,21 @@ import org.silverware.microservices.MicroserviceMetaData;
  */
 public interface ProvidingSilverService extends SilverService {
 
+   /**
+    * Looks up all available Microservices supported by this provider.
+    *
+    * @param metaData Meta-data query.
+    * @return All available Microservices supported by this provider that meet the given query.
+    */
    Object lookupMicroservice(final MicroserviceMetaData metaData);
 
+   /**
+    * Looks up all local Microservices supported by this provider.
+    * By default it relies on {@link #lookupMicroservice(MicroserviceMetaData)}.
+    *
+    * @param metaData Meta-data query.
+    * @return All local Microservices supported by this provider that meet the given query.
+    */
    default Object lookupLocalMicroservice(final MicroserviceMetaData metaData) {
       return lookupMicroservice(metaData);
    }

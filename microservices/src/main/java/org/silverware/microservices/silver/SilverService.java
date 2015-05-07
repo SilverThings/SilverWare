@@ -22,9 +22,15 @@ package org.silverware.microservices.silver;
 import org.silverware.microservices.Context;
 
 /**
+ * A generic SilverService (Microservice provider) interface.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public interface SilverService {
 
+   /**
+    * Gets the current context this instance has been created with.
+    * @return The current context this instance has been created with.
+    */
    Context getContext();
 }

@@ -25,16 +25,34 @@ import org.silverware.microservices.Executor;
 import java.util.Arrays;
 
 /**
+ * Boots the Microservices platform. Intended to be used as a public API to initialize
+ * the platform from another code.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public class BootUtil {
 
+   /**
+    * Context of the current platform instance.
+    */
    private Context context = new Context();
 
+   /**
+    * Gets the Microservices platform and searches for providers in the given list of packages.
+    *
+    * @param packages A variable array of package names.
+    * @return A thread with the running platform.
+    */
    public Thread getMicroservicePlatform(final String... packages) {
       return getMicroservicePlatform(String.join(",", packages));
    }
 
+   /**
+    * Gets the Microservices platform and searches for providers in the given list of packages.
+    *
+    * @param packages A comma separated list of package names.
+    * @return A thread with the running platform.
+    */
    public Thread getMicroservicePlatform(final String packages) {
       Thread t = new Thread(() -> {
          context.getProperties().put(Context.DEPLOYMENT_PACKAGES, packages);
@@ -50,6 +68,11 @@ public class BootUtil {
       return t;
    }
 
+   /**
+    * Gets the context of the created platform.
+    *
+    * @return The context of the created platform.
+    */
    public Context getContext() {
       return context;
    }

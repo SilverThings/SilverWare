@@ -20,10 +20,19 @@
 package org.silverware.microservices.silver;
 
 /**
+ * CDI Microservices deployer.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public interface CdiSilverService extends ProvidingSilverService {
 
+   /**
+    * Context property where the bean manager is stored.
+    */
    String BEAN_MANAGER = "silverware.cdi.beanManager";
+
+   /**
+    * Context property where the CDI container is stored.
+    */
    String CDI_CONTAINER = "silverware.cdi.container";
 }

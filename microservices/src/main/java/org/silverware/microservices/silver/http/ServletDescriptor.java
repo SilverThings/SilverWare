@@ -22,13 +22,30 @@ package org.silverware.microservices.silver.http;
 import java.util.Properties;
 
 /**
+ * Describes a servlet deployment.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public class ServletDescriptor {
 
+   /**
+    * Name of the servlet.
+    */
    private final String name;
+
+   /**
+    * Servlet class.
+    */
    private final Class<?> servletClass;
+
+   /**
+    * Context path mapping of the servlet.
+    */
    private final String mapping;
+
+   /**
+    * Servlet's initial parameters.
+    */
    private final Properties properties;
 
    public ServletDescriptor(final String name, final Class<?> servletClass, final String mapping, final Properties properties) {

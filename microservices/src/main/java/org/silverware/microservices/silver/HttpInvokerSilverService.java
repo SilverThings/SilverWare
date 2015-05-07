@@ -20,13 +20,26 @@
 package org.silverware.microservices.silver;
 
 /**
+ * Makes it possible to invoke Microservices in the current platform instance remotely.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public interface HttpInvokerSilverService extends SilverService {
 
+   /**
+    * A property with the context path on which the invoker listens.
+    * See {@link HttpServerSilverService} to obtain the complete hostname and port.
+    */
    String INVOKER_URL = "silverware.http-invoker.url";
 
+   /**
+    * Context path extension to denote invocation of a service.
+    */
    String INVOKE_COMMAND = "invoke";
+
+   /**
+    * Context path extension to denote a query extension.
+    */
    String QUERY_COMMAND = "query";
 
 }

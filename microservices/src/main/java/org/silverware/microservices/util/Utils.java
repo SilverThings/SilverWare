@@ -29,14 +29,27 @@ import java.net.URL;
 import java.util.Scanner;
 
 /**
+ * Generic utilities.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public class Utils {
 
+   /**
+    * Logger.
+    */
    private static final Logger log = LogManager.getLogger(Utils.class);
 
+   /**
+    * Maximum number of attempts to wait for an URL to become available.
+    */
    private static final int MAX_HTTP_TRIES = 60;
 
+   /**
+    * Logs a shutdown message with the given exception.
+    * @param log A logger where to log the message to.
+    * @param ie An exception causing the shutdown.
+    */
    public static void shutdownLog(final Logger log, final InterruptedException ie) {
       log.info("Execution interrupted, exiting.");
       if (log.isTraceEnabled()) {
@@ -44,6 +57,13 @@ public class Utils {
       }
    }
 
+   /**
+    * Waits for the URL to become available.
+    * @param urlString The URL to check for.
+    * @param code The expected HTTP response code.
+    * @return Returns true if the URL was available, false otherwise.
+    * @throws Exception When it was not possible to check the URL.
+    */
    public static boolean waitForHttp(String urlString, int code) throws Exception {
       final URL url = new URL(urlString);
       int lastCode = -1;
@@ -70,6 +90,12 @@ public class Utils {
       return false;
    }
 
+   /**
+    * Completely reads the content of the given URL as a string.
+    * @param urlString The URL to read from.
+    * @return The content of the given URL.
+    * @throws IOException When it was not possible to read from the URL.
+    */
    public static String readFromUrl(String urlString) throws IOException {
       return new Scanner(new URL(urlString).openStream(), "UTF-8").useDelimiter("\\A").next();
    }

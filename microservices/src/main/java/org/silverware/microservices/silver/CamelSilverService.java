@@ -20,9 +20,14 @@
 package org.silverware.microservices.silver;
 
 /**
+ * Makes it possible to instantiate Camel routes automatically.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public interface CamelSilverService extends ProvidingSilverService {
 
+   /**
+    * Context property where the Camel context is stored.
+    */
    String CAMEL_CONTEXT = "silverware.camel.camelContext";
 }

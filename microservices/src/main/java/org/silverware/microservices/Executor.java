@@ -37,29 +37,77 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * The main Microservice provider that starts all other providers.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public class Executor implements MicroserviceProvider {
 
+   /**
+    * Logger.
+    */
    private static final Logger log = LogManager.getLogger(Executor.class);
 
+   /**
+    * Instances of all discovered Microservice providers.
+    */
    private final List<MicroserviceProvider> instances = new ArrayList<>();
+
+   /**
+    * Pool of threads - each of the providers runs the main code in its own thread.
+    */
    private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool(new DaemonThreadFactory());
+
+   /**
+    * Statistics about deployed providers.
+    */
    private final DeployStats stats = new DeployStats();
+
+   /**
+    * Context for this instance.
+    */
    private Context context = null;
 
+   /**
+    * A {@link ThreadFactory} to create daemon threads with a nice name and slightly higher priority.
+    */
    static class DaemonThreadFactory implements ThreadFactory {
+
+      /**
+       * Static counter of thread pools.
+       */
       private static final AtomicInteger poolNumber = new AtomicInteger(1);
+
+      /**
+       * Thread group of this factory.
+       */
       private final ThreadGroup group;
+
+      /**
+       * Counter of the threads in this pool.
+       */
       private final AtomicInteger threadNumber = new AtomicInteger(1);
+
+      /**
+       * Name prefix for the threads in this pool.
+       */
       private final String namePrefix;
 
+      /**
+       * Creates a new factory with a nice name perfix and group name.
+       */
       DaemonThreadFactory() {
          SecurityManager s = System.getSecurityManager();
          group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
          namePrefix = "SilverWare-" + poolNumber.getAndIncrement() + "-microservice-provider-";
       }
 
+      /**
+       * Creates new daemon thread with higher priority.
+       *
+       * @param r Runnable for which the thread should be created-
+       * @return The new thread.
+       */
       public Thread newThread(final Runnable r) {
          Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
          t.setDaemon(true);
@@ -68,11 +116,24 @@ public class Executor implements MicroserviceProvider {
       }
    }
 
+   /**
+    * The main entry point to the platform.
+    * This creates a default empty context.
+    *
+    * @throws InterruptedException If the main thread fails for any reason.
+    */
    public static void bootHook() throws InterruptedException {
       final Context context = new Context();
       bootHook(context);
    }
 
+   /**
+    * The main entry point to the platform.
+    * Uses an already created context.
+    *
+    * @param initialContext The context associated with this platform instance.
+    * @throws InterruptedException If the main thread fails for any reason.
+    */
    public static void bootHook(final Context initialContext) throws InterruptedException {
       final Executor executor = new Executor();
       executor.initialize(initialContext);
@@ -83,6 +144,12 @@ public class Executor implements MicroserviceProvider {
       bootThread.join();
    }
 
+   /**
+    * Creates instances of the Microservice provider classes using reflection.
+    * Also counts statistics of the created instances.
+    *
+    * @param microserviceProviders A set of Microservice provider classes to create their instances.
+    */
    private void createInstances(final Set<Class<? extends MicroserviceProvider>> microserviceProviders) {
       log.info(String.format("Found %d microservice providers. Starting...", microserviceProviders.size()));
       stats.setFound(microserviceProviders.size());
@@ -112,6 +179,9 @@ public class Executor implements MicroserviceProvider {
       }
    }
 
+   /**
+    * Starts the instances of prepared Microservice providers.
+    */
    private void startInstances() {
       log.info("Running microservice providers...");
 
@@ -134,6 +204,11 @@ public class Executor implements MicroserviceProvider {
       context.getProvidersRegistry().put(this.getClass().getName(), this);
    }
 
+   /**
+    * Searches for Microservice providers, creates their instances and starts them.
+    * Continues execution as long as there are any active providers.
+    */
+   @Override
    public void run() {
       log.info("Looking up microservice providers...");
 

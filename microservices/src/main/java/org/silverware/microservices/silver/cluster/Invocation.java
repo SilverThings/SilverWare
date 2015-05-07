@@ -28,6 +28,9 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
+ * Carries information needed to invoke a Microservice remotely.
+ * Can actually invoke the local Microservice based on the provided data
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public class Invocation {

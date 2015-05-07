@@ -40,28 +40,53 @@ import java.util.Set;
 import java.util.jar.JarFile;
 
 /**
+ * Scanner of classpath to search for given classes, interface implementations and others.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public class DeploymentScanner {
 
+   /**
+    * Logger.
+    */
    private static final Logger log = LogManager.getLogger(DeploymentScanner.class);
 
+   /**
+    * Default singleton instance.
+    */
    private static DeploymentScanner defaultScanner = null;
 
+   /**
+    * Main scanning utility.
+    */
    private final Reflections reflections;
 
+   /**
+    * Make it possible to search in WAR files when the platform is deployed in this packaging.
+    */
    static {
       Vfs.addDefaultURLTypes(new WarUrlType());
    }
 
+   /**
+    * Creates a default instance of the scanner that scans through the whole classpath.
+    */
    private DeploymentScanner() {
       reflections = new Reflections("");
    }
 
+   /**
+    * Creates an instance of the scanner that scans only in the given packages.
+    * @param packages Packages to limit scanning to.
+    */
    private DeploymentScanner(final String... packages) {
       reflections = new Reflections((Object[]) packages);
    }
 
+   /**
+    * Gets the static default instance of the scanner.
+    * @return The static default instance of the scanner.
+    */
    public static synchronized DeploymentScanner getDefaultInstance() {
       if (defaultScanner == null) {
          defaultScanner = new DeploymentScanner();
@@ -70,10 +95,21 @@ public class DeploymentScanner {
       return defaultScanner;
    }
 
+   /**
+    * Gets an instance of the scanner that is limited to the given packages.
+    * @param packages Packages to limit scanning to.
+    * @return An instance of the scanner that is limited to the given packages.
+    */
    public static DeploymentScanner getInstance(final String... packages) {
       return new DeploymentScanner(packages);
    }
 
+   /**
+    * Gets an instance of the scanner based on the information already stored in the provided
+    * {@link Context}.
+    * @param context A {@link Context} carrying the information needed to create the scanner.
+    * @return An instance of the scanner based on the information already stored in the provided
+    */
    public static DeploymentScanner getContextInstance(final Context context) {
       final String packages = (String) context.getProperties().get(Context.DEPLOYMENT_PACKAGES);
       if (packages != null) {
@@ -86,15 +122,34 @@ public class DeploymentScanner {
       }
    }
 
+   /**
+    * Searches for all available Microservice providers.
+    * @return All available Microservice provider classes.
+    */
    public Set<Class<? extends MicroserviceProvider>> lookupMicroserviceProviders() {
       return reflections.getSubTypesOf(MicroserviceProvider.class);
    }
 
+   /**
+    * Searches for all subtypes of the given class.
+    * @param clazz A class to search subtypes of.
+    * @return All available classes of the given subtype.
+    */
    @SuppressWarnings("unchecked")
    public Set lookupSubtypes(final Class clazz) {
       return reflections.getSubTypesOf(clazz);
    }
 
+   /**
+    * Creates instances of the given classes using default constructor.
+    * @param classes Classes to create instances of.
+    * @param <T> Common type of the classes.
+    * @return Instances of the given classes.
+    * @throws NoSuchMethodException When there was no default constructor.
+    * @throws IllegalAccessException When the default constructor is not visible.
+    * @throws InvocationTargetException When it was not possible to invoke the constructor.
+    * @throws InstantiationException When it was not possible to create an instance.
+    */
    public static <T> List<T> instantiate(final Set<Class<T>> classes) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
       final List<T> instances = new ArrayList<>();
 
@@ -114,6 +169,9 @@ public class DeploymentScanner {
       return instances;
    }
 
+   /**
+    * {@link org.reflections.vfs.Vfs.UrlType} for WAR files.
+    */
    public static class WarUrlType implements Vfs.UrlType {
 
       @Override

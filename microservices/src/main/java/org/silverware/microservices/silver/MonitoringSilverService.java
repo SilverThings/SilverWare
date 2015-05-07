@@ -20,10 +20,15 @@
 package org.silverware.microservices.silver;
 
 /**
+ * A provider that monitors Microservices.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public interface MonitoringSilverService extends SilverService {
 
+   /**
+    * Property with the URL location of the monitoring service.
+    */
    String MONITORING_URL = "silverware.monitoring.url";
 
 }

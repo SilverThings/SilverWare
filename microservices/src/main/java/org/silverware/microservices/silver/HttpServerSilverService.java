@@ -25,13 +25,35 @@ import org.silverware.microservices.silver.http.ServletDescriptor;
 import java.util.List;
 
 /**
+ * Provider of an HTTP Server.
+ * Typically needed by {@link MonitoringSilverService} and or
+ * {@link HttpInvokerSilverService}.
+ *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public interface HttpServerSilverService extends SilverService {
 
+   /**
+    * Context property holding an instance of the HTTP server.
+    */
    String HTTP_SERVER = "silverware.http.server";
+
+   /**
+    * Property with the port number on which the server listens.
+    */
    String HTTP_SERVER_PORT = "silverware.http.port";
+
+   /**
+    * Property with the hostname/IP address on which the server listens.
+    */
    String HTTP_SERVER_ADDRESS = "silverware.http.address";
 
+   /**
+    * Deploys a servlet on the HTTP server.
+    * @param contextPath Context path where the servlet should be bound.
+    * @param deploymentName Name of the deployment.
+    * @param servletDescriptors A list of descriptions of the servlet(s).
+    * @throws SilverWareException When it was not possible to deploy the servlet(s).
+    */
    void deployServlet(final String contextPath, final String deploymentName, final List<ServletDescriptor> servletDescriptors) throws SilverWareException;
 }
