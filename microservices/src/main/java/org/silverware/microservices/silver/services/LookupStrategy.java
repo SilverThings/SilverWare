@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class LookupStrategy {
+public interface LookupStrategy {
 
    void initialize(final Context context, final MicroserviceMetaData metaData, final Set<Annotation> options);
 
