@@ -119,13 +119,14 @@ public class MicroservicesCDIExtension implements Extension {
       // Create proxies for the corresponding injection points
       final Set<InjectionPoint> injectionPoints = bean.getInjectionPoints();
       for (InjectionPoint injectionPoint : injectionPoints) {
+         final Set<Annotation> annotations = injectionPoint.getAnnotated().getAnnotations();
          injectionPoint.getQualifiers().stream().filter(qualifier -> MicroserviceReference.class.isAssignableFrom(qualifier.annotationType())).forEach(qualifier -> {
             final Member member = injectionPoint.getMember();
             if (member instanceof Field) {
                if (log.isTraceEnabled()) {
                   log.trace("Creating proxy bean for injection point: " + injectionPoint.toString());
                }
-               addInjectableClientProxyBean((Field) member, (MicroserviceReference) qualifier, preProcessQualifiers(injectionPoint.getQualifiers()), beanManager);
+               addInjectableClientProxyBean((Field) member, (MicroserviceReference) qualifier, preProcessQualifiers(injectionPoint.getQualifiers()), annotations, beanManager);
                injectionPointsCount = injectionPointsCount + 1;
             }
          });
@@ -173,7 +174,7 @@ public class MicroservicesCDIExtension implements Extension {
       }
    }
 
-   private void addInjectableClientProxyBean(final Field injectionPointField, final MicroserviceReference microserviceReference, final Set<Annotation> qualifiers, final BeanManager beanManager) {
+   private void addInjectableClientProxyBean(final Field injectionPointField, final MicroserviceReference microserviceReference, final Set<Annotation> qualifiers, final Set<Annotation> annotations, final BeanManager beanManager) {
       final String serviceName;
 
       // first try to use a user defined service name
@@ -188,10 +189,10 @@ public class MicroservicesCDIExtension implements Extension {
          //}
       }
 
-      addClientProxyBean(serviceName, injectionPointField.getType(), qualifiers);
+      addClientProxyBean(serviceName, injectionPointField.getType(), qualifiers, annotations);
    }
 
-   private void addClientProxyBean(final String microserviceName, final Class<?> beanClass, final Set<Annotation> qualifiers) {
+   private void addClientProxyBean(final String microserviceName, final Class<?> beanClass, final Set<Annotation> qualifiers, final Set<Annotation> annotations) {
       // Do we already have a proxy with this service name and type?
       for (MicroserviceProxyBean microserviceProxyBean : microserviceProxyBeans) {
          if (microserviceName.equals(microserviceProxyBean.getMicroserviceName()) && beanClass == microserviceProxyBean.getBeanClass()) {
@@ -208,7 +209,7 @@ public class MicroservicesCDIExtension implements Extension {
       }
 
       // No, we don't. Give us one please!
-      final MicroserviceProxyBean microserviceProxyBean = new MicroserviceProxyBean(microserviceName, beanClass, qualifiers, context);
+      final MicroserviceProxyBean microserviceProxyBean = new MicroserviceProxyBean(microserviceName, beanClass, qualifiers, annotations, context);
       microserviceProxyBeans.add(microserviceProxyBean);
    }
 

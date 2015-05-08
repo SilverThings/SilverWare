@@ -28,11 +28,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.util.AnnotationLiteral;
 
 /**
  * Client Proxy CDI Bean.
@@ -61,9 +58,14 @@ public class MicroserviceProxyBean implements Bean {
    private final Class<?> serviceInterface;
 
    /**
-    * CDI bean qualifiers.  See CDI Specification.
+    * CDI bean qualifiers. See CDI Specification.
     */
    private final Set<Annotation> qualifiers;
+
+   /**
+    * CDI bean annotations. Can specify invocation strategy, results caching etc.
+    */
+   private final Set<Annotation> annotations;
 
    /**
     * The dynamic proxy bean instance created from the supplied {@link #serviceInterface}.
@@ -82,12 +84,13 @@ public class MicroserviceProxyBean implements Bean {
     * @param beanDeploymentMetaData
     *       Deployment metadata.
     */
-   public MicroserviceProxyBean(String microserviceName, Class<?> proxyInterface, Set<Annotation> qualifiers, final Context context) {
+   public MicroserviceProxyBean(final String microserviceName, final Class<?> proxyInterface, final Set<Annotation> qualifiers, final Set<Annotation> annotations, final Context context) {
       this.microserviceName = microserviceName;
       this.serviceInterface = proxyInterface;
       this.context = context;
 
       this.qualifiers = new HashSet<>(qualifiers);
+      this.annotations = annotations;
 
       proxyBean = MicroserviceProxy.getProxy(this);
    }
@@ -127,6 +130,10 @@ public class MicroserviceProxyBean implements Bean {
    @Override
    public Set<Annotation> getQualifiers() {
       return qualifiers;
+   }
+
+   public Set<Annotation> getAnnotations() {
+      return annotations;
    }
 
    @Override
