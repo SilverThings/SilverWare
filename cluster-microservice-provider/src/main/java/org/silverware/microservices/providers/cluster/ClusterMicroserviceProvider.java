@@ -26,9 +26,17 @@ import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.silverware.microservices.Context;
+import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.ClusterSilverService;
+import org.silverware.microservices.silver.cluster.ServiceHandle;
 import org.silverware.microservices.util.Utils;
+
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -40,6 +48,8 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
    private Context context;
    private JChannel channel;
    private ChannelReceiver receiver;
+   private Map<MicroserviceMetaData, Set<ServiceHandle>> outboundHandles = new ConcurrentHashMap<>();
+   private Queue<MicroserviceMetaData> toLookup = new ConcurrentLinkedQueue<>();
 
    @Override
    public void initialize(final Context context) {
@@ -80,6 +90,16 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
       } catch (Exception e) {
          log.error("Cluster microservice provider failed: ", e);
       }
+   }
+
+   @Override
+   public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
+      return null;
+   }
+
+   @Override
+   public Set<Object> lookupLocalMicroservice(final MicroserviceMetaData metaData) {
+      return null;
    }
 
    private static class ChannelReceiver extends ReceiverAdapter {

@@ -21,6 +21,8 @@ package org.silverware.microservices.silver;
 
 import org.silverware.microservices.MicroserviceMetaData;
 
+import java.util.Set;
+
 /**
  * SilverService that is able to provide Microservices.
  *
@@ -34,7 +36,7 @@ public interface ProvidingSilverService extends SilverService {
     * @param metaData Meta-data query.
     * @return All available Microservices supported by this provider that meet the given query.
     */
-   Object lookupMicroservice(final MicroserviceMetaData metaData);
+   Set<Object> lookupMicroservice(final MicroserviceMetaData metaData);
 
    /**
     * Looks up all local Microservices supported by this provider.
@@ -43,7 +45,7 @@ public interface ProvidingSilverService extends SilverService {
     * @param metaData Meta-data query.
     * @return All local Microservices supported by this provider that meet the given query.
     */
-   default Object lookupLocalMicroservice(final MicroserviceMetaData metaData) {
+   default Set<Object> lookupLocalMicroservice(final MicroserviceMetaData metaData) {
       return lookupMicroservice(metaData);
    }
 }

@@ -25,7 +25,7 @@ package org.silverware.microservices.silver;
  *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public interface ClusterSilverService extends SilverService {
+public interface ClusterSilverService extends ProvidingSilverService {
 
    /**
     * Property with the cluster group name.

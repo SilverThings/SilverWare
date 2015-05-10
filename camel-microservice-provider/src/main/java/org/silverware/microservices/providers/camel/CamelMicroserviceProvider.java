@@ -37,6 +37,8 @@ import org.silverware.microservices.util.Utils;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -130,14 +132,14 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
    }
 
    @Override
-   public Object lookupMicroservice(final MicroserviceMetaData metaData) {
+   public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
       if (Route.class.isAssignableFrom(metaData.getType())) {
-         return camelContext.getRoute(metaData.getName());
+         return Collections.singleton(camelContext.getRoute(metaData.getName()));
       } else if (Endpoint.class.isAssignableFrom(metaData.getType())) {
-         return camelContext.getEndpoint(metaData.getName());
+         return Collections.singleton(camelContext.getEndpoint(metaData.getName()));
       }
 
-      return null;
+      return new HashSet<>();
    }
 
 }

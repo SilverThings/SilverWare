@@ -103,7 +103,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   public Object lookupMicroservice(final MicroserviceMetaData microserviceMetaData) {
+   public Set<Object> lookupMicroservice(final MicroserviceMetaData microserviceMetaData) {
       final String name = microserviceMetaData.getName();
       final Class<?> type = microserviceMetaData.getType();
       final Set<Annotation> qualifiers = microserviceMetaData.getQualifiers();
@@ -121,10 +121,10 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
             // or third, the annotation has a name defined and we asked for it
             if (name == null || (microserviceAnnotation.value().isEmpty() && name.equals(theBean.getName())) ||
                   (!microserviceAnnotation.value().isEmpty() && name.equals(microserviceAnnotation.value()))) {
-               return beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean));
+               return Collections.singleton(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
             } else if (type.isInterface() && !name.equals(theBean.getName())) {
                if (qualifiers.stream().filter(q -> q.annotationType().getName().equals("Default")).count() == 0) { // we have a qualifier match
-                  return beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean));
+                  return Collections.singleton(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
                }
             }
          }
@@ -134,7 +134,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
    }
 
    @Override
-   public Object lookupLocalMicroservice(final MicroserviceMetaData metaData) {
+   public Set<Object> lookupLocalMicroservice(final MicroserviceMetaData metaData) {
       return lookupMicroservice(metaData);
    }
 
