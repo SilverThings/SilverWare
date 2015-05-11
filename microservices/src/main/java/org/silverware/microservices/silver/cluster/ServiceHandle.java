@@ -57,6 +57,10 @@ public class ServiceHandle implements Serializable {
       this.service = service;
    }
 
+   public ServiceHandle withProxy(final Object proxy) {
+      return new ServiceHandle(host, query, proxy);
+   }
+
    public int getHandle() {
       return handle;
    }

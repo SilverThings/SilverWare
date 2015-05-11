@@ -32,11 +32,13 @@ import org.silverware.microservices.silver.ClusterSilverService;
 import org.silverware.microservices.silver.cluster.ServiceHandle;
 import org.silverware.microservices.util.Utils;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
@@ -80,7 +82,15 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
 
          try {
             while (!Thread.currentThread().isInterrupted()) {
-               Thread.sleep(1000);
+               MicroserviceMetaData metaData = toLookup.poll();
+               if (metaData != null) {
+                  channel.getView().forEach(address -> {
+                     //address.toString()
+                     // todo lookup
+                  });
+               } else {
+                  Thread.sleep(100);
+               }
             }
          } catch (InterruptedException ie) {
             Utils.shutdownLog(log, ie);
@@ -94,12 +104,13 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
 
    @Override
    public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
-      return null;
+      toLookup.add(metaData);
+      return outboundHandles.get(metaData).stream().map(ServiceHandle::getService).collect(Collectors.toSet());
    }
 
    @Override
    public Set<Object> lookupLocalMicroservice(final MicroserviceMetaData metaData) {
-      return null;
+      return new HashSet<>();
    }
 
    private static class ChannelReceiver extends ReceiverAdapter {
