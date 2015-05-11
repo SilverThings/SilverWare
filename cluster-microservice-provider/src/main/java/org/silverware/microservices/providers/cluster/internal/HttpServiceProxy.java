@@ -17,7 +17,7 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package org.silverware.microservices.providers.http.invoker.internal;
+package org.silverware.microservices.providers.cluster.internal;
 
 import org.silverware.microservices.Context;
 import org.silverware.microservices.silver.cluster.ServiceHandle;

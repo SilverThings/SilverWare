@@ -28,11 +28,13 @@ import org.jgroups.View;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.providers.MicroserviceProvider;
+import org.silverware.microservices.providers.cluster.internal.HttpServiceProxy;
 import org.silverware.microservices.silver.ClusterSilverService;
 import org.silverware.microservices.silver.cluster.ServiceHandle;
 import org.silverware.microservices.util.Utils;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -85,8 +87,18 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
                MicroserviceMetaData metaData = toLookup.poll();
                if (metaData != null) {
                   channel.getView().forEach(address -> {
-                     //address.toString()
-                     // todo lookup
+                     try {
+                        List<ServiceHandle> handles = metaData.query(context, address.toString());
+                        Set<ServiceHandle> localHandles = handles.stream().map(serviceHandle -> serviceHandle.withProxy(HttpServiceProxy.getProxy(context, serviceHandle))).collect(Collectors.toSet());
+
+                        if (outboundHandles.containsKey(metaData)) {
+                           outboundHandles.get(metaData).addAll(localHandles);
+                        } else {
+                           outboundHandles.put(metaData, localHandles);
+                        }
+                     } catch (Exception e) {
+                        log.info(String.format("Unable to lookup Microservice %s at host %s:", metaData.toString(), address.toString()), e);
+                     }
                   });
                } else {
                   Thread.sleep(100);
@@ -113,7 +125,7 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
       return new HashSet<>();
    }
 
-   private static class ChannelReceiver extends ReceiverAdapter {
+   private class ChannelReceiver extends ReceiverAdapter {
       @Override
       public void receive(final Message msg) {
          log.info("Received message " + msg);
@@ -121,6 +133,19 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
 
       @Override
       public void viewAccepted(final View view) {
+         Set<String> availableNodes = new HashSet<>();
+         view.forEach(address -> availableNodes.add(address.toString()));
+
+         outboundHandles.forEach((metaData, serviceHandles) -> {
+            Set<ServiceHandle> toBeRemoved = new HashSet<>();
+
+            toBeRemoved.addAll(
+                  serviceHandles.stream().filter(serviceHandle ->
+                     availableNodes.contains(serviceHandle.getHost())
+                  ).collect(Collectors.toSet()));
+            serviceHandles.removeAll(toBeRemoved);
+         });
+
          log.info("View accepted " + view);
       }
    }

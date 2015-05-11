@@ -19,8 +19,17 @@
  */
 package org.silverware.microservices;
 
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
+import org.silverware.microservices.silver.HttpInvokerSilverService;
+import org.silverware.microservices.silver.cluster.Invocation;
+import org.silverware.microservices.silver.cluster.ServiceHandle;
+
 import java.lang.annotation.Annotation;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -127,5 +136,25 @@ public class MicroserviceMetaData {
    @Override
    public String toString() {
       return "microservice " + name + " of type " + type.getCanonicalName() + " with qualifiers " + Arrays.toString(qualifiers.toArray());
+   }
+
+   @SuppressWarnings("unchecked")
+   public List<ServiceHandle> query(final Context context, final String host) throws Exception {
+      String urlBase = "http://" + host + "/" + context.getProperties().get(HttpInvokerSilverService.INVOKER_URL) + "/query";
+
+      HttpURLConnection con = (HttpURLConnection) new URL(urlBase).openConnection();
+      con.setRequestMethod("POST");
+      con.setDoInput(true);
+      con.setDoOutput(true);
+      con.connect();
+
+      JsonWriter jsonWriter = new JsonWriter(con.getOutputStream());
+      jsonWriter.write(this);
+      JsonReader jsonReader = new JsonReader(con.getInputStream());
+      List<ServiceHandle> response = (List<ServiceHandle>) jsonReader.readObject();
+
+      con.disconnect();
+
+      return response;
    }
 }
