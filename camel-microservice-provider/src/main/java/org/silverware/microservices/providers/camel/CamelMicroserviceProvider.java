@@ -20,10 +20,16 @@
 package org.silverware.microservices.providers.camel;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Component;
+import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Endpoint;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.Route;
+import org.apache.camel.TypeConverter;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.properties.PropertiesComponent;
+import org.apache.camel.component.properties.PropertiesParser;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -137,6 +143,14 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
          return Collections.singleton(camelContext.getRoute(metaData.getName()));
       } else if (Endpoint.class.isAssignableFrom(metaData.getType())) {
          return Collections.singleton(camelContext.getEndpoint(metaData.getName()));
+      } else if (TypeConverter.class.isAssignableFrom(metaData.getType())) {
+         return Collections.singleton(camelContext.getTypeConverter());
+      } else if (Component.class.isAssignableFrom(metaData.getType())) {
+         return Collections.singleton(camelContext.getComponent(metaData.getName()));
+      } else if (ConsumerTemplate.class.isAssignableFrom(metaData.getType())) {
+         return Collections.singleton(camelContext.createConsumerTemplate());
+      } else if (ProducerTemplate.class.isAssignableFrom(metaData.getType())) {
+         return Collections.singleton(camelContext.createProducerTemplate());
       }
 
       return new HashSet<>();
