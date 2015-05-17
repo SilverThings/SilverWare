@@ -22,6 +22,7 @@ package org.silverware.microservices;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.providers.MicroserviceProvider;
+import org.silverware.microservices.silver.ProvidingSilverService;
 import org.silverware.microservices.util.DeployStats;
 import org.silverware.microservices.util.DeploymentScanner;
 import org.silverware.microservices.util.Utils;
@@ -35,13 +36,14 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * The main Microservice provider that starts all other providers.
  *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class Executor implements MicroserviceProvider {
+public class Executor implements MicroserviceProvider, ProvidingSilverService {
 
    /**
     * Logger.
@@ -230,5 +232,16 @@ public class Executor implements MicroserviceProvider {
       } catch (InterruptedException ie) {
          Utils.shutdownLog(log, ie);
       }
+   }
+
+   @Override
+   @SuppressWarnings("unchecked")
+   public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
+      return context.getAllProviders(metaData.getType()).stream().map(provider -> (Object) provider).collect(Collectors.toSet());
+   }
+
+   @Override
+   public Context getContext() {
+      return context;
    }
 }
