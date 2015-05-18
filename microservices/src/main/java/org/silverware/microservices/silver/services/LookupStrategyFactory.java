@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.MicroserviceMetaData;
 import org.silverware.microservices.annotations.InvocationPolicy;
+import org.silverware.microservices.silver.services.lookup.LocalLookupStrategy;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -56,6 +57,11 @@ public class LookupStrategyFactory {
                log.warn(String.format("Could not instantiate lookup strategy class %s:", clazz.getName()), e);
             }
          }
+      }
+
+      if (strategy == null) {
+         strategy = new LocalLookupStrategy();
+         strategy.initialize(context, metaData, options);
       }
 
       return strategy;
