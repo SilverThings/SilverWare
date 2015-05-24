@@ -94,11 +94,8 @@ public class ServiceHandle implements Serializable {
       if (host != null ? !host.equals(that.host) : that.host != null) {
          return false;
       }
-      if (!query.equals(that.query)) {
-         return false;
-      }
-      return !(service != null ? !service.equals(that.service) : that.service != null);
 
+      return query.equals(that.query);
    }
 
    @Override
@@ -106,7 +103,6 @@ public class ServiceHandle implements Serializable {
       int result = handle;
       result = 31 * result + (host != null ? host.hashCode() : 0);
       result = 31 * result + query.hashCode();
-      result = 31 * result + (service != null ? service.hashCode() : 0);
       return result;
    }
 

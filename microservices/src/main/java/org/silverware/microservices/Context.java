@@ -134,9 +134,11 @@ public class Context {
     * @return A set of Microservices instances that meets the query.
     */
    public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
-      return getAllProviders(ProvidingSilverService.class).stream()
-            .map(providingSilverService -> ((ProvidingSilverService) providingSilverService).lookupMicroservice(metaData))
-            .collect(Collectors.toSet());
+      final Set<Object> microservices = new HashSet<>();
+      getAllProviders(ProvidingSilverService.class).forEach(provider ->
+            microservices.addAll(((ProvidingSilverService) provider).lookupMicroservice(metaData)));
+
+      return microservices;
    }
 
    /**
@@ -146,9 +148,11 @@ public class Context {
     * @return A set of Microservices instances that meets the query.
     */
    public Set<Object> lookupLocalMicroservice(final MicroserviceMetaData metaData) {
-      return getAllProviders(ProvidingSilverService.class).stream()
-            .map(providingSilverService -> ((ProvidingSilverService) providingSilverService).lookupLocalMicroservice(metaData))
-            .collect(Collectors.toSet());
+      final Set<Object> microservices = new HashSet<>();
+      getAllProviders(ProvidingSilverService.class).forEach(provider ->
+            microservices.addAll(((ProvidingSilverService) provider).lookupLocalMicroservice(metaData)));
+
+      return microservices;
    }
 
    /**

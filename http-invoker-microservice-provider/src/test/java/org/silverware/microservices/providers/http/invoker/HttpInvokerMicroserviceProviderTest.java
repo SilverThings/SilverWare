@@ -147,12 +147,11 @@ public class HttpInvokerMicroserviceProviderTest {
       jsonReader = new JsonReader(con.getInputStream());
       response = jsonReader.readObject();
 
-      //Assert.assertEquals(response, "9.223372036854776E18truec");
-      System.out.println(response);
+      Assert.assertTrue(response instanceof MagicBox);
+      Assert.assertEquals((short) ((MagicBox) response).getS(), Short.MAX_VALUE);
+      Assert.assertEquals((float) ((MagicBox) response).getF(), Float.MAX_VALUE);
 
       con.disconnect();
-
-      Thread.sleep(10000);
 
       platform.interrupt();
       platform.join();

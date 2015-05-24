@@ -29,6 +29,7 @@ import org.silverware.microservices.util.Utils;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -237,7 +238,9 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
    @Override
    @SuppressWarnings("unchecked")
    public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
-      return context.getAllProviders(metaData.getType()).stream().map(provider -> (Object) provider).collect(Collectors.toSet());
+      Set<Object> providers = new HashSet<>();
+      context.getAllProviders(metaData.getType()).forEach(providers::add);
+      return providers;
    }
 
    @Override
