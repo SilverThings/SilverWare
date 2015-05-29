@@ -21,9 +21,20 @@ package org.silverware.microservices.providers.cluster;
 
 import static org.testng.Assert.*;
 
+import org.silverware.microservices.silver.HttpServerSilverService;
+
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class ClusterMicroserviceProviderTest {
+
+   @Test
+   public void testHttpInvoker() throws Exception {
+      System.getProperties().setProperty(HttpServerSilverService.HTTP_SERVER_ADDRESS, "1.2.3.4");
+      final BootUtil bootUtil = new BootUtil();
+      final Map<String, Object> platformProperties = bootUtil.getContext().getProperties();
+      final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName(), HttpServerMicroserviceProvider.class.getPackage().getName(), HttpInvokerMicroserviceProvider.class.getPackage().getName(), CdiMicroserviceProvider.class.getPackage().getName());
+      platform.start();
+   }
 
 }

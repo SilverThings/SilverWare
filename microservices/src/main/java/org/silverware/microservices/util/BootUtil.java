@@ -22,8 +22,6 @@ package org.silverware.microservices.util;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.Executor;
 
-import java.util.Arrays;
-
 /**
  * Boots the Microservices platform. Intended to be used as a public API to initialize
  * the platform from another code.
