@@ -26,6 +26,23 @@
          <groupId>org.jboss.logging</groupId>
          <artifactId>jboss-logging</artifactId>
       </dependency-->
+
+      <!-- Testing -->
+      <dependency>
+         <groupId>org.silverware</groupId>
+         <artifactId>cdi-microservice-provider</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.silverware</groupId>
+         <artifactId>http-invoker-microservice-provider</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.silverware</groupId>
+         <artifactId>http-server-microservice-provider</artifactId>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
    <build>
    </build>
