@@ -21,7 +21,14 @@ package org.silverware.microservices.providers.cluster;
 
 import static org.testng.Assert.*;
 
+import org.junit.Test;
+import org.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
+import org.silverware.microservices.providers.http.HttpServerMicroserviceProvider;
+import org.silverware.microservices.providers.http.invoker.HttpInvokerMicroserviceProvider;
 import org.silverware.microservices.silver.HttpServerSilverService;
+import org.silverware.microservices.util.BootUtil;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>

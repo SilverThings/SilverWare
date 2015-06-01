@@ -29,7 +29,22 @@
       <dependencies>
          <dependency>
             <groupId>org.silverware</groupId>
+            <artifactId>cdi-microservice-provider</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.silverware</groupId>
             <artifactId>microservices</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.silverware</groupId>
+            <artifactId>http-invoker-microservice-provider</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.silverware</groupId>
+            <artifactId>http-server-microservice-provider</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
