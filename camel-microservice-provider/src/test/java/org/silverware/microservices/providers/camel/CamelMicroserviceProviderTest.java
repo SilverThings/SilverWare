@@ -25,6 +25,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.silverware.microservices.util.BootUtil;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -36,6 +37,8 @@ import java.util.concurrent.TimeUnit;
  * @author Martin Večeřa <marvenec@gmail.com>
  */
 public class CamelMicroserviceProviderTest {
+
+   static CamelContext camelContext = new DefaultCamelContext();
 
    private static final Semaphore semaphore = new Semaphore(0);
 
@@ -70,6 +73,21 @@ public class CamelMicroserviceProviderTest {
       platform.join();
    }
 
+   @Test
+   public void shouldCreateCamelContextUsingTheFactory() throws Exception {
+      final BootUtil bootUtil = new BootUtil();
+      final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName());
+      platform.start();
+
+      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for the camel route deployment."); // wait for the route to be deployed
+
+      CamelContext context = (CamelContext) bootUtil.getContext().getProperties().get(CamelMicroserviceProvider.CAMEL_CONTEXT);
+      Assert.assertSame(context, camelContext);
+
+      platform.interrupt();
+      platform.join();
+   }
+
    public static class CamelRoute extends RouteBuilder {
 
       @Override
@@ -79,4 +97,14 @@ public class CamelMicroserviceProviderTest {
          semaphore.release();
       }
    }
+
+   public static class TestCamelContextFactory implements CamelContextFactory {
+
+      @Override
+      public CamelContext createCamelContext() {
+         return camelContext;
+      }
+
+   }
+
 }

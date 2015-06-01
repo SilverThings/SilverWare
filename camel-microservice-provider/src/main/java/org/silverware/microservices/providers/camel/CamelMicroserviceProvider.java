@@ -56,17 +56,33 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
    private static final Logger log = LogManager.getLogger(CamelMicroserviceProvider.class);
 
    private Context context;
-   private final CamelContext camelContext = new DefaultCamelContext();
+   private CamelContext camelContext;
    private final List<RouteBuilder> routes = new ArrayList<>();
    private final DeployStats stats = new DeployStats();
-
    @Override
    public void initialize(final Context context) {
       this.context = context;
+      DeploymentScanner deploymentScanner = DeploymentScanner.getContextInstance(context);
+
+      @SuppressWarnings("unchecked")
+      Set<Class<CamelContextFactory>> camelContextFactories = deploymentScanner.lookupSubtypes(CamelContextFactory.class);
+      if(camelContextFactories.size() > 2) {
+         throw new IllegalStateException("More than one CamelContextFactories found.");
+      } else if(camelContextFactories.size() == 1) {
+         try {
+            CamelContextFactory camelContextFactory = camelContextFactories.iterator().next().newInstance();
+            camelContext = camelContextFactory.createCamelContext();
+         } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+         }
+      } else {
+         camelContext = new DefaultCamelContext();
+      }
+
       context.getProperties().put(CAMEL_CONTEXT, camelContext);
 
       @SuppressWarnings("unchecked")
-      final Set<Class<RouteBuilder>> routeBuilders = (Set<Class<RouteBuilder>>) DeploymentScanner.getContextInstance(context).lookupSubtypes(RouteBuilder.class);
+      final Set<Class<RouteBuilder>> routeBuilders = (Set<Class<RouteBuilder>>) deploymentScanner.lookupSubtypes(RouteBuilder.class);
       if (log.isDebugEnabled()) {
          log.debug("Initializing Camel routes...");
       }
