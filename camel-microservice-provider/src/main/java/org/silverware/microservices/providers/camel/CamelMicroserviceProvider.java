@@ -28,13 +28,14 @@ import org.apache.camel.Route;
 import org.apache.camel.TypeConverter;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.properties.PropertiesComponent;
-import org.apache.camel.component.properties.PropertiesParser;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.model.ModelCamelContext;
+import org.apache.camel.model.RoutesDefinition;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.silverware.microservices.Context;
 import org.silverware.microservices.MicroserviceMetaData;
+import org.silverware.microservices.SilverWareException;
 import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.CamelSilverService;
 import org.silverware.microservices.util.DeployStats;
@@ -58,16 +59,15 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
    private Context context;
    private CamelContext camelContext;
    private final List<RouteBuilder> routes = new ArrayList<>();
+   private Set<String> routeResources;
    private final DeployStats stats = new DeployStats();
-   @Override
-   public void initialize(final Context context) {
-      this.context = context;
-      DeploymentScanner deploymentScanner = DeploymentScanner.getContextInstance(context);
 
+   private void createCamelContext() throws SilverWareException {
       @SuppressWarnings("unchecked")
-      Set<Class<CamelContextFactory>> camelContextFactories = deploymentScanner.lookupSubtypes(CamelContextFactory.class);
+      Set<Class<CamelContextFactory>> camelContextFactories = DeploymentScanner.getContextInstance(context).lookupSubtypes(CamelContextFactory.class);
+
       if(camelContextFactories.size() > 2) {
-         throw new IllegalStateException("More than one CamelContextFactories found.");
+         throw new SilverWareException("More than one CamelContextFactories found.");
       } else if(camelContextFactories.size() == 1) {
          try {
             CamelContextFactory camelContextFactory = camelContextFactories.iterator().next().newInstance();
@@ -80,9 +80,11 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
       }
 
       context.getProperties().put(CAMEL_CONTEXT, camelContext);
+   }
 
+   private void loadRoutesFromClasses() {
       @SuppressWarnings("unchecked")
-      final Set<Class<RouteBuilder>> routeBuilders = (Set<Class<RouteBuilder>>) deploymentScanner.lookupSubtypes(RouteBuilder.class);
+      final Set<Class<RouteBuilder>> routeBuilders = (Set<Class<RouteBuilder>>) DeploymentScanner.getContextInstance(context).lookupSubtypes(RouteBuilder.class);
       if (log.isDebugEnabled()) {
          log.debug("Initializing Camel routes...");
       }
@@ -111,6 +113,18 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
       }
    }
 
+   private void loadRoutesFromXml() {
+      routeResources = DeploymentScanner.getContextInstance(context).lookupResources("camel/*.xml");
+   }
+
+   @Override
+   public void initialize(final Context context) {
+      this.context = context;
+
+      loadRoutesFromClasses();
+      loadRoutesFromXml();
+   }
+
    @Override
    public Context getContext() {
       return context;
@@ -122,6 +136,8 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
          try {
             log.info("Hello from Camel microservice provider!");
 
+            createCamelContext();
+
             for (final RouteBuilder builder : routes) {
                try {
                   camelContext.addRoutes(builder);
@@ -129,6 +145,16 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
                } catch (Exception e) {
                   log.warn("Unable to start Camel route " + builder.getClass().getName(), e);
                   stats.incSkipped();
+               }
+            }
+
+            final ModelCamelContext model = (ModelCamelContext) camelContext;
+            for (final String routeResource : routeResources) {
+               try {
+                  final RoutesDefinition definition = model.loadRoutesDefinition(this.getClass().getResourceAsStream(routeResource));
+                  model.addRouteDefinitions(definition.getRoutes());
+               } catch (Exception e) {
+                  log.warn(String.format("Cannot initialize routes in %s: ", routeResource), e);
                }
             }
 

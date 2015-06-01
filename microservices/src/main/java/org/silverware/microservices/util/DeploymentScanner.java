@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 /**
  * Scanner of classpath to search for given classes, interface implementations and others.
@@ -138,6 +139,16 @@ public class DeploymentScanner {
    @SuppressWarnings("unchecked")
    public Set lookupSubtypes(final Class clazz) {
       return reflections.getSubTypesOf(clazz);
+   }
+
+   /**
+    * Searches for all resources matching the given pattern.
+    * @param pattern The pattern to match.
+    * @return All available resources matching the given pattern.
+    */
+   @SuppressWarnings("unchecked")
+   public Set<String> lookupResources(final String pattern) {
+      return reflections.getResources(Pattern.compile(pattern));
    }
 
    /**
