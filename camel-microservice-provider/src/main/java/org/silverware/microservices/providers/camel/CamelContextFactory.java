@@ -21,8 +21,10 @@ package org.silverware.microservices.providers.camel;
 
 import org.apache.camel.CamelContext;
 
+/**
+ * Factory to create custom Camel context.
+ */
 public interface CamelContextFactory {
 
-    CamelContext createCamelContext();
-
+   CamelContext createCamelContext();
 }

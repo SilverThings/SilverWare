@@ -66,14 +66,15 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
       @SuppressWarnings("unchecked")
       Set<Class<CamelContextFactory>> camelContextFactories = DeploymentScanner.getContextInstance(context).lookupSubtypes(CamelContextFactory.class);
 
-      if(camelContextFactories.size() > 2) {
+      if(camelContextFactories.size() >= 2) {
          throw new SilverWareException("More than one CamelContextFactories found.");
-      } else if(camelContextFactories.size() == 1) {
+      } else if (camelContextFactories.size() == 1) {
+         Class<CamelContextFactory> clazz = camelContextFactories.iterator().next();
          try {
-            CamelContextFactory camelContextFactory = camelContextFactories.iterator().next().newInstance();
+            CamelContextFactory camelContextFactory = clazz.newInstance();
             camelContext = camelContextFactory.createCamelContext();
          } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw new SilverWareException(String.format("Cannot instantiate Camel context factory %s: ", clazz.getName()), e);
          }
       } else {
          camelContext = new DefaultCamelContext();
