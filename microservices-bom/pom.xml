@@ -7,7 +7,7 @@
    <packaging>pom</packaging>
    <name>microservices Bill of Materials</name>
    <properties>
-      <version.reflections>0.9.9</version.reflections>
+      <version.reflections>0.9.10</version.reflections>
       <version.log4j>2.1</version.log4j>
       <version.testng>6.8.5</version.testng>
       <version.apache.camel>2.14.1</version.apache.camel>
@@ -29,6 +29,16 @@
       <dependencies>
          <dependency>
             <groupId>org.silverware</groupId>
+            <artifactId>camel-microservice-provider</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.silverware</groupId>
+            <artifactId>cluster-microservice-provider</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.silverware</groupId>
             <artifactId>cdi-microservice-provider</artifactId>
             <version>${project.version}</version>
          </dependency>
@@ -45,6 +55,11 @@
          <dependency>
             <groupId>org.silverware</groupId>
             <artifactId>http-server-microservice-provider</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.silverware</groupId>
+            <artifactId>monitoring-microservice-provider</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>

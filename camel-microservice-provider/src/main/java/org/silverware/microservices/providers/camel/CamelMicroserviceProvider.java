@@ -115,7 +115,7 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
    }
 
    private void loadRoutesFromXml() {
-      routeResources = DeploymentScanner.getContextInstance(context).lookupResources("camel/*.xml");
+      routeResources = new HashSet<>(); //DeploymentScanner.getContextInstance(context).lookupResources("camel/*.xml");
    }
 
    @Override
