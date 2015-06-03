@@ -18,12 +18,12 @@
       </developer>
    </developers>
    <issueManagement>
-      <url>https://github.com/px3/silverware/issues</url>
+      <url>https://github.com/px3/SilverWare/issues</url>
       <system>github</system>
    </issueManagement>
    <organization>
       <name>px3</name>
-      <url>http://www.silverware.org</url>
+      <url>http://www.silverware.io</url>
    </organization>
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
