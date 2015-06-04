@@ -21,6 +21,8 @@ package org.silverware.microservices;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.ProvidingSilverService;
 import org.silverware.microservices.util.DeployStats;
@@ -37,7 +39,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * The main Microservice provider that starts all other providers.
@@ -205,6 +206,8 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
       this.context = context;
 
       context.getProvidersRegistry().put(this.getClass().getName(), this);
+
+      Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(executor)));
    }
 
    /**
@@ -246,5 +249,44 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
    @Override
    public Context getContext() {
       return context;
+   }
+
+   public static class ShutdownHook implements Runnable {
+
+      /**
+       * Logger.
+       */
+      private static final Logger log = LogManager.getLogger(ShutdownHook.class);
+
+
+      private final ThreadPoolExecutor executor;
+
+      public ShutdownHook(final ThreadPoolExecutor executor) {
+         this.executor = executor;
+      }
+
+      @Override
+      public void run() {
+         log.info("Terminating SilverWare...");
+
+         executor.shutdownNow();
+
+         int tries = 0;
+         try {
+            while (!executor.awaitTermination(500, TimeUnit.MILLISECONDS) && tries < 20) {
+               tries++;
+            }
+         } catch (InterruptedException e) {
+            log.error("Could not terminate all providers smoothly: ", e);
+         } finally {
+            int active = executor.getActiveCount();
+            if (active > 0) {
+               log.error("Could not terminate all providers smoothly. There are still {} providers active.", active);
+            }
+         }
+
+         log.info("Good Bye!");
+         Configurator.shutdown((LoggerContext) LogManager.getContext());
+      }
    }
 }
