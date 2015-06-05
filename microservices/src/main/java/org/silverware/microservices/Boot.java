@@ -27,6 +27,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.silverware.microservices.util.Utils;
 
 import java.util.Map;
@@ -51,7 +52,7 @@ public final class Boot {
     * @param args Any additional properties can be specified at the command line via -Dprop=value.
     */
    public static void main(final String... args) {
-      Thread.currentThread().setName("SilverWare-main");
+      Thread.currentThread().setName(Executor.THREAD_PREFIX + Executor.MAIN_THREAD);
 
       log.info("=== Welcome to SilverWare ===");
 
@@ -62,6 +63,14 @@ public final class Boot {
       }
 
       log.info("Goodbye.");
+      logFlush(); // this is needed for Ctrl+C termination
+   }
+
+   /**
+    * Flushes all appenders and terminate logging.
+    */
+   private static void logFlush() {
+      ((LoggerContext) LogManager.getContext()).stop();
    }
 
    /**
@@ -87,6 +96,8 @@ public final class Boot {
          log.error("Cannot parse arguments: ", pe);
          System.exit(1);
       }
+
+      context.getProperties().put(Executor.SHUTDOWN_HOOK, "true");
 
       return context;
    }

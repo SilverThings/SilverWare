@@ -21,8 +21,6 @@ package org.silverware.microservices;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.silverware.microservices.providers.MicroserviceProvider;
 import org.silverware.microservices.silver.ProvidingSilverService;
 import org.silverware.microservices.util.DeployStats;
@@ -48,6 +46,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Executor implements MicroserviceProvider, ProvidingSilverService {
 
    /**
+    * Prefix of names of threads running Microservice providers.
+    */
+   public static final String THREAD_PREFIX = "SilverWare-";
+
+   /**
+    * Name of the thread that boots the platform.
+    */
+   public static final String BOOT_THREAD = "boot";
+
+   /**
+    * Name of the main thread of the platform.
+    */
+   public static final String MAIN_THREAD = "main";
+
+   /**
+    * Property to omit a shutdown hook. Useful for tests mainly.
+    */
+   public static final String SHUTDOWN_HOOK = "silverware.shutdown";
+
+   /**
     * Logger.
     */
    private static final Logger log = LogManager.getLogger(Executor.class);
@@ -71,6 +89,11 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
     * Context for this instance.
     */
    private Context context = null;
+
+   /**
+    * Thread used to boot the platform.
+    */
+   private Thread bootThread;
 
    /**
     * A {@link ThreadFactory} to create daemon threads with a nice name and slightly higher priority.
@@ -103,13 +126,14 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
       DaemonThreadFactory() {
          SecurityManager s = System.getSecurityManager();
          group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-         namePrefix = "SilverWare-" + poolNumber.getAndIncrement() + "-microservice-provider-";
+         namePrefix = THREAD_PREFIX + poolNumber.getAndIncrement() + "-microservice-provider-";
       }
 
       /**
        * Creates new daemon thread with higher priority.
        *
-       * @param r Runnable for which the thread should be created-
+       * @param r
+       *       Runnable for which the thread should be created-
        * @return The new thread.
        */
       public Thread newThread(final Runnable r) {
@@ -118,13 +142,23 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
          t.setPriority(8);
          return t;
       }
+
+      /**
+       * Gets the thread group used by the factory.
+       *
+       * @return The thread group used by the factory.
+       */
+      public ThreadGroup getGroup() {
+         return group;
+      }
    }
 
    /**
     * The main entry point to the platform.
     * This creates a default empty context.
     *
-    * @throws InterruptedException If the main thread fails for any reason.
+    * @throws InterruptedException
+    *       If the main thread fails for any reason.
     */
    public static void bootHook() throws InterruptedException {
       final Context context = new Context();
@@ -135,15 +169,19 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
     * The main entry point to the platform.
     * Uses an already created context.
     *
-    * @param initialContext The context associated with this platform instance.
-    * @throws InterruptedException If the main thread fails for any reason.
+    * @param initialContext
+    *       The context associated with this platform instance.
+    * @throws InterruptedException
+    *       If the main thread fails for any reason.
     */
    public static void bootHook(final Context initialContext) throws InterruptedException {
       final Executor executor = new Executor();
+      final Thread bootThread = new Thread(executor);
+
+      executor.bootThread = bootThread;
       executor.initialize(initialContext);
 
-      final Thread bootThread = new Thread(executor);
-      bootThread.setName("SilverWare-boot");
+      bootThread.setName(THREAD_PREFIX + BOOT_THREAD);
       bootThread.start();
       bootThread.join();
    }
@@ -152,7 +190,8 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
     * Creates instances of the Microservice provider classes using reflection.
     * Also counts statistics of the created instances.
     *
-    * @param microserviceProviders A set of Microservice provider classes to create their instances.
+    * @param microserviceProviders
+    *       A set of Microservice provider classes to create their instances.
     */
    private void createInstances(final Set<Class<? extends MicroserviceProvider>> microserviceProviders) {
       log.info(String.format("Found %d microservice providers. Starting...", microserviceProviders.size()));
@@ -207,7 +246,9 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
 
       context.getProvidersRegistry().put(this.getClass().getName(), this);
 
-      Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(executor)));
+      if (Boolean.parseBoolean((String) context.getProperties().getOrDefault(SHUTDOWN_HOOK, "false"))) {
+         Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(executor)));
+      }
    }
 
    /**
@@ -251,42 +292,81 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
       return context;
    }
 
-   public static class ShutdownHook implements Runnable {
+   public class ShutdownHook implements Runnable {
 
       /**
        * Logger.
        */
-      private static final Logger log = LogManager.getLogger(ShutdownHook.class);
+      private final Logger log = LogManager.getLogger(ShutdownHook.class);
 
-
+      /**
+       * Thread pool with Microservice providers.
+       */
       private final ThreadPoolExecutor executor;
 
       public ShutdownHook(final ThreadPoolExecutor executor) {
          this.executor = executor;
       }
 
+      private void terminateThread(final Thread thread) {
+         if (log.isDebugEnabled()) {
+            log.debug("Terminating thread {}...", thread.getName());
+         }
+
+         thread.interrupt();
+
+         int tries = 0;
+         while (thread.isAlive() && tries < 20) {
+            tries++;
+            try {
+               Thread.sleep(500);
+            } catch (InterruptedException e) {
+               log.warn("Cannot wait for thread termination: ", e);
+            }
+         }
+
+         if (thread.isAlive()) {
+            log.warn("Could not terminate thread {}.", thread.getName());
+         }
+      }
+
       @Override
       public void run() {
          log.info("Terminating SilverWare...");
 
-         executor.shutdownNow();
+         final ThreadGroup group = ((DaemonThreadFactory) executor.getThreadFactory()).getGroup();
+         final Thread[] threadList = new Thread[group.activeCount() + 1];
+         group.enumerate(threadList);
 
-         int tries = 0;
-         try {
-            while (!executor.awaitTermination(500, TimeUnit.MILLISECONDS) && tries < 20) {
-               tries++;
-            }
-         } catch (InterruptedException e) {
-            log.error("Could not terminate all providers smoothly: ", e);
-         } finally {
-            int active = executor.getActiveCount();
-            if (active > 0) {
-               log.error("Could not terminate all providers smoothly. There are still {} providers active.", active);
+         Thread bootThread = null;
+         Thread mainThread = null;
+
+         for (int i = 0; i < threadList.length; i++) {
+            if (threadList[i] != null) {
+               final String threadName = threadList[i].getName();
+               if (threadName.startsWith(THREAD_PREFIX)) {
+                  if (threadName.equals(THREAD_PREFIX + MAIN_THREAD)) {
+                     mainThread = threadList[i];
+                  } else if (threadName.equals(THREAD_PREFIX + BOOT_THREAD)) {
+                     bootThread = threadList[i]; // let's keep the boot thread to be terminated last
+                  } else {
+                     terminateThread(threadList[i]);
+                  }
+               }
             }
          }
 
-         log.info("Good Bye!");
-         Configurator.shutdown((LoggerContext) LogManager.getContext());
+         if (log.isDebugEnabled()) {
+            log.debug("Waiting for main thread cleanup.");
+
+         }
+         while ((mainThread != null && mainThread.isAlive()) || (bootThread != null && bootThread.isAlive())) {
+            try {
+               Thread.sleep(1000);
+            } catch (InterruptedException e) {
+               log.warn(e);
+            }
+         }
       }
    }
 }
