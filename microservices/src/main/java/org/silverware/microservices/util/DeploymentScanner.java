@@ -22,6 +22,8 @@ package org.silverware.microservices.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reflections.Reflections;
+import org.reflections.scanners.ResourcesScanner;
+import org.reflections.util.ConfigurationBuilder;
 import org.reflections.vfs.SystemDir;
 import org.reflections.vfs.Vfs;
 import org.reflections.vfs.ZipDir;
@@ -73,19 +75,28 @@ public class DeploymentScanner {
     * Creates a default instance of the scanner that scans through the whole classpath.
     */
    private DeploymentScanner() {
-      reflections = new Reflections("");
+      final ConfigurationBuilder builder = ConfigurationBuilder.build("");
+      builder.addScanners(new ResourcesScanner());
+
+      reflections = new Reflections(builder);
    }
 
    /**
     * Creates an instance of the scanner that scans only in the given packages.
-    * @param packages Packages to limit scanning to.
+    *
+    * @param packages
+    *       Packages to limit scanning to.
     */
    private DeploymentScanner(final String... packages) {
-      reflections = new Reflections((Object[]) packages);
+      final ConfigurationBuilder builder = ConfigurationBuilder.build((Object[]) packages);
+      builder.addScanners(new ResourcesScanner());
+
+      reflections = new Reflections(builder);
    }
 
    /**
     * Gets the static default instance of the scanner.
+    *
     * @return The static default instance of the scanner.
     */
    public static synchronized DeploymentScanner getDefaultInstance() {
@@ -98,7 +109,9 @@ public class DeploymentScanner {
 
    /**
     * Gets an instance of the scanner that is limited to the given packages.
-    * @param packages Packages to limit scanning to.
+    *
+    * @param packages
+    *       Packages to limit scanning to.
     * @return An instance of the scanner that is limited to the given packages.
     */
    public static DeploymentScanner getInstance(final String... packages) {
@@ -108,7 +121,9 @@ public class DeploymentScanner {
    /**
     * Gets an instance of the scanner based on the information already stored in the provided
     * {@link Context}.
-    * @param context A {@link Context} carrying the information needed to create the scanner.
+    *
+    * @param context
+    *       A {@link Context} carrying the information needed to create the scanner.
     * @return An instance of the scanner based on the information already stored in the provided
     */
    public static DeploymentScanner getContextInstance(final Context context) {
@@ -125,6 +140,7 @@ public class DeploymentScanner {
 
    /**
     * Searches for all available Microservice providers.
+    *
     * @return All available Microservice provider classes.
     */
    public Set<Class<? extends MicroserviceProvider>> lookupMicroserviceProviders() {
@@ -133,7 +149,9 @@ public class DeploymentScanner {
 
    /**
     * Searches for all subtypes of the given class.
-    * @param clazz A class to search subtypes of.
+    *
+    * @param clazz
+    *       A class to search subtypes of.
     * @return All available classes of the given subtype.
     */
    @SuppressWarnings("unchecked")
@@ -143,7 +161,9 @@ public class DeploymentScanner {
 
    /**
     * Searches for all resources matching the given pattern.
-    * @param pattern The pattern to match.
+    *
+    * @param pattern
+    *       The pattern to match.
     * @return All available resources matching the given pattern.
     */
    @SuppressWarnings("unchecked")
@@ -153,13 +173,20 @@ public class DeploymentScanner {
 
    /**
     * Creates instances of the given classes using default constructor.
-    * @param classes Classes to create instances of.
-    * @param <T> Common type of the classes.
+    *
+    * @param classes
+    *       Classes to create instances of.
+    * @param <T>
+    *       Common type of the classes.
     * @return Instances of the given classes.
-    * @throws NoSuchMethodException When there was no default constructor.
-    * @throws IllegalAccessException When the default constructor is not visible.
-    * @throws InvocationTargetException When it was not possible to invoke the constructor.
-    * @throws InstantiationException When it was not possible to create an instance.
+    * @throws NoSuchMethodException
+    *       When there was no default constructor.
+    * @throws IllegalAccessException
+    *       When the default constructor is not visible.
+    * @throws InvocationTargetException
+    *       When it was not possible to invoke the constructor.
+    * @throws InstantiationException
+    *       When it was not possible to create an instance.
     */
    public static <T> List<T> instantiate(final Set<Class<T>> classes) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
       final List<T> instances = new ArrayList<>();

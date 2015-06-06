@@ -115,7 +115,7 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
    }
 
    private void loadRoutesFromXml() {
-      routeResources = new HashSet<>(); //DeploymentScanner.getContextInstance(context).lookupResources("camel/*.xml");
+      routeResources = DeploymentScanner.getContextInstance(context).lookupResources(".*camel-.*\\.xml");
    }
 
    @Override
@@ -133,7 +133,7 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
 
    @Override
    public void run() {
-      if (routes.size() > 0) {
+      if (routes.size() > 0 || routeResources.size() > 0) {
          try {
             log.info("Hello from Camel microservice provider!");
 
@@ -152,7 +152,7 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
             final ModelCamelContext model = (ModelCamelContext) camelContext;
             for (final String routeResource : routeResources) {
                try {
-                  final RoutesDefinition definition = model.loadRoutesDefinition(this.getClass().getResourceAsStream(routeResource));
+                  final RoutesDefinition definition = model.loadRoutesDefinition(this.getClass().getResourceAsStream("/" + routeResource));
                   model.addRouteDefinitions(definition.getRoutes());
                } catch (Exception e) {
                   log.warn(String.format("Cannot initialize routes in %s: ", routeResource), e);

@@ -93,7 +93,7 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
    /**
     * Thread used to boot the platform.
     */
-   private Thread bootThread;
+   private Thread shutdownHook;
 
    /**
     * A {@link ThreadFactory} to create daemon threads with a nice name and slightly higher priority.
@@ -178,7 +178,6 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
       final Executor executor = new Executor();
       final Thread bootThread = new Thread(executor);
 
-      executor.bootThread = bootThread;
       executor.initialize(initialContext);
 
       bootThread.setName(THREAD_PREFIX + BOOT_THREAD);
@@ -247,7 +246,8 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
       context.getProvidersRegistry().put(this.getClass().getName(), this);
 
       if (Boolean.parseBoolean((String) context.getProperties().getOrDefault(SHUTDOWN_HOOK, "false"))) {
-         Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(executor)));
+         shutdownHook = new Thread(new ShutdownHook(executor));
+         Runtime.getRuntime().addShutdownHook(shutdownHook);
       }
    }
 
@@ -274,6 +274,10 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
          } while (active > 0);
 
          log.info("All work is done. Graceful termination.");
+
+         if (shutdownHook != null) {
+            Runtime.getRuntime().removeShutdownHook(shutdownHook);
+         }
       } catch (InterruptedException ie) {
          Utils.shutdownLog(log, ie);
       }
@@ -332,6 +336,8 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
 
       @Override
       public void run() {
+         shutdownHook = null; // make it impossible to unregister the hook once it is already running
+
          log.info("Terminating SilverWare...");
 
          final ThreadGroup group = ((DaemonThreadFactory) executor.getThreadFactory()).getGroup();
