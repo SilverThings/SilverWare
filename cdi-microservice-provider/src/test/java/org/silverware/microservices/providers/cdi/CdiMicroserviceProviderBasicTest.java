@@ -44,6 +44,7 @@ public class CdiMicroserviceProviderBasicTest {
    private static final Semaphore semaphore = new Semaphore(0);
 
    private TestMicroserviceB testMicroserviceB;
+   private static String result = "";
 
    private static boolean postConstructCalled = false;
 
@@ -62,8 +63,8 @@ public class CdiMicroserviceProviderBasicTest {
       //testMicroserviceB = (TestMicroserviceB) CdiMicroserviceProvider.getMicroserviceProxy(bootUtil.getContext(), TestMicroserviceB.class);
 
       Assert.assertTrue(semaphore.tryAcquire(10, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
-
       Assert.assertTrue(postConstructCalled);
+      Assert.assertEquals(result, "micrononame");
 
       platform.interrupt();
       platform.join();
@@ -105,8 +106,9 @@ public class CdiMicroserviceProviderBasicTest {
          log.info("Hello from B (" + this.toString() + ") to A " + (testMicroserviceA != null ? testMicroserviceA.getClass().getName() : null));
          testMicroserviceA.hello();
          log.info("Hello from B to Micro " + testMicroBean.getClass().getName());
-         testMicroBean.hello();
-         noNameMicroBean.hello();
+         result += testMicroBean.hello();
+         result += noNameMicroBean.hello();
+         semaphore.release();
       }
    }
 
@@ -128,15 +130,16 @@ public class CdiMicroserviceProviderBasicTest {
    }
 
    public interface TestMicro {
-      void hello();
+      String hello();
    }
 
    @Microservice("microBean")
    public static class TestMicroBean implements TestMicro {
 
       @Override
-      public void hello() {
+      public String hello() {
          log.info("micro hello");
+         return "micro";
       }
    }
 
@@ -144,9 +147,9 @@ public class CdiMicroserviceProviderBasicTest {
    public static class NoNameMicroBean implements TestMicro {
 
       @Override
-      public void hello() {
+      public String hello() {
          log.info("noname hello");
-         semaphore.release();
+         return "noname";
       }
    }
 

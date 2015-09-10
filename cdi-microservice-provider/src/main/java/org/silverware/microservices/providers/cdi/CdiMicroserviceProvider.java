@@ -108,6 +108,17 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       final Class<?> type = microserviceMetaData.getType();
       final Set<Annotation> qualifiers = microserviceMetaData.getQualifiers();
 
+      /*
+         We are in search for a CDI bean that meets the provided meta-data.
+         Input and corresponding output is as follows:
+           * name specified in MicroserviceReference or derived from data type (both class or interface)
+                 * beans having the same name in Microservice annotation
+                 * beans having the same name according to CDI
+           * the injection point is interface and name matches interface type name
+                 * beans implementing the interface and matching the qualifiers
+         In all cases, there must be precisely one result or an error is thrown.
+       */
+
       final BeanManager beanManager = ((BeanManager) context.getProperties().get(BEAN_MANAGER));
       Set<Bean<?>> beans = beanManager.getBeans(type, qualifiers.toArray(new Annotation[qualifiers.size()]));
       for (Bean<?> bean : beans) {
