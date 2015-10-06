@@ -12,7 +12,7 @@
       <version.testng>6.8.5</version.testng>
       <version.apache.camel>2.14.1</version.apache.camel>
       <version.slf4j>1.7.7</version.slf4j>
-      <version.weld>2.2.9.Final</version.weld>
+      <version.weld>2.3.0.Final</version.weld>
       <version.ejb.api>3.0</version.ejb.api>
       <version.jboss.logging>3.2.1.Final</version.jboss.logging>
       <version.jgroups>3.6.2.Final</version.jgroups>
