@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
+import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.vfs.SystemDir;
 import org.reflections.vfs.Vfs;
@@ -37,6 +38,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -76,6 +78,7 @@ public class DeploymentScanner {
     */
    private DeploymentScanner() {
       final ConfigurationBuilder builder = ConfigurationBuilder.build("");
+      addNestedClasspathUrls(builder);
       builder.addScanners(new ResourcesScanner());
 
       reflections = new Reflections(builder);
@@ -205,6 +208,19 @@ public class DeploymentScanner {
       }
 
       return instances;
+   }
+
+   /**
+    * Add ClasspathUrls from MANIFEST Class-Path directive into builder
+    * @param builder Reflection ConfigurationBuilder
+    */
+   private static void addNestedClasspathUrls(final ConfigurationBuilder builder) {
+      final ClassLoader[] cls = ClasspathHelper.classLoaders(builder.getClassLoaders());
+      try {
+         builder.addUrls(ClassLoaderUtil.getAlsoNestedClasspathUrls(Arrays.asList(cls)));
+      } catch (final IOException e) {
+         log.error("Problem while adding nested classpath urls.", e);
+      }
    }
 
    /**
