@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
-   <groupId>org.silverware</groupId>
+   <groupId>io.silverware</groupId>
    <artifactId>microservices-bom</artifactId>
    <version>1.0-SNAPSHOT</version>
    <packaging>pom</packaging>
@@ -12,7 +12,7 @@
       <version.testng>6.8.5</version.testng>
       <version.apache.camel>2.14.1</version.apache.camel>
       <version.slf4j>1.7.7</version.slf4j>
-      <version.weld>2.3.0.Final</version.weld>
+      <version.weld>2.3.1.Final</version.weld>
       <version.ejb.api>3.0</version.ejb.api>
       <version.jboss.logging>3.2.1.Final</version.jboss.logging>
       <version.jgroups>3.6.2.Final</version.jgroups>
@@ -28,37 +28,37 @@
    <dependencyManagement>
       <dependencies>
          <dependency>
-            <groupId>org.silverware</groupId>
+            <groupId>io.silverware</groupId>
             <artifactId>camel-microservice-provider</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.silverware</groupId>
+            <groupId>io.silverware</groupId>
             <artifactId>cluster-microservice-provider</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.silverware</groupId>
+            <groupId>io.silverware</groupId>
             <artifactId>cdi-microservice-provider</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.silverware</groupId>
+            <groupId>io.silverware</groupId>
             <artifactId>microservices</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.silverware</groupId>
+            <groupId>io.silverware</groupId>
             <artifactId>http-invoker-microservice-provider</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.silverware</groupId>
+            <groupId>io.silverware</groupId>
             <artifactId>http-server-microservice-provider</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.silverware</groupId>
+            <groupId>io.silverware</groupId>
             <artifactId>monitoring-microservice-provider</artifactId>
             <version>${project.version}</version>
          </dependency>
