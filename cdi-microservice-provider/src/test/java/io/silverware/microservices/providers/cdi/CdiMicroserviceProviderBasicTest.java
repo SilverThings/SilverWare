@@ -89,7 +89,7 @@ public class CdiMicroserviceProviderBasicTest {
       private TestMicro testMicroBean;
 
       @Inject
-      @MicroserviceReference
+      @MicroserviceReference("noNameMicroBean")
       private TestMicro noNameMicroBean;
 
       public TestMicroserviceB() {

@@ -61,7 +61,7 @@ public class CdiMicroserviceProviderSpecializationTest {
          Thread.sleep(200);
       }
 
-      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
+      Assert.assertTrue(semaphore.tryAcquire(10, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
       Assert.assertEquals(result, "specialspecial");
 
       platform.interrupt();

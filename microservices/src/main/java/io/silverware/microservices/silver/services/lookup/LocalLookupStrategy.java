@@ -33,7 +33,7 @@ public class LocalLookupStrategy extends AbstractLookupStrategy {
    @Override
    public Object getService() {
       final Object[] services = context.lookupLocalMicroservice(metaData).toArray();
-      return services[rnd.nextInt(services.length)];
+      return services.length == 0 ? null : services[rnd.nextInt(services.length)];
    }
 
 }
