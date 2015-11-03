@@ -21,29 +21,19 @@ package io.silverware.microservices.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import javax.enterprise.inject.Stereotype;
-import javax.inject.Named;
 
 /**
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ */
+
+/**
+ * Specifies that the given service is published through REST interface.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Inherited
-@Named
-@MicroserviceScoped
-@Stereotype
 @Target(ElementType.TYPE)
-public @interface Microservice {
-
-   /**
-    * Gets the name of the Microservice.
-    *
-    * @return Name of the Microservice.
-    */
-   String value() default "";
+public @interface Gateway {
 }
