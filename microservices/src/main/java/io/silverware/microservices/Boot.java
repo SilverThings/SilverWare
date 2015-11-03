@@ -19,18 +19,24 @@
  */
 package io.silverware.microservices;
 
+import io.silverware.microservices.util.Utils;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import io.silverware.microservices.util.Utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Main class to boot the Microservices platforms.
@@ -43,6 +49,7 @@ public final class Boot {
    private static final Logger log = LogManager.getLogger(Boot.class);
 
    private static final String PROPERTY_LETTER = "D";
+   private static final String PROPERTY_FILE_LETTER = "p";
 
    /**
     * Starts the Microservices platform.
@@ -74,9 +81,35 @@ public final class Boot {
    }
 
    /**
-    * Creates initial context pre-filled with system properties and command line arguments.
+    * Load custom properties from file on a classpath.
+    * @return Properties from silverware.properties when present on a classpath.
+    */
+   private static Properties loadProperties() {
+      Properties props = new Properties();
+      try {
+         props.load(Boot.class.getResourceAsStream("silverware.properties"));
+      } catch (IOException ioe) {
+         log.info("No configuration property file available. Using default values.");
+      }
+
+      return props;
+   }
+
+   private static Properties loadProperties(final File propertiesFile) {
+      Properties props = new Properties();
+      try (FileInputStream fis = new FileInputStream(propertiesFile)) {
+         props.load(fis);
+      } catch (IOException ioe) {
+         log.warn("Cannot read configuration property file %s.", propertiesFile.getAbsolutePath());
+      }
+
+      return props;
+   }
+
+   /**
+    * Creates initial context pre-filled with system properties, command line arguments, custom property file and default property file.
     * @param args Command line arguments.
-    * @return Initial context pre-filled with system properties and command line arguments.
+    * @return Initial context pre-filled with system properties, command line arguments, custom property file and default property file.
     */
    @SuppressWarnings("static-access")
    private static Context getInitialContext(final String... args) {
@@ -88,14 +121,30 @@ public final class Boot {
       System.getProperties().forEach((key, value) -> contextProperties.put((String) key, value));
 
       options.addOption(OptionBuilder.withArgName("property=value").hasArgs(2).withValueSeparator().withDescription("system properties").create(PROPERTY_LETTER));
+      options.addOption(OptionBuilder.withLongOpt("properties").withDescription("Custom property file").hasArg().withArgName("PROPERTY_FILE").create(PROPERTY_FILE_LETTER));
 
       try {
          final CommandLine commandLine = commandLineParser.parse(options, args);
          commandLine.getOptionProperties(PROPERTY_LETTER).forEach((key, value) -> contextProperties.put((String) key, value));
+
+         // process custom properties file
+         if (commandLine.hasOption(PROPERTY_FILE_LETTER)) {
+            final File propertiesFile = new File(commandLine.getOptionValue(PROPERTY_FILE_LETTER));
+            if (propertiesFile.exists()) {
+               final Properties props = loadProperties();
+               props.forEach((key, val) -> contextProperties.putIfAbsent(key.toString(), val));
+            } else {
+               log.error("Specified property file %s does not exists.", propertiesFile.getAbsolutePath());
+            }
+         }
       } catch (ParseException pe) {
          log.error("Cannot parse arguments: ", pe);
+         new HelpFormatter().printHelp("SilverWare usage:", options);
          System.exit(1);
       }
+
+      // now add in default properties from silverware.properties on a classpath
+      loadProperties().forEach((key, val) -> contextProperties.putIfAbsent(key.toString(), val));
 
       context.getProperties().put(Executor.SHUTDOWN_HOOK, "true");
 

@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
+import io.silverware.microservices.annotations.Gateway;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.providers.cdi.MicroserviceContext;
@@ -67,6 +68,11 @@ public class MicroservicesCDIExtension implements Extension {
    private long injectionPointsCount = 0;
 
    /**
+    * Rest interface to register gateway annotated beans.
+    */
+   private RestInterface restInterface;
+
+   /**
     * Microservices context.
     */
    private final Context context;
@@ -76,8 +82,9 @@ public class MicroservicesCDIExtension implements Extension {
     */
    private List<MicroserviceProxyBean> microserviceProxyBeans = new ArrayList<>();
 
-   public MicroservicesCDIExtension(final Context context) {
+   public MicroservicesCDIExtension(final Context context, final RestInterface restInterface) {
       this.context = context;
+      this.restInterface = restInterface;
    }
 
    /**
@@ -113,6 +120,10 @@ public class MicroservicesCDIExtension implements Extension {
             final String microserviceName = annotation.value().length() > 0 ? annotation.value() : bean.getBeanClass().getSimpleName();
 
             context.registerMicroservice(getMicroserviceMetaData(microserviceName, bean));
+
+            if (bean.getBeanClass().isAnnotationPresent(Gateway.class)) {
+               restInterface.registerGateway(microserviceName, bean);
+            }
          }
       }
 

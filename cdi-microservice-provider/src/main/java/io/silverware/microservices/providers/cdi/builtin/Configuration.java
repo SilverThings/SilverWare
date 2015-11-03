@@ -17,32 +17,17 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.silver;
+package io.silverware.microservices.providers.cdi.builtin;
 
 /**
- * CDI Microservices deployer.
- *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-public interface CdiSilverService extends ProvidingSilverService {
+public interface Configuration {
 
    /**
-    * Context property where the bean manager is stored.
+    * Gets the value of a configuration property.
+    * @param propertyName Name of the configuration property to obtain.
+    * @return The value of a configuration property.
     */
-   String BEAN_MANAGER = "silverware.cdi.beanManager";
-
-   /**
-    * Context property where the CDI container is stored.
-    */
-   String CDI_CONTAINER = "silverware.cdi.container";
-
-   /**
-    * Port on which the CDI REST interface should listen.
-    */
-   String CDI_REST_PORT = "silverware.cdi.rest.port";
-
-   /**
-    * Host on which the CDI REST interface should listen.
-    */
-   String CDI_REST_HOST = "silverware.cdi.rest.host";
+   Object getProperty(final String propertyName);
 }

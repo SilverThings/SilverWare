@@ -19,29 +19,30 @@
  */
 package io.silverware.microservices.providers.cdi;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.weld.environment.se.Weld;
-import org.jboss.weld.environment.se.WeldContainer;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.providers.MicroserviceProvider;
+import io.silverware.microservices.providers.cdi.builtin.Configuration;
 import io.silverware.microservices.providers.cdi.internal.MicroserviceProxyBean;
 import io.silverware.microservices.providers.cdi.internal.MicroservicesCDIExtension;
+import io.silverware.microservices.providers.cdi.internal.RestInterface;
 import io.silverware.microservices.silver.CdiSilverService;
 import io.silverware.microservices.util.Utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jboss.weld.environment.se.Weld;
+import org.jboss.weld.environment.se.WeldContainer;
+
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -78,7 +79,8 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
          log.info("Hello from CDI microservice provider!");
 
          final Weld weld = new Weld();
-         final MicroservicesCDIExtension microservicesCDIExtension = new MicroservicesCDIExtension(context);
+         final RestInterface rest = new RestInterface(context);
+         final MicroservicesCDIExtension microservicesCDIExtension = new MicroservicesCDIExtension(context, rest);
          System.setProperty("org.jboss.weld.se.archive.isolation", "false");
          weld.addExtension(microservicesCDIExtension);
 
@@ -93,6 +95,9 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
          container.event().select(MicroservicesStartedEvent.class).fire(new MicroservicesStartedEvent(context, container.getBeanManager(), container));
 
+         log.info("Deploying REST gateway services.");
+         rest.deploy();
+
          try {
             while (!Thread.currentThread().isInterrupted()) {
                Thread.sleep(1000);
@@ -100,6 +105,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
          } catch (InterruptedException ie) {
             Utils.shutdownLog(log, ie);
          } finally {
+            rest.undeploy();
             weld.shutdown();
          }
       } catch (Exception e) {
@@ -226,6 +232,15 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       public Object log(final InvocationContext ic) throws Exception {
          log.info("AroundInvoke " + ic.toString());
          return ic.proceed();
+      }
+   }
+
+   @Microservice
+   public class SilverWareConfiguration implements Configuration {
+
+      @Override
+      public Object getProperty(final String propertyName) {
+         return context.getProperties().get(propertyName);
       }
    }
 }
