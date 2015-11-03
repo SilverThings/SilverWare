@@ -56,7 +56,7 @@ public class CdiMicroserviceProviderAlternativesTest {
          Thread.sleep(200);
       }
 
-      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
+      Assert.assertTrue(semaphore.tryAcquire(100, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
       Assert.assertEquals(result, "alternatealternate");
 
       platform.interrupt();
@@ -87,7 +87,7 @@ public class CdiMicroserviceProviderAlternativesTest {
    }
 
    @Microservice
-   public static class AlternativesMicroBean implements AlternativesMicro {
+   public static class MyAlternativesMicroBean implements AlternativesMicro {
 
       @Override
       public String hello() {
@@ -97,7 +97,7 @@ public class CdiMicroserviceProviderAlternativesTest {
 
    @Alternative
    @Microservice
-   public static class AlternateAlternativesMicroBean extends AlternativesMicroBean {
+   public static class AlternateAlternativesMicroBean implements AlternativesMicro {
 
       @Override
       public String hello() {

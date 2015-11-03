@@ -41,6 +41,7 @@ import java.util.Set;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -78,6 +79,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
          final Weld weld = new Weld();
          final MicroservicesCDIExtension microservicesCDIExtension = new MicroservicesCDIExtension(context);
+         System.setProperty("org.jboss.weld.se.archive.isolation", "false");
          weld.addExtension(microservicesCDIExtension);
 
          final WeldContainer container = weld.initialize();
@@ -111,6 +113,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       final Set<Annotation> qualifiers = microserviceMetaData.getQualifiers();
       final Set<Object> matchingBeansByName = new HashSet<>();
       final Set<Object> matchingBeansByType = new HashSet<>();
+      boolean wasAlternative = false;
 
       /*
          We are in search for a CDI bean that meets the provided meta-data.
@@ -123,6 +126,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
          In all cases, there must be precisely one result or an error is thrown.
        */
 
+      //final BeanManager beanManager = CDI.current().getBeanManager();
       final BeanManager beanManager = ((BeanManager) context.getProperties().get(BEAN_MANAGER));
       Set<Bean<?>> beans = beanManager.getBeans(type, qualifiers.toArray(new Annotation[qualifiers.size()]));
       for (Bean<?> bean : beans) {
@@ -139,7 +143,23 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
                   qualifiers.stream().forEach(qualifiersToCompare::remove);
 
                   if (qualifiersToCompare.size() == 0) {
-                     matchingBeansByType.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
+
+                     if (bean.isAlternative()) {
+                        if (!wasAlternative) {
+                           matchingBeansByType.clear();
+                           matchingBeansByType.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
+                           wasAlternative = true;
+                        } else {
+                           matchingBeansByType.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
+                           throw new IllegalStateException(String.format("There are more than alternate beans matching the query: %s. The beans are: %s.", microserviceMetaData.toString(), matchingBeansByType.toString()));
+                        }
+                     } else {
+                        if (!wasAlternative) {
+                           matchingBeansByType.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
+                        } else {
+                           // ignore this bean
+                        }
+                     }
                   }
                }
             }
