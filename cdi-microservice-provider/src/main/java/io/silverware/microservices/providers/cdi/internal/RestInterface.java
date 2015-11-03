@@ -147,8 +147,7 @@ public class RestInterface extends AbstractVerticle {
 
       try {
          Method m = gatewayRegistry.get(microserviceName).getBeanClass().getDeclaredMethod(methodName);
-         log.info(gatewayRegistry.get(microserviceName).getBeanClass().getName());
-         Object result = m.invoke(gatewayRegistry.get(microserviceName).getBean());
+         Object result = m.invoke(gatewayRegistry.get(microserviceName).getBeanClass());
 
          routingContext.response().end(Json.encodePrettily(result));
       } catch (Exception e) {
