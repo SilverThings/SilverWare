@@ -23,11 +23,18 @@ import io.silverware.microservices.annotations.Gateway;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.util.BootUtil;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import javax.enterprise.inject.spi.BeanManager;
@@ -54,8 +61,44 @@ public class CdiMicroserviceProviderGatewayTest {
          Thread.sleep(200);
       }
 
-      Assert.assertTrue(semaphore.tryAcquire(10, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
-      Assert.assertEquals(result, "normalmock");
+    //  Assert.assertTrue(semaphore.tryAcquire(10, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
+
+      final List<String> checksPassed = new ArrayList<>();
+
+      Vertx vertx = Vertx.vertx();
+
+      HttpClient client = vertx.createHttpClient();
+
+      client.getNow(8081, "localhost", "/rest", response -> {
+         response.bodyHandler(buffer -> {
+            JsonArray services = new JsonArray(buffer.toString());
+
+            Assert.assertEquals(services.size(), 1);
+            Assert.assertTrue(services.contains("RestfulMicroservice"));
+            checksPassed.add("Service list");
+         });
+      });
+
+      client.getNow(8081, "localhost", "/rest/RestfulMicroservice", response -> {
+         response.bodyHandler(buffer -> {
+            JsonArray methods = new JsonArray(buffer.toString());
+            log.info(methods);
+
+            Assert.assertEquals(methods.size(), 2);
+            Assert.assertEquals(methods.getJsonObject(0).getString("methodName"), "hello");
+            Assert.assertEquals(methods.getJsonObject(0).getJsonArray("parameters").size(), 0);
+            Assert.assertEquals(methods.getJsonObject(0).getString("returns"), "void");
+            Assert.assertEquals(methods.getJsonObject(1).getString("methodName"), "multiHello");
+            Assert.assertEquals(methods.getJsonObject(1).getJsonArray("parameters").size(), 1);
+            Assert.assertEquals(methods.getJsonObject(1).getJsonArray("parameters").getString(0), "int");
+            Assert.assertEquals(methods.getJsonObject(1).getString("returns"), "java.lang.String");
+            checksPassed.add("Methods list");
+         });
+      });
+
+      Thread.sleep(5000);
+
+      //Assert.assertEquals(result, "normalmock");
 
       platform.interrupt();
       platform.join();

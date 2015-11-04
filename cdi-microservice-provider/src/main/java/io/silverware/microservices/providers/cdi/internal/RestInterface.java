@@ -20,15 +20,19 @@
 package io.silverware.microservices.providers.cdi.internal;
 
 import io.silverware.microservices.Context;
+import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.silver.CdiSilverService;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 import javax.enterprise.inject.spi.Bean;
 
 import io.vertx.core.AbstractVerticle;
@@ -53,6 +57,7 @@ public class RestInterface extends AbstractVerticle {
     */
    private static final Logger log = LogManager.getLogger(RestInterface.class);
 
+   final private Context context;
    final private int port;
    final private String host;
    private Vertx vertx;
@@ -60,6 +65,7 @@ public class RestInterface extends AbstractVerticle {
    private Map<String, Bean> gatewayRegistry = new HashMap<>();
 
    public RestInterface(final Context context) {
+      this.context = context;
       port = Integer.valueOf(context.getProperties().getOrDefault(CdiSilverService.CDI_REST_PORT, "8081").toString());
       host = context.getProperties().getOrDefault(CdiSilverService.CDI_REST_HOST, "").toString();
    }
@@ -136,20 +142,74 @@ public class RestInterface extends AbstractVerticle {
       }
    }
 
-   public void callMethod(final RoutingContext routingContext) {
+   private String stackTraceAsString(final Exception e) {
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(new StringWriter());
+      e.printStackTrace(pw);
+      return sw.toString();
+   }
 
+   public void callMethod(final RoutingContext routingContext) {
+      String microserviceName = routingContext.request().getParam("microservice");
+      String methodName = routingContext.request().getParam("method");
+      JsonArray params = new JsonArray(routingContext.getBodyAsString());
+      Bean bean = gatewayRegistry.get(microserviceName);
+
+      try {
+         List<Method> methods = Arrays.asList(bean.getBeanClass().getDeclaredMethods()).stream().filter(method -> method.getName().equals(methodName) && method.getParameterCount() == params.size()).collect(Collectors.toList());
+
+         if (methods.size() == 0) {
+            throw new IllegalStateException(String.format("No such method %s with compatible parameters.", methodName));
+         }
+
+         if (methods.size() > 1) {
+            throw new IllegalStateException("Overridden methods are not supported yet.");
+         }
+
+         final Method m = methods.get(0);
+
+         Class[] paramTypes = m.getParameterTypes();
+         Object[] paramValues = new Object[paramTypes.length];
+         for (int i = 0; i < paramTypes.length; i++) {
+            paramValues[i] = paramTypes[i].cast(params.getValue(i));
+         }
+
+         Set<Object> services = context.lookupLocalMicroservice(new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers()));
+         JsonObject response = new JsonObject();
+         try {
+            Object result = m.invoke(services.iterator().next(), paramValues);
+            response.put("result", Json.encodePrettily(result));
+         } catch (Exception e) {
+            response.put("exception", e.getMessage());
+            response.put("stackTrace", stackTraceAsString(e));
+         }
+
+         routingContext.response().end(response.encodePrettily());
+      } catch (Exception e) {
+         log.warn(String.format("Unable to call method %s#%s: ", microserviceName, methodName), e);
+         routingContext.response().setStatusCode(503).end("Resource not available.");
+      }
    }
 
    @SuppressWarnings("unchecked")
    public void callNoParamMethod(final RoutingContext routingContext) {
       String microserviceName = routingContext.request().getParam("microservice");
       String methodName = routingContext.request().getParam("method");
+      Bean bean = gatewayRegistry.get(microserviceName);
 
       try {
-         Method m = gatewayRegistry.get(microserviceName).getBeanClass().getDeclaredMethod(methodName);
-         Object result = m.invoke(gatewayRegistry.get(microserviceName).getBeanClass());
+         Method m = bean.getBeanClass().getDeclaredMethod(methodName);
+         Set<Object> services = context.lookupLocalMicroservice(new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers()));
+         JsonObject response = new JsonObject();
+         try {
+            Object result = m.invoke(services.iterator().next());
+            response.put("result", Json.encodePrettily(result));
+         } catch (Exception e) {
+            response.put("exception", e.getMessage());
+            response.put("stackTrace", stackTraceAsString(e));
+         }
 
-         routingContext.response().end(Json.encodePrettily(result));
+         routingContext.response().end(response.encodePrettily());
       } catch (Exception e) {
          log.warn(String.format("Unable to call method %s#%s: ", microserviceName, methodName), e);
          routingContext.response().setStatusCode(503).end("Resource not available.");
