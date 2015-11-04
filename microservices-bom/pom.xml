@@ -24,6 +24,7 @@
       <version.jackson>2.5.3</version.jackson>
       <version.vertx>3.1.0</version.vertx>
       <version.jsonio>3.0.2</version.jsonio>
+      <version.beanutils>1.9.2</version.beanutils>
       <java.level>1.8</java.level>
    </properties>
    <dependencyManagement>
@@ -200,6 +201,11 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
             <version>${version.vertx}</version>
+         </dependency>
+         <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>${version.beanutils}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

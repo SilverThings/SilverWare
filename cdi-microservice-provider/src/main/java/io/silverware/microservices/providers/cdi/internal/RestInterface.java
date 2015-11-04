@@ -23,15 +23,19 @@ import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.silver.CdiSilverService;
 
+import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.enterprise.inject.spi.Bean;
 
@@ -94,8 +98,8 @@ public class RestInterface extends AbstractVerticle {
       Router router = Router.router(vertx);
       router.get("/rest").handler(this::listBeans);
       router.get("/rest/:microservice").handler(this::listMethods);
-      router.post("/rest/:microservice/:method").handler(this::callMethod);
       router.get("/rest/:microservice/:method").handler(this::callNoParamMethod);
+      router.post("/rest/:microservice/:method").handler(this::callMethod);
 
       HttpServerOptions options = new HttpServerOptions().setAcceptBacklog(1000);
       HttpServer server = vertx.createHttpServer(options).requestHandler(router::accept);
@@ -150,45 +154,49 @@ public class RestInterface extends AbstractVerticle {
    }
 
    public void callMethod(final RoutingContext routingContext) {
-      String microserviceName = routingContext.request().getParam("microservice");
-      String methodName = routingContext.request().getParam("method");
-      JsonArray params = new JsonArray(routingContext.getBodyAsString());
-      Bean bean = gatewayRegistry.get(microserviceName);
+      final String microserviceName = routingContext.request().getParam("microservice");
+      final String methodName = routingContext.request().getParam("method");
+      final Bean bean = gatewayRegistry.get(microserviceName);
 
-      try {
-         List<Method> methods = Arrays.asList(bean.getBeanClass().getDeclaredMethods()).stream().filter(method -> method.getName().equals(methodName) && method.getParameterCount() == params.size()).collect(Collectors.toList());
+      routingContext.request().bodyHandler(buffer -> {
+         JsonArray params = new JsonArray(buffer.toString());
 
-         if (methods.size() == 0) {
-            throw new IllegalStateException(String.format("No such method %s with compatible parameters.", methodName));
-         }
-
-         if (methods.size() > 1) {
-            throw new IllegalStateException("Overridden methods are not supported yet.");
-         }
-
-         final Method m = methods.get(0);
-
-         Class[] paramTypes = m.getParameterTypes();
-         Object[] paramValues = new Object[paramTypes.length];
-         for (int i = 0; i < paramTypes.length; i++) {
-            paramValues[i] = paramTypes[i].cast(params.getValue(i));
-         }
-
-         Set<Object> services = context.lookupLocalMicroservice(new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers()));
-         JsonObject response = new JsonObject();
          try {
-            Object result = m.invoke(services.iterator().next(), paramValues);
-            response.put("result", Json.encodePrettily(result));
-         } catch (Exception e) {
-            response.put("exception", e.getMessage());
-            response.put("stackTrace", stackTraceAsString(e));
-         }
+            List<Method> methods = Arrays.asList(bean.getBeanClass().getDeclaredMethods()).stream().filter(method -> method.getName().equals(methodName) && method.getParameterCount() == params.size()).collect(Collectors.toList());
 
-         routingContext.response().end(response.encodePrettily());
-      } catch (Exception e) {
-         log.warn(String.format("Unable to call method %s#%s: ", microserviceName, methodName), e);
-         routingContext.response().setStatusCode(503).end("Resource not available.");
-      }
+            if (methods.size() == 0) {
+               throw new IllegalStateException(String.format("No such method %s with compatible parameters.", methodName));
+            }
+
+            if (methods.size() > 1) {
+               throw new IllegalStateException("Overridden methods are not supported yet.");
+            }
+
+            final Method m = methods.get(0);
+
+            Class[] paramTypes = m.getParameterTypes();
+            Object[] paramValues = new Object[paramTypes.length];
+            final ConvertUtilsBean convert = new ConvertUtilsBean();
+            for (int i = 0; i < paramTypes.length; i++) {
+               paramValues[i] = convert.convert(params.getValue(i), paramTypes[i]);
+            }
+
+            Set<Object> services = context.lookupLocalMicroservice(new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers()));
+            JsonObject response = new JsonObject();
+            try {
+               Object result = m.invoke(services.iterator().next(), paramValues);
+               response.put("result", Json.encodePrettily(result));
+            } catch (Exception e) {
+               response.put("exception", e.getMessage());
+               response.put("stackTrace", stackTraceAsString(e));
+            }
+
+            routingContext.response().end(response.encodePrettily());
+         } catch (Exception e) {
+            log.warn(String.format("Unable to call method %s#%s: ", microserviceName, methodName), e);
+            routingContext.response().setStatusCode(503).end("Resource not available.");
+         }
+      });
    }
 
    @SuppressWarnings("unchecked")

@@ -23,11 +23,6 @@ import io.silverware.microservices.annotations.Gateway;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.util.BootUtil;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
@@ -39,6 +34,11 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import javax.enterprise.inject.spi.BeanManager;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
@@ -47,7 +47,6 @@ public class CdiMicroserviceProviderGatewayTest {
    private static final Logger log = LogManager.getLogger(CdiMicroserviceProviderGatewayTest.class);
 
    private static final Semaphore semaphore = new Semaphore(0);
-   private static String result = "";
 
    @Test
    public void testGateway() throws Exception {
@@ -60,8 +59,6 @@ public class CdiMicroserviceProviderGatewayTest {
          beanManager = (BeanManager) bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.BEAN_MANAGER);
          Thread.sleep(200);
       }
-
-    //  Assert.assertTrue(semaphore.tryAcquire(10, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
 
       final List<String> checksPassed = new ArrayList<>();
 
@@ -76,29 +73,66 @@ public class CdiMicroserviceProviderGatewayTest {
             Assert.assertEquals(services.size(), 1);
             Assert.assertTrue(services.contains("RestfulMicroservice"));
             checksPassed.add("Service list");
+            semaphore.release();
          });
       });
 
       client.getNow(8081, "localhost", "/rest/RestfulMicroservice", response -> {
          response.bodyHandler(buffer -> {
             JsonArray methods = new JsonArray(buffer.toString());
-            log.info(methods);
 
             Assert.assertEquals(methods.size(), 2);
-            Assert.assertEquals(methods.getJsonObject(0).getString("methodName"), "hello");
-            Assert.assertEquals(methods.getJsonObject(0).getJsonArray("parameters").size(), 0);
-            Assert.assertEquals(methods.getJsonObject(0).getString("returns"), "void");
-            Assert.assertEquals(methods.getJsonObject(1).getString("methodName"), "multiHello");
-            Assert.assertEquals(methods.getJsonObject(1).getJsonArray("parameters").size(), 1);
-            Assert.assertEquals(methods.getJsonObject(1).getJsonArray("parameters").getString(0), "int");
-            Assert.assertEquals(methods.getJsonObject(1).getString("returns"), "java.lang.String");
+
+            JsonObject o1, o2;
+            if (methods.getJsonObject(0).getString("methodName").equals("hello")) {
+               o1 = methods.getJsonObject(0);
+               o2 = methods.getJsonObject(1);
+            } else {
+               o1 = methods.getJsonObject(1);
+               o2 = methods.getJsonObject(0);
+            }
+
+            Assert.assertEquals(o1.getString("methodName"), "hello");
+            Assert.assertEquals(o1.getJsonArray("parameters").size(), 0);
+            Assert.assertEquals(o1.getString("returns"), "void");
+            Assert.assertEquals(o2.getString("methodName"), "multiHello");
+            Assert.assertEquals(o2.getJsonArray("parameters").size(), 1);
+            Assert.assertEquals(o2.getJsonArray("parameters").getString(0), "int");
+            Assert.assertEquals(o2.getString("returns"), "java.lang.String");
             checksPassed.add("Methods list");
+            semaphore.release();
          });
       });
 
-      Thread.sleep(5000);
+      client.getNow(8081, "localhost", "/rest/RestfulMicroservice/hello", response -> {
+         response.bodyHandler(buffer -> {
+            JsonObject result = new JsonObject(buffer.toString());
 
-      //Assert.assertEquals(result, "normalmock");
+            Assert.assertTrue(result.containsKey("result"));
+            Assert.assertEquals(result.getString("result"), "null");
+            checksPassed.add("Call to hello");
+            semaphore.release();
+         });
+      });
+
+      String request = new JsonArray().add(4).encodePrettily();
+      client.post(8081, "localhost", "/rest/RestfulMicroservice/multiHello", response -> {
+         response.bodyHandler(buffer -> {
+            JsonObject result = new JsonObject(buffer.toString());
+
+            Assert.assertTrue(result.containsKey("result"));
+            Assert.assertEquals(result.getString("result"), "\"hello hello hello hello\"");
+            checksPassed.add("Call to multiHello");
+            semaphore.release();
+         });
+      }).putHeader("content-length", String.valueOf(request.length())).putHeader("content-type", "application/json").write(request).end();
+
+      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES));
+      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES));
+      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES));
+      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES));
+
+      Assert.assertEquals(checksPassed.size(), 4);
 
       platform.interrupt();
       platform.join();

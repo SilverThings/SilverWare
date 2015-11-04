@@ -42,6 +42,10 @@
          <groupId>io.vertx</groupId>
          <artifactId>vertx-web</artifactId>
       </dependency>
+      <dependency>
+         <groupId>commons-beanutils</groupId>
+         <artifactId>commons-beanutils</artifactId>
+      </dependency>
    </dependencies>
    <build>
       <plugins>

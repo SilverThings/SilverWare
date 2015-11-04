@@ -19,14 +19,15 @@
  */
 package io.silverware.microservices.providers.cdi.internal;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.Gateway;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.providers.cdi.MicroserviceContext;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
