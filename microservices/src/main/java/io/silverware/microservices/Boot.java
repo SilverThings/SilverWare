@@ -88,7 +88,7 @@ public final class Boot {
       Properties props = new Properties();
       try {
          props.load(Boot.class.getResourceAsStream("silverware.properties"));
-      } catch (IOException ioe) {
+      } catch (NullPointerException | IOException ioe) {
          log.info("No configuration property file available. Using default values.");
       }
 
