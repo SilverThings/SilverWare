@@ -110,7 +110,11 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
             Utils.shutdownLog(log, ie);
          } finally {
             rest.undeploy();
-            weld.shutdown();
+            try {
+               weld.shutdown();
+            } catch (IllegalStateException e) {
+               // nothing, this is just fine, weld was already terminated
+            }
          }
       } catch (Exception e) {
          log.error("CDI microservice provider failed: ", e);

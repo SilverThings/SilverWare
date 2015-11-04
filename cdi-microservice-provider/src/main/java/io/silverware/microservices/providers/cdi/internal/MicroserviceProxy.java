@@ -58,7 +58,7 @@ public class MicroserviceProxy implements MethodHandler {
       final Object service = lookupStrategy.getService();
 
       if (log.isDebugEnabled()) {
-         log.info(String.format("Proxy %s matched with service implementation %s.", this.toString(), service));
+         log.debug(String.format("Proxy %s matched with service implementation %s.", this.toString(), service));
       }
 
       return service;
@@ -96,7 +96,9 @@ public class MicroserviceProxy implements MethodHandler {
          }
       }
 
-      log.info("Invocation of " + thisMethod + ", proceed " + proceed);
+      if (log.isDebugEnabled()) {
+         log.debug("Invocation of " + thisMethod + ", proceed " + proceed);
+      }
       return thisMethod.invoke(getService(), args);
    }
 }
