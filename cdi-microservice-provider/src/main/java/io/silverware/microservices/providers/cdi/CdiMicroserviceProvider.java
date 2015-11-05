@@ -25,9 +25,11 @@ import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.providers.cdi.builtin.Configuration;
+import io.silverware.microservices.providers.cdi.builtin.CurrentContext;
 import io.silverware.microservices.providers.cdi.builtin.Storage;
 import io.silverware.microservices.providers.cdi.internal.MicroserviceProxyBean;
 import io.silverware.microservices.providers.cdi.internal.MicroservicesCDIExtension;
+import io.silverware.microservices.providers.cdi.internal.MicroservicesInitEvent;
 import io.silverware.microservices.providers.cdi.internal.RestInterface;
 import io.silverware.microservices.silver.CdiSilverService;
 import io.silverware.microservices.util.Utils;
@@ -44,6 +46,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Priority;
+import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
@@ -97,6 +100,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
          log.info("Total count of discovered microservice injection points: " + microservicesCDIExtension.getInjectionPointsCount());
 
+         container.event().select(MicroservicesInitEvent.class).fire(new MicroservicesInitEvent(context, container.getBeanManager(), container));
          container.event().select(MicroservicesStartedEvent.class).fire(new MicroservicesStartedEvent(context, container.getBeanManager(), container));
 
          log.info("Deploying REST gateway services.");
@@ -231,17 +235,25 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
    @SuppressWarnings("unused")
    @Microservice
-   public class SilverWareConfiguration implements Configuration {
+   public static class SilverWareConfiguration implements Configuration {
+
+      private Context context;
 
       @Override
       public Object getProperty(final String propertyName) {
          return context.getProperties().get(propertyName);
       }
+
+      public void eventObserver(@Observes MicroservicesInitEvent event) {
+         this.context = event.getContext();
+      }
    }
 
    @SuppressWarnings({"unused", "unchecked"})
    @Microservice
-   public class SilverWareStorage implements Storage {
+   public static class SilverWareStorage implements Storage {
+
+      private Context context;
 
       private Map<String, Object> getStorage() {
          return (Map<String, Object>) context.getProperties().get(STORAGE);
@@ -261,5 +273,26 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       public boolean drop(final String key) {
          return getStorage().remove(key) != null;
       }
+
+      public void eventObserver(@Observes MicroservicesInitEvent event) {
+         this.context = event.getContext();
+      }
    }
+
+   @SuppressWarnings("unused")
+   @Microservice
+   public static class SilverWareCurrentContext implements CurrentContext {
+
+      private Context context;
+
+      @Override
+      public Context getContext() {
+         return context;
+      }
+
+      public void eventObserver(@Observes MicroservicesInitEvent event) {
+         this.context = event.getContext();
+      }
+   }
+
 }
