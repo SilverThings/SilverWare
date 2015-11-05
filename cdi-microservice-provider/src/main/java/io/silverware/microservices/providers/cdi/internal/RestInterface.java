@@ -27,6 +27,7 @@ import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
@@ -146,10 +147,9 @@ public class RestInterface extends AbstractVerticle {
       }
    }
 
-   private String stackTraceAsString(final Exception e) {
+   private String stackTraceAsString(final Exception e) throws IOException {
       StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(new StringWriter());
-      e.printStackTrace(pw);
+      e.printStackTrace(new PrintWriter(sw));
       return sw.toString();
    }
 
@@ -187,8 +187,9 @@ public class RestInterface extends AbstractVerticle {
                Object result = m.invoke(services.iterator().next(), paramValues);
                response.put("result", Json.encodePrettily(result));
             } catch (Exception e) {
-               response.put("exception", e.getMessage());
+               response.put("exception", e.toString());
                response.put("stackTrace", stackTraceAsString(e));
+               log.warn("Could not call method: ", e);
             }
 
             routingContext.response().end(response.encodePrettily());
@@ -213,8 +214,9 @@ public class RestInterface extends AbstractVerticle {
             Object result = m.invoke(services.iterator().next());
             response.put("result", Json.encodePrettily(result));
          } catch (Exception e) {
-            response.put("exception", e.getMessage());
+            response.put("exception", e.toString());
             response.put("stackTrace", stackTraceAsString(e));
+            log.warn("Could not call method: ", e);
          }
 
          routingContext.response().end(response.encodePrettily());
