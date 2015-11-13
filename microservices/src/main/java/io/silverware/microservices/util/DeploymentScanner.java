@@ -28,8 +28,6 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.vfs.SystemDir;
 import org.reflections.vfs.Vfs;
 import org.reflections.vfs.ZipDir;
-import io.silverware.microservices.Context;
-import io.silverware.microservices.providers.MicroserviceProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,10 +37,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import io.silverware.microservices.Context;
+import io.silverware.microservices.providers.MicroserviceProvider;
 
 /**
  * Scanner of classpath to search for given classes, interface implementations and others.
@@ -79,6 +82,7 @@ public class DeploymentScanner {
    private DeploymentScanner() {
       final ConfigurationBuilder builder = ConfigurationBuilder.build("");
       addNestedClasspathUrls(builder);
+      removeSysLibUrls(builder);
       builder.addScanners(new ResourcesScanner());
 
       reflections = new Reflections(builder);
@@ -92,6 +96,7 @@ public class DeploymentScanner {
     */
    private DeploymentScanner(final String... packages) {
       final ConfigurationBuilder builder = ConfigurationBuilder.build((Object[]) packages);
+      removeSysLibUrls(builder);
       builder.addScanners(new ResourcesScanner());
 
       reflections = new Reflections(builder);
@@ -221,6 +226,19 @@ public class DeploymentScanner {
       } catch (final IOException e) {
          log.error("Problem while adding nested classpath urls.", e);
       }
+   }
+
+   /**
+    * Remove ClasspathUrls like *.so or *.dll
+    * @param builder Reflection ConfigurationBuilder
+    */
+   private static void removeSysLibUrls(final ConfigurationBuilder builder) {
+      final Pattern sysLibPattern = Pattern.compile(".*[.](so|dll)", Pattern.CASE_INSENSITIVE);
+
+      final Set<URL> urls = builder.getUrls().stream().filter(
+            url -> !sysLibPattern.matcher(url.getFile()).matches()
+      ).collect(Collectors.toCollection(LinkedHashSet::new));
+      builder.setUrls(urls);
    }
 
    /**
