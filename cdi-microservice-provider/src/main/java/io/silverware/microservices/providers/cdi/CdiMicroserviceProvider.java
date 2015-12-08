@@ -96,7 +96,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
          context.getProperties().put(Storage.STORAGE, new HashMap<String, Object>());
 
          log.info("Discovered the following microservice implementations:");
-         context.getMicroservices().forEach(metaData -> log.info(" - " + metaData.toString()));
+         context.getMicroservices().forEach(metaData -> log.info((" - " + metaData.toString())));
 
          log.info("Total count of discovered microservice injection points: " + microservicesCDIExtension.getInjectionPointsCount());
 

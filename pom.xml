@@ -132,6 +132,8 @@
                         <classpathPrefix>lib/</classpathPrefix>
                      </manifest>
                      <manifestEntries>
+                        <Specification-Version>${project.version}</Specification-Version>
+                        <Implementation-Version>${project.version}</Implementation-Version>
                      </manifestEntries>
                   </archive>
                </configuration>

@@ -24,6 +24,7 @@ import com.cedarsoftware.util.io.JsonWriter;
 import io.silverware.microservices.silver.HttpInvokerSilverService;
 import io.silverware.microservices.silver.cluster.Invocation;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
+import io.silverware.microservices.util.Utils;
 
 import java.lang.annotation.Annotation;
 import java.net.HttpURLConnection;
@@ -37,7 +38,7 @@ import java.util.Set;
  *
  * @author Martin Večeřa <marvenec@gmail.com>
  */
-public class MicroserviceMetaData {
+final public class MicroserviceMetaData {
 
    /**
     * Name of the Microservice.
@@ -55,6 +56,16 @@ public class MicroserviceMetaData {
    private final Set<Annotation> qualifiers;
 
    /**
+    * Microservice specification version.
+    */
+   private final String specVersion;
+
+   /**
+    * Microservice implementation version.
+    */
+   private final String implVersion;
+
+   /**
     * Create a representation of a discovered Microservice.
     *
     * @param name
@@ -68,6 +79,8 @@ public class MicroserviceMetaData {
       this.name = name;
       this.type = type;
       this.qualifiers = qualifiers;
+      this.specVersion = Utils.getClassSpecVersion(type);
+      this.implVersion = Utils.getClassImplVersion(type);
 
       if (name == null || type == null) {
          throw new IllegalStateException("Name and type fields cannot be null.");
@@ -101,28 +114,39 @@ public class MicroserviceMetaData {
       return qualifiers;
    }
 
+   /**
+    * Gets the Microservice specification version.
+    * @return The Microservice specification version.
+    */
+   public String getSpecVersion() {
+      return specVersion;
+   }
+
+   /**
+    * Gets the Microservice implementation version.
+    * @return The Microservice implementation version.
+    */
+   public String getImplVersion() {
+      return implVersion;
+   }
+
    @Override
-   public boolean equals(final Object o) {
-      if (this == o) {
+   public boolean equals(Object o) {
+      if (this == o)
          return true;
-      }
-      if (!(o instanceof MicroserviceMetaData)) {
+      if (o == null || getClass() != o.getClass())
          return false;
-      }
 
-      final MicroserviceMetaData that = (MicroserviceMetaData) o;
+      MicroserviceMetaData that = (MicroserviceMetaData) o;
 
-      if (!name.equals(that.name)) {
+      if (!name.equals(that.name))
          return false;
-      }
-      if (qualifiers != null ? !qualifiers.equals(that.qualifiers) : that.qualifiers != null) {
+      if (!type.equals(that.type))
          return false;
-      }
-      if (!type.equals(that.type)) {
+      if (qualifiers != null ? !qualifiers.equals(that.qualifiers) : that.qualifiers != null)
          return false;
-      }
+      return !(specVersion != null ? !specVersion.equals(that.specVersion) : that.specVersion != null);
 
-      return true;
    }
 
    @Override
@@ -135,7 +159,8 @@ public class MicroserviceMetaData {
 
    @Override
    public String toString() {
-      return "microservice " + name + " of type " + type.getCanonicalName() + " with qualifiers " + Arrays.toString(qualifiers.toArray());
+      return "microservice " + name + " of type " + type.getCanonicalName() + " with qualifiers " + Arrays.toString(qualifiers.toArray())
+            + " (version: spec. " + specVersion + ", impl. " + implVersion + ")";
    }
 
    @SuppressWarnings("unchecked")

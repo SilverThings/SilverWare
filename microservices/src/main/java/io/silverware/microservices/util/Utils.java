@@ -23,10 +23,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.Scanner;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * Generic utilities.
@@ -100,4 +104,58 @@ public class Utils {
       return new Scanner(new URL(urlString).openStream(), "UTF-8").useDelimiter("\\A").next();
    }
 
+   /**
+    * Gets the manifest entry for the given class.
+    * @param clazz The class I want to obtain entry for.
+    * @return The entry from manifest, null if there is no such entry or the manifest file does not exists.
+    */
+   public static String getManifestEntry(final Class clazz, final String entryName) throws IOException {
+      Enumeration<URL> resources = clazz.getClassLoader().getResources("META-INF/MANIFEST.MF");
+      while (resources.hasMoreElements()) {
+         try (final InputStream is = resources.nextElement().openStream()) {
+            Manifest manifest = new Manifest(is);
+            Attributes attr = manifest.getMainAttributes();
+            String value = attr.getValue(entryName);
+            if (value != null && value.length() > 0) {
+               return value;
+            }
+         }
+      }
+
+      return null;
+   }
+
+   /**
+    * Gets the class implementation version from manifest.
+    * @param clazz The class I want to obtain version of.
+    * @return The class specification version from manifest, null if there is no version information present or the manifest file does not exists.
+    */
+   public static String getClassImplVersion(final Class clazz) {
+      try {
+         return getManifestEntry(clazz, "Implementation-Version");
+      } catch (IOException ioe) {
+         if (log.isDebugEnabled()) {
+            log.debug("Cannot obtain version for class {}.", clazz.getName());
+         }
+      }
+
+      return null;
+   }
+
+   /**
+    * Gets the class specification version from manifest.
+    * @param clazz The class I want to obtain version of.
+    * @return The class specification version from manifest, null if there is no version information present or the manifest file does not exists.
+    */
+   public static String getClassSpecVersion(final Class clazz) {
+      try {
+         return getManifestEntry(clazz, "Specification-Version");
+      } catch (IOException ioe) {
+         if (log.isDebugEnabled()) {
+            log.debug("Cannot obtain version for class {}.", clazz.getName());
+         }
+      }
+
+      return null;
+   }
 }

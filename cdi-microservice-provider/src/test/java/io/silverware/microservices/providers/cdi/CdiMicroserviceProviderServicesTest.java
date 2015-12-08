@@ -19,26 +19,22 @@
  */
 package io.silverware.microservices.providers.cdi;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.testng.Assert;
-import org.testng.annotations.Test;
-
-import java.util.Map;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.PostConstruct;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
-
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.providers.cdi.builtin.Configuration;
 import io.silverware.microservices.providers.cdi.builtin.CurrentContext;
 import io.silverware.microservices.providers.cdi.builtin.Storage;
-import io.silverware.microservices.providers.cdi.internal.MicroservicesInitEvent;
 import io.silverware.microservices.util.BootUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.inject.Inject;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Martin Večeřa <marvenec@gmail.com>
