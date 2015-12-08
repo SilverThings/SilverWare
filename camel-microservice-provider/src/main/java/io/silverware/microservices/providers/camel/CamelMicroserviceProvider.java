@@ -154,8 +154,10 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
                try {
                   final RoutesDefinition definition = model.loadRoutesDefinition(this.getClass().getResourceAsStream("/" + routeResource));
                   model.addRouteDefinitions(definition.getRoutes());
+                  stats.incDeployed();
                } catch (Exception e) {
                   log.warn(String.format("Cannot initialize routes in %s: ", routeResource), e);
+                  stats.incSkipped();
                }
             }
 
