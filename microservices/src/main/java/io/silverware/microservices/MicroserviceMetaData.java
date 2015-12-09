@@ -88,6 +88,28 @@ final public class MicroserviceMetaData {
    }
 
    /**
+    * Create a representation of a discovered Microservice.
+    *
+    * @param name
+    *       The name of the discovered Microservice.
+    * @param type
+    *       The type of the discovered Microservice.
+    * @param qualifiers
+    *       The qualifiers of the discovered Microservice.
+    */
+   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers, final String specVersion, final String implVersion) {
+      this.name = name;
+      this.type = type;
+      this.qualifiers = qualifiers;
+      this.specVersion = specVersion;
+      this.implVersion = implVersion;
+
+      if (name == null || type == null) {
+         throw new IllegalStateException("Name and type fields cannot be null.");
+      }
+   }
+
+   /**
     * Gets the name of the discovered Microservice.
     *
     * @return The name of the discovered Microservice.
