@@ -21,6 +21,7 @@ public class MonitoringMicroserviceProviderTest {
    public void testMonitoring() throws Exception {
       final BootUtil bootUtil = new BootUtil();
       final Map<String, Object> platformProperties = bootUtil.getContext().getProperties();
+      platformProperties.put(HttpServerSilverService.HTTP_SERVER_PORT, 18080);
       final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName(), HttpServerMicroserviceProvider.class.getPackage().getName());
       platform.start();
 
