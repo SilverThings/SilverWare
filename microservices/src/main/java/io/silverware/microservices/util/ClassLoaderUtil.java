@@ -1,5 +1,8 @@
 package io.silverware.microservices.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
@@ -16,6 +19,11 @@ import java.util.Set;
  * Helper methods for work with classloaders.
  */
 public final class ClassLoaderUtil {
+
+   /**
+    * Logger.
+    */
+   private static final Logger log = LogManager.getLogger(ClassLoaderUtil.class);
 
    private ClassLoaderUtil() {
    }
@@ -68,7 +76,11 @@ public final class ClassLoaderUtil {
          final URL urlResource = eResource.nextElement();
          final URLConnection connection = urlResource.openConnection();
          if (connection instanceof JarURLConnection) {
-            result.add(((JarURLConnection) connection).getJarFileURL());
+            final URL jarFileUrl = ((JarURLConnection) connection).getJarFileURL();
+            if (!result.contains(jarFileUrl)) {
+               log.debug("Got nested classpath url " + jarFileUrl);
+               result.add(jarFileUrl);
+            }
          }
       }
 
