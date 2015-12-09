@@ -1,5 +1,0 @@
-<beans>
-   <!--alternatives>
-      <class>io.silverware.microservices.providers.cdi.CdiMicroserviceProviderAlternativesTest$AlternateAlternativesMicroBean</class>
-   </alternatives-->
-</beans>
