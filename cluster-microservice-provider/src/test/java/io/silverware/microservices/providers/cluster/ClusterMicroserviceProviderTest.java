@@ -21,12 +21,12 @@ package io.silverware.microservices.providers.cluster;
 
 import static org.testng.Assert.*;
 
-import org.junit.Test;
 import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
 import io.silverware.microservices.providers.http.HttpServerMicroserviceProvider;
 import io.silverware.microservices.providers.http.invoker.HttpInvokerMicroserviceProvider;
 import io.silverware.microservices.silver.HttpServerSilverService;
 import io.silverware.microservices.util.BootUtil;
+import org.testng.annotations.Test;
 
 import java.util.Map;
 
@@ -35,7 +35,7 @@ import java.util.Map;
  */
 public class ClusterMicroserviceProviderTest {
 
-   @Test
+   @Test(enabled = false)
    public void testHttpInvoker() throws Exception {
       System.getProperties().setProperty(HttpServerSilverService.HTTP_SERVER_ADDRESS, "1.2.3.4");
       final BootUtil bootUtil = new BootUtil();
