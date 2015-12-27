@@ -59,7 +59,7 @@ public final class Boot {
     * @param args Any additional properties can be specified at the command line via -Dprop=value.
     */
    public static void main(final String... args) {
-      Thread.currentThread().setName(Executor.THREAD_PREFIX + Executor.MAIN_THREAD);
+      preMainConfig();
 
       log.info("=== Welcome to SilverWare ===");
 
@@ -71,6 +71,13 @@ public final class Boot {
 
       log.info("Goodbye.");
       logFlush(); // this is needed for Ctrl+C termination
+   }
+
+   /**
+    * Performs some quick system settings for a smooth run.
+    */
+   private static void preMainConfig() {
+      Thread.currentThread().setName(Executor.THREAD_PREFIX + Executor.MAIN_THREAD);
    }
 
    /**
