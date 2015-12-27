@@ -36,7 +36,7 @@ import javax.enterprise.inject.spi.InjectionPoint;
  *
  * CDI bean for injecting into consumer beans where the {@link io.silverware.microservices.annotations.MicroserviceReference} is used.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class MicroserviceProxyBean implements Bean {
 

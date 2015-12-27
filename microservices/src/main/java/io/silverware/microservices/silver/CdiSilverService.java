@@ -22,7 +22,7 @@ package io.silverware.microservices.silver;
 /**
  * CDI Microservices deployer.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public interface CdiSilverService extends ProvidingSilverService {
 

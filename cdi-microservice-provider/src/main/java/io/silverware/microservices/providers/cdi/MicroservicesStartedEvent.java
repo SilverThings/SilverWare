@@ -25,7 +25,7 @@ import io.silverware.microservices.Context;
 import javax.enterprise.inject.spi.BeanManager;
 
 /**
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public final class MicroservicesStartedEvent {
    private final Context context;

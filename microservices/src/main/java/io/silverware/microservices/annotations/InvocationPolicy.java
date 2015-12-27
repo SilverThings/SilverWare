@@ -28,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

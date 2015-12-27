@@ -22,7 +22,7 @@ package io.silverware.microservices.silver;
 /**
  * Makes it possible to instantiate Camel routes automatically.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public interface CamelSilverService extends ProvidingSilverService {
 

@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Deployment statistics. Counts the number of discovered, skipped and deployed instances.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class DeployStats implements Serializable {
 

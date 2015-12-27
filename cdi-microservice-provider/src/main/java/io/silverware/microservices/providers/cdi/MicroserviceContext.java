@@ -29,7 +29,7 @@ import java.lang.annotation.Annotation;
 import javax.enterprise.context.ApplicationScoped;
 
 /**
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class MicroserviceContext extends AbstractManagedContext {
 

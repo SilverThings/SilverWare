@@ -29,7 +29,7 @@ import java.util.List;
  * Typically needed by {@link MonitoringSilverService} and or
  * {@link HttpInvokerSilverService}.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public interface HttpServerSilverService extends SilverService {
 

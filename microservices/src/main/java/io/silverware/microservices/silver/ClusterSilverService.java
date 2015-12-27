@@ -23,7 +23,7 @@ package io.silverware.microservices.silver;
  * Makes it possible for the platforms to discover each other in a cluster.
  * Can lookup services on other instances. Kepps handles to remote services.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public interface ClusterSilverService extends ProvidingSilverService {
 

@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * otherwise it holds a remote proxy.
  * Can act as a Http Invoker client to invoke the remote Microservice.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class ServiceHandle implements Serializable {
 

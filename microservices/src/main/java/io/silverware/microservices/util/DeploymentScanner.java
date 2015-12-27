@@ -50,7 +50,7 @@ import io.silverware.microservices.providers.MicroserviceProvider;
 /**
  * Scanner of classpath to search for given classes, interface implementations and others.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class DeploymentScanner {
 

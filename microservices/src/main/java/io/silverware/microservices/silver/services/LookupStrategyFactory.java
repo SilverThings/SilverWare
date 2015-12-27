@@ -31,7 +31,7 @@ import java.lang.reflect.Constructor;
 import java.util.Set;
 
 /**
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class LookupStrategyFactory {
 

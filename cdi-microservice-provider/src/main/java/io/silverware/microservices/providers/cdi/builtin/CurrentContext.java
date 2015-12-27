@@ -22,7 +22,7 @@ package io.silverware.microservices.providers.cdi.builtin;
 import io.silverware.microservices.Context;
 
 /**
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public interface CurrentContext {
 

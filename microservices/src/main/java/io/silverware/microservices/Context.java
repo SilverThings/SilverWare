@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  * The intention is to separate all information shared between providers
  * to be able to create multiple instances of the platform in the same JVM.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class Context {
 

@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 import javax.inject.Scope;
 
 /**
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })

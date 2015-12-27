@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Immutable meta-data of a discovered Microservice implementation.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 final public class MicroserviceMetaData {
 

@@ -22,7 +22,7 @@ package io.silverware.microservices.silver.services.lookup;
 import java.util.Random;
 
 /**
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class RandomRobinLookupStrategy extends AbstractLookupStrategy {
 

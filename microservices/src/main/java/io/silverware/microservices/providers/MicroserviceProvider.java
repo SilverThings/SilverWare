@@ -26,7 +26,7 @@ import io.silverware.microservices.Context;
  * Upon boot, the initialize method is called. After a successful initialization, all services will be started in their
  * dedicated thread. A proper shutdown must be part of the run() method.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public interface MicroserviceProvider extends Runnable {
 

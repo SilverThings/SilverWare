@@ -24,7 +24,7 @@ import java.util.Random;
 /**
  * Lookup just local service implementations.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class LocalLookupStrategy extends AbstractLookupStrategy {
 

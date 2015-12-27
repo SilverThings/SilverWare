@@ -41,7 +41,7 @@ import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ServletInfo;
 
 /**
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class HttpServerMicroserviceProvider implements MicroserviceProvider, HttpServerSilverService {
 

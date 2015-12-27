@@ -41,7 +41,7 @@ import java.util.Properties;
 /**
  * Main class to boot the Microservices platforms.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DM_EXIT", justification = "This class is allowed to terminate the JVM.")
 public final class Boot {

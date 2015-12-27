@@ -53,7 +53,7 @@ import javax.enterprise.util.AnnotationLiteral;
 /**
  * CDI Extension for Microservices.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 @ApplicationScoped
 public class MicroservicesCDIExtension implements Extension {

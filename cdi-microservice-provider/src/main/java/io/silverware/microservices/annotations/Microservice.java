@@ -29,7 +29,7 @@ import javax.enterprise.inject.Stereotype;
 import javax.inject.Named;
 
 /**
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

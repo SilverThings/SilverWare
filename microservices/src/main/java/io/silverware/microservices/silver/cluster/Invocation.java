@@ -31,7 +31,7 @@ import java.util.Arrays;
  * Carries information needed to invoke a Microservice remotely.
  * Can actually invoke the local Microservice based on the provided data
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class Invocation {
 

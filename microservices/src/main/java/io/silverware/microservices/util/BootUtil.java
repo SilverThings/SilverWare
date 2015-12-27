@@ -26,7 +26,7 @@ import io.silverware.microservices.Executor;
  * Boots the Microservices platform. Intended to be used as a public API to initialize
  * the platform from another code.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class BootUtil {
 

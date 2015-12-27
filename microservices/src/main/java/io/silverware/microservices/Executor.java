@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * The main Microservice provider that starts all other providers.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class Executor implements MicroserviceProvider, ProvidingSilverService {
 

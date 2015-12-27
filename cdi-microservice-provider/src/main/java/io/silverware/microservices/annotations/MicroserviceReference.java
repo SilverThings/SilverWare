@@ -33,7 +33,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * Use this annotation, in conjunction with the {@link javax.inject.Inject}
  * annotation, to inject a reference to a Microservice.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 @Qualifier
 @Target({ TYPE, FIELD, PARAMETER, METHOD })

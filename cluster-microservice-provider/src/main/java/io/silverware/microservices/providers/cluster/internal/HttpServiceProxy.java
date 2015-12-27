@@ -28,7 +28,7 @@ import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 
 /**
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class HttpServiceProxy implements MethodHandler {
 

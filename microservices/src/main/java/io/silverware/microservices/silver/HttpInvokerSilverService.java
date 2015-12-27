@@ -22,7 +22,7 @@ package io.silverware.microservices.silver;
 /**
  * Makes it possible to invoke Microservices in the current platform instance remotely.
  *
- * @author Martin Večeřa <marvenec@gmail.com>
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public interface HttpInvokerSilverService extends SilverService {
 
