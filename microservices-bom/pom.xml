@@ -8,22 +8,22 @@
    <name>microservices Bill of Materials</name>
    <properties>
       <version.reflections>0.9.10</version.reflections>
-      <version.log4j>2.3</version.log4j>
-      <version.testng>6.8.5</version.testng>
-      <version.apache.camel>2.14.1</version.apache.camel>
-      <version.slf4j>1.7.7</version.slf4j>
-      <version.weld>2.3.1.Final</version.weld>
+      <version.log4j>2.5</version.log4j>
+      <version.testng>6.9.10</version.testng>
+      <version.apache.camel>2.16.1</version.apache.camel>
+      <version.slf4j>1.7.13</version.slf4j>
+      <version.weld>2.3.2.Final</version.weld>
       <version.ejb.api>3.0</version.ejb.api>
-      <version.jboss.logging>3.2.1.Final</version.jboss.logging>
-      <version.jgroups>3.6.2.Final</version.jgroups>
-      <version.commons.cli>1.2</version.commons.cli>
+      <version.jboss.logging>3.3.0.Final</version.jboss.logging>
+      <version.jgroups>3.6.6.Final</version.jgroups>
+      <version.commons.cli>1.3.1</version.commons.cli>
       <version.findbugs>1.3.2</version.findbugs>
-      <version.javassist>3.19.0-GA</version.javassist>
-      <version.undertow>1.2.0.Beta10</version.undertow>
-      <version.jolokia>1.2.3</version.jolokia>
-      <version.jackson>2.5.3</version.jackson>
-      <version.vertx>3.1.0</version.vertx>
-      <version.jsonio>3.0.2</version.jsonio>
+      <version.javassist>3.20.0-GA</version.javassist>
+      <version.undertow>1.3.10.Final</version.undertow>
+      <version.jolokia>1.3.2</version.jolokia>
+      <version.jackson>2.6.4</version.jackson>
+      <version.vertx>3.2.0</version.vertx>
+      <version.jsonio>4.3.0</version.jsonio>
       <version.beanutils>1.9.2</version.beanutils>
       <java.level>1.8</java.level>
    </properties>
