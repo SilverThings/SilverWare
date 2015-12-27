@@ -1,4 +1,4 @@
-[![Build Status][Travis badge]][Travis build]]
+[![Build Status][Travis badge]][Travis build]
 
 [Travis badge]: https://travis-ci.org/px3/SilverWare.svg?branch=devel
 [Travis build]: https://travis-ci.org/px3/SilverWare
