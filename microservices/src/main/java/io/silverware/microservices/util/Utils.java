@@ -158,4 +158,16 @@ public class Utils {
 
       return null;
    }
+
+   /**
+    * Do the best to sleep for the given time. Ignores {@link InterruptedException}.
+    * @param ms The number of milliseconds to sleep for.
+    */
+   public static void sleep(final long ms) {
+      try {
+         Thread.sleep(ms);
+      } catch (InterruptedException ie) {
+         // ignored
+      }
+   }
 }

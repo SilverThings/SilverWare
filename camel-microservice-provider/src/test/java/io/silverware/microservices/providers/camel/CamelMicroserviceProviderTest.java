@@ -19,6 +19,8 @@
  */
 package io.silverware.microservices.providers.camel;
 
+import io.silverware.microservices.util.BootUtil;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
@@ -26,8 +28,6 @@ import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
-import io.silverware.microservices.Executor;
-import io.silverware.microservices.util.BootUtil;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

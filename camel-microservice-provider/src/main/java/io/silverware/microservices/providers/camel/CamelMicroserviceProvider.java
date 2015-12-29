@@ -38,6 +38,7 @@ import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.SilverWareException;
 import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.silver.CamelSilverService;
+import io.silverware.microservices.silver.CdiSilverService;
 import io.silverware.microservices.util.DeployStats;
 import io.silverware.microservices.util.DeploymentScanner;
 import io.silverware.microservices.util.Utils;
@@ -131,11 +132,52 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
       return context;
    }
 
+   private void waitForCdi() {
+      try {
+         Class.forName("org.apache.camel.cdi.internal.CamelExtension");
+
+         log.info("Camel CDI extension is present, waiting for 5s for CDI initialization...");
+
+         // first lookup the cdi silverservice
+         CdiSilverService cdiSilverService = null;
+         int i = 0;
+         while (cdiSilverService == null && i++ < 10) {
+            cdiSilverService = (CdiSilverService) context.getProvider(CdiSilverService.class);
+            Utils.sleep(500);
+         }
+
+         if (cdiSilverService != null) {
+            log.info("Got CDI SilverService, waiting for 5s for its full deployment...");
+
+            // now wait for it to complete deployment
+            i = 0;
+            while (!cdiSilverService.isDeployed() && i++ < 10) {
+               Utils.sleep(500);
+            }
+
+            if (cdiSilverService.isDeployed()) {
+               log.info("CDI SilverService connected successfully!");
+            } else {
+               log.warn("CDI deployment took to long, trying to continue.");
+            }
+
+
+         } else {
+            log.warn("Failed to find CDI SilverService, trying to continue.");
+         }
+
+      } catch (ClassNotFoundException e) {
+         // not found, exiting
+      }
+   }
+
    @Override
    public void run() {
       if (routes.size() > 0 || routeResources.size() > 0) {
          try {
             log.info("Hello from Camel microservice provider!");
+
+            waitForCdi();
 
             createCamelContext();
 

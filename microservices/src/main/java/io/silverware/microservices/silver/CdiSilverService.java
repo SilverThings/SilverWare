@@ -45,4 +45,6 @@ public interface CdiSilverService extends ProvidingSilverService {
     * Host on which the CDI REST interface should listen.
     */
    String CDI_REST_HOST = "silverware.cdi.rest.host";
+
+   boolean isDeployed();
 }

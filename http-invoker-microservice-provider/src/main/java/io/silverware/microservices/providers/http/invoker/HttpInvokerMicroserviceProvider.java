@@ -19,21 +19,19 @@
  */
 package io.silverware.microservices.providers.http.invoker;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.providers.http.invoker.internal.HttpInvokerServlet;
 import io.silverware.microservices.silver.HttpInvokerSilverService;
 import io.silverware.microservices.silver.HttpServerSilverService;
-import io.silverware.microservices.silver.ProvidingSilverService;
 import io.silverware.microservices.silver.http.ServletDescriptor;
 import io.silverware.microservices.util.Utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -44,7 +42,6 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
 
    private Context context;
    private HttpServerSilverService http;
-   private Set<ProvidingSilverService> microserviceProviders = new HashSet<>();
 
    @Override
    public void initialize(final Context context) {
@@ -63,7 +60,6 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
    public void run() {
       try {
          log.info("Hello from Http Invoker microservice provider!");
-         context.getAllProviders(ProvidingSilverService.class).stream().forEach(silverService -> microserviceProviders.add((ProvidingSilverService) silverService));
 
          try {
             if (log.isDebugEnabled()) {
@@ -102,7 +98,6 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
             }
          } catch (InterruptedException ie) {
             Utils.shutdownLog(log, ie);
-         } finally {
          }
       } catch (Exception e) {
          log.error("Http Invoker microservice provider failed: ", e);

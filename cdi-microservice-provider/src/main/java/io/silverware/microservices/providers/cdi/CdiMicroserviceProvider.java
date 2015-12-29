@@ -39,13 +39,8 @@ import org.apache.logging.log4j.Logger;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import javax.annotation.Priority;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -53,6 +48,12 @@ import javax.enterprise.util.AnnotationLiteral;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import java.lang.annotation.Annotation;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -63,6 +64,8 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
     * Logger.
     */
    private static final Logger log = LogManager.getLogger(CdiMicroserviceProvider.class);
+
+   private boolean deployed = false;
 
    /**
     * Microservices context.
@@ -77,6 +80,11 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
    @Override
    public Context getContext() {
       return context;
+   }
+
+   @Override
+   public boolean isDeployed() {
+      return deployed;
    }
 
    @Override
@@ -106,6 +114,8 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
          log.info("Deploying REST gateway services.");
          rest.deploy();
 
+         deployed = true;
+
          try {
             while (!Thread.currentThread().isInterrupted()) {
                Thread.sleep(1000);
@@ -113,6 +123,8 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
          } catch (InterruptedException ie) {
             Utils.shutdownLog(log, ie);
          } finally {
+            deployed = false;
+            
             rest.undeploy();
             try {
                weld.shutdown();
@@ -222,6 +234,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
+   @Dependent
    @Interceptor()
    @Priority(Interceptor.Priority.APPLICATION)
    public static class LoggingInterceptor {
