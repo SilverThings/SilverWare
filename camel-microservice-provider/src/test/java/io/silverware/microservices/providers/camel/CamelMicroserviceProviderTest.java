@@ -19,6 +19,7 @@
  */
 package io.silverware.microservices.providers.camel;
 
+import io.silverware.microservices.Context;
 import io.silverware.microservices.util.BootUtil;
 
 import org.apache.camel.CamelContext;
@@ -102,7 +103,7 @@ public class CamelMicroserviceProviderTest {
    public static class TestCamelContextFactory implements CamelContextFactory {
 
       @Override
-      public CamelContext createCamelContext() {
+      public CamelContext createCamelContext(final Context context) {
          return camelContext;
       }
 

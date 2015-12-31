@@ -25,7 +25,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.LogManager;
@@ -127,8 +127,8 @@ public final class Boot {
 
       System.getProperties().forEach((key, value) -> contextProperties.put((String) key, value));
 
-      options.addOption(OptionBuilder.withArgName("property=value").hasArgs(2).withValueSeparator().withDescription("system properties").create(PROPERTY_LETTER));
-      options.addOption(OptionBuilder.withLongOpt("properties").withDescription("Custom property file").hasArg().withArgName("PROPERTY_FILE").create(PROPERTY_FILE_LETTER));
+      options.addOption(Option.builder(PROPERTY_LETTER).argName("property=value").numberOfArgs(2).valueSeparator().desc("system properties").build());
+      options.addOption(Option.builder(PROPERTY_FILE_LETTER).longOpt("properties").desc("Custom property file").hasArg().argName("PROPERTY_FILE").build());
 
       try {
          final CommandLine commandLine = commandLineParser.parse(options, args);

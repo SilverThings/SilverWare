@@ -17,16 +17,21 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.providers.camel;
+package io.silverware.providers.camel;
 
-import io.silverware.microservices.Context;
-
-import org.apache.camel.CamelContext;
+import org.apache.camel.builder.RouteBuilder;
 
 /**
- * Factory to create custom Camel context.
+ * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-public interface CamelContextFactory {
+public class CamelCdiRoute extends RouteBuilder {
 
-   CamelContext createCamelContext(final Context context);
+   @Override
+   public void configure() throws Exception {
+      from("timer://foo?period=2000&repeatCount=1")
+         .setBody().simple("Hello from Camel Timer!")
+         .beanRef("camelCdiMicroservice", "sayHello")
+         .to("log:test").to("stream:out");
+   }
+
 }

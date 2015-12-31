@@ -39,6 +39,7 @@
       <module>microservices-bom</module>
       <module>microservices</module>
       <module>camel-microservice-provider</module>
+      <module>camel-cdi-integration</module>
       <module>cdi-microservice-provider</module>
       <module>cluster-microservice-provider</module>
       <module>http-server-microservice-provider</module>
@@ -95,6 +96,10 @@
             <version>${version.maven.surefire}</version>
             <configuration>
                <forkCount>1</forkCount>
+               <systemPropertyVariables>
+                  <java.util.logging.manager>org.apache.logging.log4j.jul.LogManager</java.util.logging.manager>
+                  <org.apache.commons.logging.Log>org.apache.logging.log4j.jcl.Log4jLog</org.apache.commons.logging.Log>
+               </systemPropertyVariables>
             </configuration>
          </plugin>
       </plugins>

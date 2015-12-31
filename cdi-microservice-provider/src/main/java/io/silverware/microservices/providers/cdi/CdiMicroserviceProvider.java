@@ -41,6 +41,7 @@ import org.jboss.weld.environment.se.WeldContainer;
 
 import javax.annotation.Priority;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -124,7 +125,6 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
             Utils.shutdownLog(log, ie);
          } finally {
             deployed = false;
-            
             rest.undeploy();
             try {
                weld.shutdown();
@@ -218,6 +218,22 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
    static Object getMicroserviceProxy(final Context context, final Class clazz, final String beanName) {
       return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(clazz).select(new MicroserviceReferenceLiteral(beanName)).get();
+   }
+
+   public <T> T lookupBean(final Class<T> type) {
+      return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(type).get();
+   }
+
+   @Override
+   public <T> T findByType(Class<T> type) {
+      BeanManager beanManager = (BeanManager) context.getProperties().get(BEAN_MANAGER);
+      Set<T> beans = new HashSet<T>();
+      Set<Bean<?>> definitions = beanManager.getBeans(type);
+      Bean<?> bean = beanManager.resolve(definitions);
+      CreationalContext<?> creationalContext = beanManager.createCreationalContext(bean);
+      Object result = beanManager.getReference(bean, type, creationalContext);
+
+      return result == null ? null : type.cast(result);
    }
 
    private static class MicroserviceReferenceLiteral extends AnnotationLiteral<MicroserviceReference> implements MicroserviceReference {

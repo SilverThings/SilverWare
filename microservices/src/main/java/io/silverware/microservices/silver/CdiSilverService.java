@@ -47,4 +47,13 @@ public interface CdiSilverService extends ProvidingSilverService {
    String CDI_REST_HOST = "silverware.cdi.rest.host";
 
    boolean isDeployed();
+
+   /**
+    * Looks up the given bean type in CDI. The particular implementation is dependant on the underlying service provider.
+    * @param type The type to search for.
+    * @param <T> Type of the bean to return.
+    * @return
+    */
+   <T> T findByType(final Class<T> type);
+
 }
