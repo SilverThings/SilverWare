@@ -34,6 +34,11 @@
       <version.maven.project.reports>2.7</version.maven.project.reports>
       <version.maven.jar.plugin>2.4</version.maven.jar.plugin>
       <version.maven.dependency.plugin>2.10</version.maven.dependency.plugin>
+      <version.maven.license.plugin>1.5</version.maven.license.plugin>
+      <version.maven.release.plugin>2.4.1</version.maven.release.plugin>
+      <version.maven.gpg.plugin>1.5</version.maven.gpg.plugin>
+      <version.maven.source.plugin>2.4</version.maven.source.plugin>
+      <version.maven.javadoc.plugin>2.10.1</version.maven.javadoc.plugin>
    </properties>
    <modules>
       <module>microservices-bom</module>
@@ -172,6 +177,62 @@
                   </execution>
                </executions>
             </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-release-plugin</artifactId>
+               <version>${version.maven.release.plugin}</version>
+               <configuration>
+                  <tagNameFormat>v@{project.version}</tagNameFormat>
+                  <pushChanges>false</pushChanges>
+                  <localCheckout>true</localCheckout>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>license-maven-plugin</artifactId>
+               <version>${version.maven.license.plugin}</version>
+               <configuration>
+                  <verbose>false</verbose>
+                  <addSvnKeyWords>false</addSvnKeyWords>
+                  <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                  <processStartTag>-----------------------------------------------------------------------\</processStartTag>
+                  <processEndTag>-----------------------------------------------------------------------/</processEndTag>
+                  <sectionDelimiter> 
+                  </sectionDelimiter>
+                  <organizationName>the original author or authors.</organizationName>
+                  <licenseName>apache_v2</licenseName>
+                  <roots>
+                     <root>src/main/java</root>
+                     <root>src/test/java</root>
+                  </roots>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-source-plugin</artifactId>
+               <version>${version.maven.source.plugin}</version>
+               <executions>
+                  <execution>
+                     <id>attach-sources</id>
+                     <goals>
+                        <goal>jar-no-fork</goal>
+                     </goals>
+                  </execution>
+               </executions>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-javadoc-plugin</artifactId>
+               <version>${version.maven.javadoc.plugin}</version>
+               <executions>
+                  <execution>
+                     <id>attach-javadocs</id>
+                     <goals>
+                        <goal>jar</goal>
+                     </goals>
+                  </execution>
+               </executions>
+            </plugin>
          </plugins>
       </pluginManagement>
    </build>
@@ -191,4 +252,27 @@
          </plugin>
       </plugins>
    </reporting>
+   <profiles>
+      <profile>
+         <id>sign</id>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-gpg-plugin</artifactId>
+                  <version>${version.maven.gpg.plugin}</version>
+                  <executions>
+                     <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                           <goal>sign</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
 </project>
