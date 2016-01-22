@@ -25,6 +25,30 @@
       <name>px3</name>
       <url>http://www.silverware.io</url>
    </organization>
+   <scm>
+      <url>https://github.com/PerfCake/PerfCake</url>
+      <connection>scm:git:git://github.com/px3/SilverWare.git</connection>
+      <developerConnection>scm:git:git@github.com:px3/SilverWare.git</developerConnection>
+      <tag>v1.0</tag>
+   </scm>
+   <licenses>
+      <license>
+         <name>The Apache Software License, Version 2.0</name>
+         <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+         <distribution>repo</distribution>
+         <comments>A business-friendly OSS license</comments>
+      </license>
+   </licenses>
+   <distributionManagement>
+      <snapshotRepository>
+         <id>ossrh</id>
+         <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      </snapshotRepository>
+      <repository>
+         <id>ossrh</id>
+         <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      </repository>
+   </distributionManagement>
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <java.level>1.8</java.level>
