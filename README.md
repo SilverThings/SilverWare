@@ -25,7 +25,7 @@ Enabling the following technologies in on our near-term roadmap.
 
 * __CDI__ - _WORKS_ - Enables development of business code using using simple java classes and injection. Integrates well with Camel.
 * __Camel__ - _WORKS_ - Enables automatic startup of Camel routes and components in both Java classes and XML files. Also friends with CDI.
-* __REST__ - _PoC WORK_ - It is possible to expose a CDI microservice via the REST interface. However, this is just a basic version, uses 
+* __REST__ - _PoC WORKS_ - It is possible to expose a CDI microservice via the REST interface. However, this is just a basic version, uses 
   only JSON and no custom URL or parameters manipulation. Improvements are on the way!
 * __Monitoring__ - _NOT TESTED_ - Theoreticaly completed, but not verified with an external monitoring console.
 * __ActiveMQ__ - _COMING SOON_ - Integration between CDI, Camel and ActiveMQ messaging. Microservices should be able to become an ultimate consumer and 
