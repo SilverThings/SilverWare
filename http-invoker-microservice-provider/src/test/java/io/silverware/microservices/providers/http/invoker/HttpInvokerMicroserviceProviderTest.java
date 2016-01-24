@@ -35,6 +35,7 @@ public class HttpInvokerMicroserviceProviderTest {
    private HttpInvokerSilverService httpInvokerSilverService = null;
 
    @Test
+   @SuppressWarnings("unchecked")
    public void testHttpInvoker() throws Exception {
       final BootUtil bootUtil = new BootUtil();
       final Map<String, Object> platformProperties = bootUtil.getContext().getProperties();

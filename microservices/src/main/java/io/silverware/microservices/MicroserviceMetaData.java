@@ -96,6 +96,10 @@ final public class MicroserviceMetaData {
     *       The type of the discovered Microservice.
     * @param qualifiers
     *       The qualifiers of the discovered Microservice.
+    * @param specVersion
+    *       The specification version we are looking for.
+    * @param implVersion
+    *       The implementation version we are looking for.
     */
    public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers, final String specVersion, final String implVersion) {
       this.name = name;

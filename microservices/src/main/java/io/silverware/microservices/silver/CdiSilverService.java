@@ -52,7 +52,7 @@ public interface CdiSilverService extends ProvidingSilverService {
     * Looks up the given bean type in CDI. The particular implementation is dependant on the underlying service provider.
     * @param type The type to search for.
     * @param <T> Type of the bean to return.
-    * @return
+    * @return Bean of the requested type.
     */
    <T> T findByType(final Class<T> type);
 

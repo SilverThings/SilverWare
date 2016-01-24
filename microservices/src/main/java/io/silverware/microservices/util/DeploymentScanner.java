@@ -221,11 +221,7 @@ public class DeploymentScanner {
     */
    private static void addNestedClasspathUrls(final ConfigurationBuilder builder) {
       final ClassLoader[] cls = ClasspathHelper.classLoaders(builder.getClassLoaders());
-      try {
-         builder.addUrls(ClassLoaderUtil.getAlsoNestedClasspathUrls(Arrays.asList(cls)));
-      } catch (final IOException e) {
-         log.error("Problem while adding nested classpath urls.", e);
-      }
+      builder.addUrls(ClassLoaderUtil.getAlsoNestedClasspathUrls(Arrays.asList(cls)));
    }
 
    /**

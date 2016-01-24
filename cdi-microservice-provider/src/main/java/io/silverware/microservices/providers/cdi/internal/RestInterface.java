@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -181,6 +182,7 @@ public class RestInterface extends AbstractVerticle {
                paramValues[i] = convert.convert(params.getValue(i), paramTypes[i]);
             }
 
+            @SuppressWarnings("unchecked")
             Set<Object> services = context.lookupLocalMicroservice(new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers()));
             JsonObject response = new JsonObject();
             try {

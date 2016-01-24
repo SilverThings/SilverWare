@@ -104,7 +104,7 @@ public class Context {
 
    /**
     * Gets the registry of Microservices providers.
-    * @return
+    * @return The registry of Microservices providers.
     */
    @SuppressWarnings("unchecked")
    public Map<String, MicroserviceProvider> getProvidersRegistry() {
@@ -113,7 +113,7 @@ public class Context {
 
    /**
     * Adds a Microservice to the registry.
-    * @param metaData
+    * @param metaData Description of the service to be registered.
     */
    public void registerMicroservice(final MicroserviceMetaData metaData) {
       microservices.add(metaData);

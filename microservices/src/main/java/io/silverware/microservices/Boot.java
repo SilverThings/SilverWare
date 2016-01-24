@@ -23,6 +23,7 @@ import io.silverware.microservices.util.Utils;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
@@ -123,7 +124,7 @@ public final class Boot {
       final Context context = new Context();
       final Map<String, Object> contextProperties = context.getProperties();
       final Options options = new Options();
-      final CommandLineParser commandLineParser = new GnuParser();
+      final CommandLineParser commandLineParser = new DefaultParser();
 
       System.getProperties().forEach((key, value) -> contextProperties.put((String) key, value));
 

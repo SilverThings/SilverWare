@@ -107,7 +107,9 @@ public class Utils {
    /**
     * Gets the manifest entry for the given class.
     * @param clazz The class I want to obtain entry for.
+    * @param entryName The name of the entry to obtain.
     * @return The entry from manifest, null if there is no such entry or the manifest file does not exists.
+    * @throws IOException When it was not possible to get the manifest file.
     */
    public static String getManifestEntry(final Class clazz, final String entryName) throws IOException {
       Enumeration<URL> resources = clazz.getClassLoader().getResources("META-INF/MANIFEST.MF");

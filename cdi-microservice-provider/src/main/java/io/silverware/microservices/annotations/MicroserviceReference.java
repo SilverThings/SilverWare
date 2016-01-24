@@ -43,6 +43,7 @@ public @interface MicroserviceReference {
 
     /**
      * Get the name of the Microservice that should be injected.
+     * @return The name of the Microservice to be injected.
      */
     String value() default "";
 }

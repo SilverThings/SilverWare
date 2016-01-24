@@ -30,10 +30,10 @@ public final class ClassLoaderUtil {
 
    /**
     * Get URLs to basicClassLoaders and also to jars from MANIFEST Class-Path directive.
-    * @param basicClassLoaders classloaders that we want to examine
-    * @return set of URL (not null)
+    * @param basicClassLoaders Classloaders that we want to examine.
+    * @return Set of URL (not null).
     */
-   public static Set<URL> getAlsoNestedClasspathUrls(final List<ClassLoader> basicClassLoaders) throws IOException {
+   public static Set<URL> getAlsoNestedClasspathUrls(final List<ClassLoader> basicClassLoaders) {
       if (basicClassLoaders == null || basicClassLoaders.isEmpty()) {
          return Collections.emptySet();
       }
@@ -41,7 +41,11 @@ public final class ClassLoaderUtil {
       final Set<ClassLoader> classLoaders = getAlsoParentsClassLoaders(basicClassLoaders);
       final Set<URL> result = new LinkedHashSet<>();
       for (final ClassLoader cl : classLoaders) {
-         result.addAll(getAlsoNestedClasspathUrls(cl));
+         try {
+            result.addAll(getAlsoNestedClasspathUrls(cl));
+         } catch (IOException ioe) {
+            log.warn("Unable to investigate nested classpath of {}: {}", cl, ioe);
+         }
       }
 
       return result;

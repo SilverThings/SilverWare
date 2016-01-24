@@ -73,6 +73,7 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
    }
 
    @Override
+   @SuppressWarnings("unchecked")
    public void deployServlet(final String contextPath, final String deploymentName, final List<ServletDescriptor> servletDescriptors) throws SilverWareException {
       DeploymentInfo servletBuilder = Servlets.deployment()
                                               .setClassLoader(this.getClass().getClassLoader())

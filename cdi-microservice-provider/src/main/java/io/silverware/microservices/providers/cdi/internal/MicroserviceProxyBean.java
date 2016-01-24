@@ -80,9 +80,11 @@ public class MicroserviceProxyBean implements Bean {
     * @param proxyInterface
     *       The proxy Interface.
     * @param qualifiers
-    *       The CDI bean qualifiers.  Copied from the injection point.
-    * @param beanDeploymentMetaData
-    *       Deployment metadata.
+    *       The CDI bean qualifiers. Copied from the injection point.
+    * @param annotations
+    *       Annotations from the source code at tha injection point.
+    * @param context
+    *       SilverWare context in which we run.
     */
    public MicroserviceProxyBean(final String microserviceName, final Class<?> proxyInterface, final Set<Annotation> qualifiers, final Set<Annotation> annotations, final Context context) {
       this.microserviceName = microserviceName;
