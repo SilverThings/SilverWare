@@ -5,6 +5,50 @@
    <version>1.0</version>
    <packaging>pom</packaging>
    <name>microservices Bill of Materials</name>
+   <description>SilverWare Microservices Platform Bill of Materials.</description>
+   <url>http://www.silverware.org</url>
+   <inceptionYear>2015</inceptionYear>
+   <developers>
+      <developer>
+         <name>Martin Večeřa</name>
+         <email>marvenec@gmail.com</email>
+         <roles>
+            <role>Owner</role>
+         </roles>
+      </developer>
+   </developers>
+   <issueManagement>
+      <url>https://github.com/px3/SilverWare/issues</url>
+      <system>github</system>
+   </issueManagement>
+   <organization>
+      <name>px3</name>
+      <url>http://www.silverware.io</url>
+   </organization>
+   <scm>
+      <url>https://github.com/PerfCake/PerfCake</url>
+      <connection>scm:git:git://github.com/px3/SilverWare.git</connection>
+      <developerConnection>scm:git:git@github.com:px3/SilverWare.git</developerConnection>
+      <tag>v1.0</tag>
+   </scm>
+   <licenses>
+      <license>
+         <name>The Apache Software License, Version 2.0</name>
+         <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+         <distribution>repo</distribution>
+         <comments>A business-friendly OSS license</comments>
+      </license>
+   </licenses>
+   <distributionManagement>
+      <snapshotRepository>
+         <id>ossrh</id>
+         <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      </snapshotRepository>
+      <repository>
+         <id>ossrh</id>
+         <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      </repository>
+   </distributionManagement>
    <properties>
       <version.reflections>0.9.10</version.reflections>
       <version.log4j>2.5</version.log4j>
