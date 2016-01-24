@@ -92,14 +92,15 @@
 									<div class="6u">
 										<section>
 											<h3 class="icon fa-smile-o">Easy to use</h3>
-											<p>SilverWare builds on top of existing technologies and frameworks you are familiar with (REST, CDI (Weld), Camel, Vert.x, NoSQL, ActiveMQ, Amazon SQS, Hystrix...).</p>
+											<p>SilverWare builds on top of existing technologies and frameworks you are familiar with (CDI (Weld), Camel, REST, ActiveMQ, Vert.x, NoSQL, Amazon SQS, Hystrix...). We do not reinvent the wheel. No generated stubs and yet easy to debug.</p>
 										</section>
 									</div>
 									<div class="6u">
 										<section>
 											<h3 class="icon fa-cube">Modularized</h3>
 											<p>SilverWare is modularized, highy configurable and container-free. Your deployments only carry the minimum code to run independently. 
-											A developer picks up individual components that they need for their Microservices.</p>
+											A developer picks up individual components that they need for their Microservices and starts developing their business code
+											immediately.</p>
 										</section>
 									</div>
 								</div>
@@ -107,7 +108,7 @@
 									<div class="6u">
 										<section>
 											<h3 class="icon fa-refresh">Reuse existing services</h3>
-											<p>You can immediately deploy any of your existing services written in those frameworks with SilverWare. Or you can start developing new services in a language of your taste including Java, Jython, jRuby, Scala, Ceylon, Kolin, Clojure...</p>
+											<p>You can immediately deploy any of your existing services written in the supported frameworks with SilverWare. Or you can start developing new services in a language of your taste including Java, Jython, jRuby, Scala, Ceylon, Kotlin, Clojure...</p>
 										</section>
 									</div>
 									<div class="6u">
@@ -156,9 +157,11 @@ public class HelloMicroservice implements HelloService {
 							<section class="highlight">
 								<a href="#" class="image featured"><img src="images/184V.jpg" alt="" /></a>
 								<h3><a href="#">Internet of Things</a></h3>
-								<p>Success stories, examples and demonstrations comming soon!</p>
+								<p>Just have a look on our demos and quickstarts available on GitHub. There you can find sample building blocks and
+								run your first example with just a few maven goals!</p>
+								<br/>
 								<ul class="actions">
-									<li><a href="#" class="button style1">Learn More</a></li>
+									<li><a href="https://github.com/px3/SilverWare-Demos" class="button style1">Learn More</a></li>
 								</ul>
 							</section>
 						</div>
@@ -166,7 +169,9 @@ public class HelloMicroservice implements HelloService {
 							<section class="highlight">
 								<a href="#" class="image featured"><img src="images/117V.jpg" alt="" /></a>
 								<h3><a href="#">Monitoring &amp; Management</a></h3>
-								<p>Success stories, examples and demonstrations comming soon!</p>
+								<p>Working on the integration with <a href="https://www.docker.com/">Docker</a>, <a href="https://www.openshift.com/">OpenShift</a>, 
+								and <a href="http://fabric8.io/">Fabric8</a>. Success story coming soon!</p>
+								<br /><br />
 								<ul class="actions">
 									<li><a href="#" class="button style1">Learn More</a></li>
 								</ul>
@@ -176,7 +181,8 @@ public class HelloMicroservice implements HelloService {
 							<section class="highlight">
 								<a href="#" class="image featured"><img src="images/msg-flowV.jpg" alt="" /></a>
 								<h3><a href="#">Message flow</a></h3>
-								<p>Success stories, examples and demonstrations comming soon!</p>
+								<p>To enable implementation of Enterprise Integration Patters using message oriented middleware, we work on a complex rule-based
+								message translator between the supported frameworks. We expect the work to be done by summer 2016.</p>
 								<ul class="actions">
 									<li><a href="#" class="button style1">Learn More</a></li>
 								</ul>
@@ -191,9 +197,9 @@ public class HelloMicroservice implements HelloService {
 				<div class="title">The Partnership</div>
 				<div id="footer" class="container">
 					<header class="style1">
-						<h2>Would you like to get more?</h2>
+						<h2>Would you like to give it a try?</h2>
 						<p>
-							More information, more explanation, more support &ndash; we can definitely help you!
+							More code, more examples, more information, more explanation, more support.
 						</p>
 					</header>
 					<hr />
@@ -260,13 +266,19 @@ public class HelloMicroservice implements HelloService {
 												</p>
 												<p>
 													SilverWare.io has:
-													<a id="issues"><span class="badge">0 Open Issues</span></a>
+													<a id="issues" hraf="https://github.com/px3/SilverWare/issues"><span class="badge">0 Open Issues</span></a>
 												</p>
 											</section>
 										</div>
 										<div class="6u">
 											<section>
 												<h3 class="icon fa-download">Download</h3>
+												<p>
+												  Release 1.0 available in <a href="http://search.maven.org/#search|ga|1|silverware">Maven Repository</a>!
+												</p>
+												<p>
+												  Or download source:
+												</p>
 												<p>
 													<a href="https://github.com/px3/SilverWare/zipball/devel">ZIP</a> /
 													<a href="https://github.com/px3/SilverWare/tarball/devel">TAR.GZ</a>
