@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <groupId>io.silverware</groupId>
+      <artifactId>silverware-parent</artifactId>
+      <version>1.0</version>
+   </parent>
+   <artifactId>monitoring-microservice-provider</artifactId>
+   <packaging>jar</packaging>
+   <name>Monitoring Microservices Provider</name>
+   <dependencies>
+      <dependency>
+         <groupId>io.silverware</groupId>
+         <artifactId>microservices</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>io.silverware</groupId>
+         <artifactId>http-server-microservice-provider</artifactId>
+         <version>${project.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.jolokia</groupId>
+         <artifactId>jolokia-core</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jolokia</groupId>
+         <artifactId>jolokia-jsr160</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jolokia</groupId>
+         <artifactId>jolokia-war</artifactId>
+         <type>war</type>
+      </dependency>
+   </dependencies>
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>${version.maven.dependency.plugin}</version>
+         </plugin>
+      </plugins>
+   </build>
+</project>

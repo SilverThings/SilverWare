@@ -21,7 +21,7 @@
       <Logger name="org" level="info"/>
       <Logger name="java" level="info"/>
       <Logger name="org.jboss.weld" level="trace"/>
-      <Logger name="org.silverware" level="info"/>
+      <Logger name="io.silverware" level="info"/>
       <Root level="trace">
          <AppenderRef ref="ASYNC"/>
       </Root>
