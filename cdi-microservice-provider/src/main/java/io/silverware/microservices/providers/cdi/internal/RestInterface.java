@@ -19,10 +19,7 @@
  */
 package io.silverware.microservices.providers.cdi.internal;
 
-import io.silverware.microservices.Context;
-import io.silverware.microservices.MicroserviceMetaData;
-import io.silverware.microservices.silver.CdiSilverService;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,9 +27,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +38,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.enterprise.inject.spi.Bean;
 
+import io.silverware.microservices.Context;
+import io.silverware.microservices.MicroserviceMetaData;
+import io.silverware.microservices.annotations.ParamName;
+import io.silverware.microservices.silver.CdiSilverService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -55,6 +56,7 @@ import io.vertx.ext.web.RoutingContext;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ * @author <a href="mailto:mswiech@redhat.com">Martin Swiech</a>
  */
 public class RestInterface extends AbstractVerticle {
 
@@ -160,10 +162,11 @@ public class RestInterface extends AbstractVerticle {
       final Bean bean = gatewayRegistry.get(microserviceName);
 
       routingContext.request().bodyHandler(buffer -> {
-         JsonArray params = new JsonArray(buffer.toString());
+         final JsonObject mainJsonObject = new JsonObject(buffer.toString());
 
          try {
-            List<Method> methods = Arrays.asList(bean.getBeanClass().getDeclaredMethods()).stream().filter(method -> method.getName().equals(methodName) && method.getParameterCount() == params.size()).collect(Collectors.toList());
+            final Class<?> beanClass = bean.getBeanClass();
+            List<Method> methods = Arrays.asList(beanClass.getDeclaredMethods()).stream().filter(method -> method.getName().equals(methodName) && method.getParameterCount() == mainJsonObject.size()).collect(Collectors.toList());
 
             if (methods.size() == 0) {
                throw new IllegalStateException(String.format("No such method %s with compatible parameters.", methodName));
@@ -175,15 +178,18 @@ public class RestInterface extends AbstractVerticle {
 
             final Method m = methods.get(0);
 
-            Class[] paramTypes = m.getParameterTypes();
-            Object[] paramValues = new Object[paramTypes.length];
+            final Parameter[] methodParams = m.getParameters();
+            final Object[] paramValues = new Object[methodParams.length];
             final ConvertUtilsBean convert = new ConvertUtilsBean();
-            for (int i = 0; i < paramTypes.length; i++) {
-               paramValues[i] = convert.convert(params.getValue(i), paramTypes[i]);
+            for (int i = 0; i < methodParams.length; i++) {
+               final Parameter methodParameter = methodParams[i];
+               final String paramName = getParamName(methodParameter, m, beanClass);
+               final Object jsonObject = mainJsonObject.getValue(paramName);
+               paramValues[i] = convert.convert(jsonObject, methodParameter.getType());
             }
 
             @SuppressWarnings("unchecked")
-            Set<Object> services = context.lookupLocalMicroservice(new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers()));
+            Set<Object> services = context.lookupLocalMicroservice(new MicroserviceMetaData(microserviceName, beanClass, bean.getQualifiers()));
             JsonObject response = new JsonObject();
             try {
                Object result = m.invoke(services.iterator().next(), paramValues);
@@ -200,6 +206,23 @@ public class RestInterface extends AbstractVerticle {
             routingContext.response().setStatusCode(503).end("Resource not available.");
          }
       });
+   }
+
+   private static String getParamName(final Parameter methodParameter, Method method, final Class<?> clazz) {
+      final ParamName paramName = methodParameter.getAnnotation(ParamName.class);
+      if (paramName != null && paramName.value() != null && !paramName.value().trim().isEmpty()) {
+         return paramName.value().trim();
+      }
+      final JsonProperty jsonProperty = methodParameter.getAnnotation(JsonProperty.class);
+      if (jsonProperty != null && jsonProperty.value() != null && !jsonProperty.value().trim().isEmpty()) {
+         return jsonProperty.value().trim();
+      }
+
+      if (!methodParameter.isNamePresent()) {
+         log.warn(String.format("Method parameter name is not present for method %s in class %s. Please use compilation argument (or test compilation argument) \"-parameters\""
+               + " or use annotation @%s or @%s for parameters of this method.", method.getName(), clazz.getCanonicalName(), ParamName.class.getCanonicalName(), JsonProperty.class.getCanonicalName()));
+      }
+      return methodParameter.getName();
    }
 
    @SuppressWarnings("unchecked")

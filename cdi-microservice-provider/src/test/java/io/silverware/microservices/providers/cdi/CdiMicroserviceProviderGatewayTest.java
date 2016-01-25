@@ -19,23 +19,25 @@
  */
 package io.silverware.microservices.providers.cdi;
 
-import io.silverware.microservices.annotations.Gateway;
-import io.silverware.microservices.annotations.Microservice;
-import io.silverware.microservices.util.BootUtil;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import javax.enterprise.inject.spi.BeanManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import javax.enterprise.inject.spi.BeanManager;
+
+import io.silverware.microservices.annotations.Gateway;
+import io.silverware.microservices.annotations.Microservice;
+import io.silverware.microservices.annotations.ParamName;
+import io.silverware.microservices.util.BootUtil;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -113,7 +115,7 @@ public class CdiMicroserviceProviderGatewayTest {
          });
       });
 
-      String request = new JsonArray().add(4).encodePrettily();
+      final String request = new JsonObject().put("count", 4).encodePrettily();
       client.post(8081, "localhost", "/rest/RestfulMicroservice/multiHello", response -> {
          response.bodyHandler(buffer -> {
             JsonObject result = new JsonObject(buffer.toString());
@@ -144,7 +146,7 @@ public class CdiMicroserviceProviderGatewayTest {
          log.info("This is the coolest method");
       }
 
-      public String multiHello(int count) {
+      public String multiHello(@ParamName("count") int count) {
          StringBuilder sb = new StringBuilder();
          for (int i = 0; i < count; i++) {
             sb.append("hello ");
