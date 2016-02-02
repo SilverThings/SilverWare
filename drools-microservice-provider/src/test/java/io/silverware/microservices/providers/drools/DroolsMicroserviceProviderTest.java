@@ -36,7 +36,7 @@ public class DroolsMicroserviceProviderTest {
 
    private static final Semaphore semaphore = new Semaphore(0);
 
-   @Test
+   @Test(enabled = false)
    public void droolsMicroserviceProviderTest() throws Exception {
       final BootUtil bootUtil = new BootUtil();
       final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName());
