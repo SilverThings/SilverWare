@@ -264,9 +264,17 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
 
       try {
          int active;
+         boolean firstTime = true;
+
          do {
             active = executor.getActiveCount();
-            log.info("Still here ;-) Microservice providers alive: " + active);
+
+            if (firstTime) {
+               log.info("Microservice providers alive: " + active);
+               firstTime = false;
+            } else if (log.isDebugEnabled()) {
+               log.debug("Still here ;-) Microservice providers alive: " + active);
+            }
 
             if (active > 0) {
                executor.awaitTermination(1, TimeUnit.MINUTES);

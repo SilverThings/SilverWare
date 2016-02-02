@@ -114,6 +114,11 @@
             <version>${project.version}</version>
          </dependency>
          <dependency>
+            <groupId>io.silverware</groupId>
+            <artifactId>drools-microservice-provider</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>${version.reflections}</version>

@@ -19,6 +19,12 @@
  */
 package io.silverware.microservices.providers.drools;
 
+import io.silverware.microservices.annotations.Microservice;
+import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
+import io.silverware.microservices.providers.cdi.MicroservicesStartedEvent;
+import io.silverware.microservices.silver.CdiSilverService;
+import io.silverware.microservices.util.BootUtil;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kie.api.cdi.KSession;
@@ -31,12 +37,6 @@ import java.util.concurrent.TimeUnit;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
-
-import io.silverware.microservices.annotations.Microservice;
-import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
-import io.silverware.microservices.providers.cdi.MicroservicesStartedEvent;
-import io.silverware.microservices.silver.CdiSilverService;
-import io.silverware.microservices.util.BootUtil;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -57,7 +57,7 @@ public class DroolsMicroserviceProviderTest {
          Thread.sleep(200);
       }
 
-      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for ..."); 
+      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for ...");
 
       platform.interrupt();
       platform.join();
