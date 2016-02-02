@@ -29,5 +29,5 @@ public interface DroolsSilverService extends ProvidingSilverService {
    /**
     * A map where KIE sessions are stored.
     */
-   String DROOLS_SESSION_MAP = "silverware.drools.sessionMap";
+   String DROOLS_CONTAINER = "silverware.drools.sessionMap";
 }

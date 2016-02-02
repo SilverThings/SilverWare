@@ -21,21 +21,21 @@ package io.silverware.microservices.providers.drools;
 
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
-import io.silverware.microservices.SilverWareException;
 import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.silver.DroolsSilverService;
 import io.silverware.microservices.util.DeployStats;
-import io.silverware.microservices.util.DeploymentScanner;
 import io.silverware.microservices.util.Utils;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.kie.api.KieServices;
+import org.kie.api.runtime.KieContainer;
+import org.kie.api.runtime.KieSession;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -47,21 +47,18 @@ public class DroolsMicroserviceProvider implements MicroserviceProvider, DroolsS
 
    private Context context;
 
-   private final DeployStats stats = new DeployStats();
+   private Map<String, KieSession> sessions = new HashMap<>();
+   private KieContainer container;
 
-   private void createDroolsSession() throws SilverWareException {
-      throw new SilverWareException("Unimplemented");
-   }
-
-   private void loadRoutesFromXml() {
-      // routeResources = DeploymentScanner.getContextInstance(context).lookupResources(".*camel-.*\\.xml");
+   private void createDroolsSession() {
+      final KieServices ks = KieServices.Factory.get();
+      container = ks.getKieClasspathContainer();
+      context.getProperties().put(DROOLS_CONTAINER, container);
    }
 
    @Override
    public void initialize(final Context context) {
       this.context = context;
-
-      loadRoutesFromXml();
    }
 
    @Override
@@ -71,35 +68,37 @@ public class DroolsMicroserviceProvider implements MicroserviceProvider, DroolsS
 
    @Override
    public void run() {
-      //if (routes.size() > 0 || routeResources.size() > 0) {
+      try {
+         log.info("Hello from Drools microservice provider!");
+
+         //createDroolsSession();
+
          try {
-            log.info("Hello from Drools microservice provider!");
-
-            createDroolsSession();
-
-            //log.info("Total Camel routes " + stats.toString() + ".");
-
-            //camelContext.start();
-
-            try {
-               while (!Thread.currentThread().isInterrupted()) {
-                  Thread.sleep(1000);
-               }
-            } catch (InterruptedException ie) {
-               Utils.shutdownLog(log, ie);
-            } finally {
-               //camelContext.stop();
+            while (!Thread.currentThread().isInterrupted()) {
+               Thread.sleep(1000);
             }
-         } catch (Exception e) {
-            log.error("Drools microservice provider failed: ", e);
+         } catch (InterruptedException ie) {
+            Utils.shutdownLog(log, ie);
+         } finally {
+            sessions.forEach((k, v) -> v.dispose());
          }
-      //} else {
-      //   log.warn("No KIE Jars to deploy. Drools microservice provider is terminated.");
-      //}
+      } catch (Exception e) {
+         log.error("Drools microservice provider failed: ", e);
+      }
    }
 
    @Override
    public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
+      if (KieSession.class.isAssignableFrom(metaData.getType())) {
+         String name = metaData.getName();
+
+         if (name == null || name.isEmpty()) {
+            return Collections.singleton(container.newKieSession());
+         } else {
+            return Collections.singleton(sessions.computeIfAbsent(name, newName -> container.newKieSession(newName)));
+         }
+      }
+
       return new HashSet<>();
    }
 

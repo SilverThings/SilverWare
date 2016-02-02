@@ -21,6 +21,17 @@
          <groupId>org.drools</groupId>
          <artifactId>drools-compiler</artifactId>
       </dependency>
+      <dependency>
+         <groupId>io.silverware</groupId>
+         <artifactId>cdi-microservice-provider</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <!--dependency>
+         <groupId>org.drools.examples.kie-project-from-classpath</groupId>
+         <artifactId>kjar</artifactId>
+         <version>0.0.1-SNAPSHOT</version>
+         <scope>test</scope>
+      </dependency-->
    </dependencies>
    <build>
       <plugins>
