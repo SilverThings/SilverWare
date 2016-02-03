@@ -44,6 +44,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -104,10 +105,13 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
             stats.incSkipped();
          } else {
             try {
-               final Constructor c = clazz.getConstructor();
-               final RouteBuilder r = (RouteBuilder) c.newInstance();
-
-               routes.add(r);
+               if (!Modifier.isAbstract(clazz.getModifiers())) {
+                  final Constructor c = clazz.getConstructor();
+                  final RouteBuilder r = (RouteBuilder) c.newInstance();
+                  routes.add(r);
+               } else {
+                  stats.incSkipped();
+               }
             } catch (Error | Exception e) {
                log.error("Cannot initialize Camel route: " + clazz.getName(), e);
             }
