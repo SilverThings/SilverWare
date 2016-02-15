@@ -2,7 +2,7 @@
    <modelVersion>4.0.0</modelVersion>
    <groupId>io.silverware</groupId>
    <artifactId>microservices-bom</artifactId>
-   <version>2.0-SNAPSHOT</version>
+   <version>1.1</version>
    <packaging>pom</packaging>
    <name>microservices Bill of Materials</name>
    <description>SilverWare Microservices Platform Bill of Materials.</description>
@@ -29,7 +29,7 @@
       <url>https://github.com/PerfCake/PerfCake</url>
       <connection>scm:git:git://github.com/px3/SilverWare.git</connection>
       <developerConnection>scm:git:git@github.com:px3/SilverWare.git</developerConnection>
-      <tag>v2.0</tag>
+      <tag>v1.1</tag>
    </scm>
    <licenses>
       <license>
