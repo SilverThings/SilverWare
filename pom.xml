@@ -2,7 +2,7 @@
    <modelVersion>4.0.0</modelVersion>
    <groupId>io.silverware</groupId>
    <artifactId>silverware-parent</artifactId>
-   <version>1.0</version>
+   <version>1.1</version>
    <packaging>pom</packaging>
    <name>SilverWare</name>
    <description>Microservices Platform.</description>
@@ -29,7 +29,7 @@
       <url>https://github.com/PerfCake/PerfCake</url>
       <connection>scm:git:git://github.com/px3/SilverWare.git</connection>
       <developerConnection>scm:git:git@github.com:px3/SilverWare.git</developerConnection>
-      <tag>v1.0</tag>
+      <tag>v1.1</tag>
    </scm>
    <licenses>
       <license>
@@ -74,6 +74,7 @@
       <module>http-server-microservice-provider</module>
       <module>monitoring-microservice-provider</module>
       <module>http-invoker-microservice-provider</module>
+      <module>drools-microservice-provider</module>
    </modules>
    <dependencyManagement>
       <dependencies>

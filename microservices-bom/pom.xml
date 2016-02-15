@@ -2,7 +2,7 @@
    <modelVersion>4.0.0</modelVersion>
    <groupId>io.silverware</groupId>
    <artifactId>microservices-bom</artifactId>
-   <version>1.0</version>
+   <version>1.1</version>
    <packaging>pom</packaging>
    <name>microservices Bill of Materials</name>
    <description>SilverWare Microservices Platform Bill of Materials.</description>
@@ -29,7 +29,7 @@
       <url>https://github.com/PerfCake/PerfCake</url>
       <connection>scm:git:git://github.com/px3/SilverWare.git</connection>
       <developerConnection>scm:git:git@github.com:px3/SilverWare.git</developerConnection>
-      <tag>v1.0</tag>
+      <tag>v1.1</tag>
    </scm>
    <licenses>
       <license>
@@ -68,6 +68,7 @@
       <version.vertx>3.2.0</version.vertx>
       <version.jsonio>4.3.0</version.jsonio>
       <version.beanutils>1.9.2</version.beanutils>
+      <version.drools>6.3.0.Final</version.drools>
       <java.level>1.8</java.level>
    </properties>
    <dependencyManagement>
@@ -110,6 +111,11 @@
          <dependency>
             <groupId>io.silverware</groupId>
             <artifactId>camel-cdi-integration</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>io.silverware</groupId>
+            <artifactId>drools-microservice-provider</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
@@ -274,6 +280,16 @@
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
             <version>${version.beanutils}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-core</artifactId>
+            <version>${version.drools}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-compiler</artifactId>
+            <version>${version.drools}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

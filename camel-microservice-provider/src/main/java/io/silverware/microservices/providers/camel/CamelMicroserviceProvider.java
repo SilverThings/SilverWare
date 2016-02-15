@@ -44,6 +44,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -88,28 +89,31 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
       @SuppressWarnings("unchecked")
       final Set<Class<RouteBuilder>> routeBuilders = (Set<Class<RouteBuilder>>) DeploymentScanner.getContextInstance(context).lookupSubtypes(RouteBuilder.class);
       if (log.isDebugEnabled()) {
-         log.debug("Initializing Camel routes...");
+         log.debug("Initializing Camel route resources...");
       }
       stats.setFound(routeBuilders.size());
 
       for (Class<RouteBuilder> clazz : routeBuilders) {
          if (log.isDebugEnabled()) {
-            log.debug("Creating Camel route: " + clazz.getName());
+            log.debug("Creating Camel route builder: " + clazz.getName());
          }
 
          if (clazz.getName().equals(AdviceWithRouteBuilder.class.getName())) {
             if (log.isDebugEnabled()) {
-               log.debug("Skipping " + clazz.getName() + ". This is an internal Camel route.");
+               log.debug("Skipping " + clazz.getName() + ". This is an internal Camel route builder.");
             }
             stats.incSkipped();
          } else {
             try {
-               final Constructor c = clazz.getConstructor();
-               final RouteBuilder r = (RouteBuilder) c.newInstance();
-
-               routes.add(r);
+               if (!Modifier.isAbstract(clazz.getModifiers())) {
+                  final Constructor c = clazz.getConstructor();
+                  final RouteBuilder r = (RouteBuilder) c.newInstance();
+                  routes.add(r);
+               } else {
+                  stats.incSkipped();
+               }
             } catch (Error | Exception e) {
-               log.error("Cannot initialize Camel route: " + clazz.getName(), e);
+               log.error("Cannot initialize Camel route builder: " + clazz.getName(), e);
             }
          }
       }
@@ -162,7 +166,7 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
                }
             }
 
-            log.info("Total Camel routes " + stats.toString() + ".");
+            log.info("Total Camel route resources " + stats.toString() + ".");
 
             camelContext.start();
 
@@ -179,7 +183,7 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
             log.error("Camel microservice provider failed: ", e);
          }
       } else {
-         log.warn("No routes to start. Camel microservice provider is terminated.");
+         log.warn("No route resources to start. Camel microservice provider is terminated.");
       }
    }
 
