@@ -177,7 +177,11 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
             } catch (InterruptedException ie) {
                Utils.shutdownLog(log, ie);
             } finally {
-               camelContext.stop();
+               try {
+                  camelContext.stop();
+               } catch (Exception e) {
+                  log.trace("Weld was shut down before Camel and destroyed the context: ", e);
+               }
             }
          } catch (Exception e) {
             log.error("Camel microservice provider failed: ", e);
