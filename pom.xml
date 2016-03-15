@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <groupId>io.silverware</groupId>
    <artifactId>silverware-parent</artifactId>
@@ -52,6 +53,8 @@
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <java.level>1.8</java.level>
+      <version.checkstyle>6.16.1</version.checkstyle>
+      <version.maven.checkstyle.plugin>2.17</version.maven.checkstyle.plugin>
       <version.maven.compiler>3.3</version.maven.compiler>
       <version.maven.surefire>2.18.1</version.maven.surefire>
       <version.maven.findbugs>3.0.0</version.maven.findbugs>
@@ -167,7 +170,32 @@
                   </goals>
                </execution>
             </executions>
-         </plugin>         
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <configuration>
+               <configLocation>checkstyle.xml</configLocation>
+               <consoleOutput>true</consoleOutput>
+               <failsOnError>true</failsOnError>
+               <includeTestSourceDirectory>true</includeTestSourceDirectory>
+            </configuration>
+            <dependencies>
+               <dependency>
+                  <groupId>com.puppycrawl.tools</groupId>
+                  <artifactId>checkstyle</artifactId>
+                  <version>${version.checkstyle}</version>
+               </dependency>
+            </dependencies>
+            <executions>
+               <execution>
+                  <id>check</id>
+                  <goals>
+                     <goal>check</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
       <pluginManagement>
          <plugins>
@@ -265,6 +293,11 @@
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-javadoc-plugin</artifactId>
                <version>${version.maven.javadoc.plugin}</version>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-checkstyle-plugin</artifactId>
+               <version>${version.maven.checkstyle.plugin}</version>
             </plugin>
          </plugins>
       </pluginManagement>
