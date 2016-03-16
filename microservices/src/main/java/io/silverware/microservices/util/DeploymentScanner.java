@@ -168,13 +168,11 @@ public class DeploymentScanner {
     */
    @SuppressWarnings("unchecked")
    public Set lookupSubtypes(final Class clazz) {
-      Set s1 = Sets.newHashSet(ReflectionUtils.forNames(
-            reflections.getStore().getAll(SubTypesScanner.class.getSimpleName(), Collections.singletonList(clazz.getName())), reflections.getConfiguration().getClassLoaders()));
-      Set s2 = Sets.newHashSet(ReflectionUtils.forNames(
+      final Set s1 = reflections.getSubTypesOf(clazz);
+      final Set s2 = Sets.newHashSet(ReflectionUtils.forNames(
             reflections.getStore().getAll(TransitiveInterfacesScanner.class.getSimpleName(), Collections.singletonList(clazz.getName())), reflections.getConfiguration().getClassLoaders()));
-      return Sets.union(s1, s2);
 
-      //return reflections.getSubTypesOf(clazz);
+      return Sets.union(s1, s2);
    }
 
    /**
