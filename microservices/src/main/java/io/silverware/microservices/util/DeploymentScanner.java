@@ -19,10 +19,16 @@
  */
 package io.silverware.microservices.util;
 
+import io.silverware.microservices.Context;
+import io.silverware.microservices.providers.MicroserviceProvider;
+
+import com.google.common.collect.Sets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
+import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.vfs.SystemDir;
@@ -37,15 +43,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import io.silverware.microservices.Context;
-import io.silverware.microservices.providers.MicroserviceProvider;
 
 /**
  * Scanner of classpath to search for given classes, interface implementations and others.
@@ -83,7 +87,7 @@ public class DeploymentScanner {
       final ConfigurationBuilder builder = ConfigurationBuilder.build("");
       addNestedClasspathUrls(builder);
       removeSysLibUrls(builder);
-      builder.addScanners(new ResourcesScanner());
+      builder.addScanners(new ResourcesScanner(), new TransitiveInterfacesScanner());
 
       reflections = new Reflections(builder);
    }
@@ -97,7 +101,7 @@ public class DeploymentScanner {
    private DeploymentScanner(final String... packages) {
       final ConfigurationBuilder builder = ConfigurationBuilder.build((Object[]) packages);
       removeSysLibUrls(builder);
-      builder.addScanners(new ResourcesScanner());
+      builder.addScanners(new ResourcesScanner(), new TransitiveInterfacesScanner());
 
       reflections = new Reflections(builder);
    }
@@ -164,7 +168,13 @@ public class DeploymentScanner {
     */
    @SuppressWarnings("unchecked")
    public Set lookupSubtypes(final Class clazz) {
-      return reflections.getSubTypesOf(clazz);
+      Set s1 = Sets.newHashSet(ReflectionUtils.forNames(
+            reflections.getStore().getAll(SubTypesScanner.class.getSimpleName(), Collections.singletonList(clazz.getName())), reflections.getConfiguration().getClassLoaders()));
+      Set s2 = Sets.newHashSet(ReflectionUtils.forNames(
+            reflections.getStore().getAll(TransitiveInterfacesScanner.class.getSimpleName(), Collections.singletonList(clazz.getName())), reflections.getConfiguration().getClassLoaders()));
+      return Sets.union(s1, s2);
+
+      //return reflections.getSubTypesOf(clazz);
    }
 
    /**
@@ -256,5 +266,33 @@ public class DeploymentScanner {
             return new ZipDir(new JarFile(file));
          }
       }
+   }
+
+   public static class TransitiveInterfacesScanner extends SubTypesScanner {
+
+      @SuppressWarnings({"unchecked"})
+      public void scan(final Object cls) {
+         final String className = getMetadataAdapter().getClassName(cls);
+
+         try {
+            Class clazz = Class.forName(className);
+
+            while (!clazz.getName().equals("java.lang.Object")) {
+
+               for (Class anInterface : clazz.getInterfaces()) {
+                  if (acceptResult(anInterface.getCanonicalName())) {
+                     getStore().put(anInterface.getCanonicalName(), className);
+                  }
+               }
+
+               clazz = clazz.getSuperclass();
+            }
+         } catch (ClassNotFoundException cnfe) {
+            if (log.isDebugEnabled()) {
+               log.debug("Could not load class {}", className);
+            }
+         }
+      }
+
    }
 }
