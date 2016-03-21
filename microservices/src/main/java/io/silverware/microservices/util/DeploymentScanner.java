@@ -22,10 +22,8 @@ package io.silverware.microservices.util;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.providers.MicroserviceProvider;
 
-import com.google.common.collect.Sets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -43,7 +41,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -87,7 +84,7 @@ public class DeploymentScanner {
       final ConfigurationBuilder builder = ConfigurationBuilder.build("");
       addNestedClasspathUrls(builder);
       removeSysLibUrls(builder);
-      builder.addScanners(new ResourcesScanner(), new TransitiveInterfacesScanner());
+      builder.addScanners(new ResourcesScanner());
 
       reflections = new Reflections(builder);
    }
@@ -101,7 +98,7 @@ public class DeploymentScanner {
    private DeploymentScanner(final String... packages) {
       final ConfigurationBuilder builder = ConfigurationBuilder.build((Object[]) packages);
       removeSysLibUrls(builder);
-      builder.addScanners(new ResourcesScanner(), new TransitiveInterfacesScanner());
+      builder.addScanners(new ResourcesScanner());
 
       reflections = new Reflections(builder);
    }
@@ -168,11 +165,12 @@ public class DeploymentScanner {
     */
    @SuppressWarnings("unchecked")
    public Set lookupSubtypes(final Class clazz) {
-      final Set s1 = reflections.getSubTypesOf(clazz);
+      return reflections.getSubTypesOf(clazz);
+      /*final Set s1 = reflections.getSubTypesOf(clazz);
       final Set s2 = Sets.newHashSet(ReflectionUtils.forNames(
             reflections.getStore().getAll(TransitiveInterfacesScanner.class.getSimpleName(), Collections.singletonList(clazz.getName())), reflections.getConfiguration().getClassLoaders()));
 
-      return Sets.union(s1, s2);
+      return Sets.union(s1, s2);*/
    }
 
    /**
@@ -275,7 +273,7 @@ public class DeploymentScanner {
          try {
             Class clazz = Class.forName(className);
 
-            while (!clazz.getName().equals("java.lang.Object")) {
+            while (!clazz.getCanonicalName().startsWith("javax.") && !clazz.getCanonicalName().startsWith("java.") && !clazz.getCanonicalName().startsWith("com.sun.") && !clazz.getCanonicalName().startsWith("sun.")) {
 
                for (Class anInterface : clazz.getInterfaces()) {
                   if (acceptResult(anInterface.getCanonicalName())) {
