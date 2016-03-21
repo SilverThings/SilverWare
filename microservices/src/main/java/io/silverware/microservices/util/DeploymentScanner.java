@@ -285,7 +285,7 @@ public class DeploymentScanner {
 
                clazz = clazz.getSuperclass();
             }
-         } catch (Error | Exception e) {
+         } catch (Error | Exception ex) {
             if (log.isTraceEnabled()) {
                log.trace("Could not load class {}", className);
             }
