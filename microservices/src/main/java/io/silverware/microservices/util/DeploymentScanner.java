@@ -285,9 +285,9 @@ public class DeploymentScanner {
 
                clazz = clazz.getSuperclass();
             }
-         } catch (NoClassDefFoundError | ClassNotFoundException cnfe) {
-            if (log.isDebugEnabled()) {
-               log.debug("Could not load class {}", className);
+         } catch (Error | Exception e) {
+            if (log.isTraceEnabled()) {
+               log.trace("Could not load class {}", className);
             }
          }
       }
