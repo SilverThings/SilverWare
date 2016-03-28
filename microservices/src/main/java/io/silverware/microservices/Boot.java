@@ -24,7 +24,6 @@ import io.silverware.microservices.util.Utils;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -90,6 +89,7 @@ public final class Boot {
 
    /**
     * Load custom properties from file on a classpath.
+    *
     * @return Properties from silverware.properties when present on a classpath.
     */
    private static Properties loadProperties() {
@@ -116,6 +116,7 @@ public final class Boot {
 
    /**
     * Creates initial context pre-filled with system properties, command line arguments, custom property file and default property file.
+    *
     * @param args Command line arguments.
     * @return Initial context pre-filled with system properties, command line arguments, custom property file and default property file.
     */

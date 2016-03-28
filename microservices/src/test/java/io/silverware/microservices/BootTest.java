@@ -19,10 +19,11 @@
  */
 package io.silverware.microservices;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.util.BootUtil;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -40,7 +41,6 @@ public class BootTest {
    private static boolean wasRun = false;
    private static boolean wasInterrupted = false;
    private static final Semaphore semaphore = new Semaphore(0);
-
 
    @BeforeMethod
    public void beforeMethod() {

@@ -19,12 +19,13 @@
  */
 package io.silverware.microservices.silver.services;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.InvocationPolicy;
 import io.silverware.microservices.silver.services.lookup.LocalLookupStrategy;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -43,7 +44,7 @@ public class LookupStrategyFactory {
    public static LookupStrategy getStrategy(final Context context, final MicroserviceMetaData metaData, final Set<Annotation> options) {
       LookupStrategy strategy = null;
 
-      for (Annotation option: options) {
+      for (Annotation option : options) {
          if (option.annotationType().isAssignableFrom(InvocationPolicy.class)) {
             InvocationPolicy policy = (InvocationPolicy) option;
             Class<LookupStrategy> clazz = policy.lookupStrategy();

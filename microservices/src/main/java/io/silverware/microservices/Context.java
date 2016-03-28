@@ -19,14 +19,14 @@
  */
 package io.silverware.microservices;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.silverware.microservices.providers.MicroserviceProvider;
-import io.silverware.microservices.silver.HttpInvokerSilverService;
 import io.silverware.microservices.silver.HttpServerSilverService;
 import io.silverware.microservices.silver.ProvidingSilverService;
 import io.silverware.microservices.silver.SilverService;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,6 +96,7 @@ public class Context {
 
    /**
     * Gets the global properties.
+    *
     * @return The global properties.
     */
    public Map<String, Object> getProperties() {
@@ -104,6 +105,7 @@ public class Context {
 
    /**
     * Gets the registry of Microservices providers.
+    *
     * @return The registry of Microservices providers.
     */
    @SuppressWarnings("unchecked")
@@ -113,6 +115,7 @@ public class Context {
 
    /**
     * Adds a Microservice to the registry.
+    *
     * @param metaData Description of the service to be registered.
     */
    public void registerMicroservice(final MicroserviceMetaData metaData) {
@@ -121,6 +124,7 @@ public class Context {
 
    /**
     * Gets an unmodifiable copy of the current local Microservices registry.
+    *
     * @return An unmodifiable copy of the current local Microservices registry.
     */
    public Set<MicroserviceMetaData> getMicroservices() {
@@ -130,13 +134,13 @@ public class Context {
    /**
     * Looks up Microservices based on the provided meta-data query.
     * All providers are asked to look up all possible services including local and remote.
+    *
     * @param metaData Meta-data query.
     * @return A set of Microservices instances that meets the query.
     */
    public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
       final Set<Object> microservices = new HashSet<>();
-      getAllProviders(ProvidingSilverService.class).forEach(provider ->
-            microservices.addAll(((ProvidingSilverService) provider).lookupMicroservice(metaData)));
+      getAllProviders(ProvidingSilverService.class).forEach(provider -> microservices.addAll(((ProvidingSilverService) provider).lookupMicroservice(metaData)));
 
       return microservices;
    }
@@ -144,13 +148,13 @@ public class Context {
    /**
     * Looks up Microservices based on the provided meta-data query.
     * Only local Microservices are searched.
+    *
     * @param metaData Meta-data query.
     * @return A set of Microservices instances that meets the query.
     */
    public Set<Object> lookupLocalMicroservice(final MicroserviceMetaData metaData) {
       final Set<Object> microservices = new HashSet<>();
-      getAllProviders(ProvidingSilverService.class).forEach(provider ->
-            microservices.addAll(((ProvidingSilverService) provider).lookupLocalMicroservice(metaData)));
+      getAllProviders(ProvidingSilverService.class).forEach(provider -> microservices.addAll(((ProvidingSilverService) provider).lookupLocalMicroservice(metaData)));
 
       return microservices;
    }
@@ -210,6 +214,7 @@ public class Context {
 
    /**
     * Gets the {@link ServiceHandle} for the given handle number.
+    *
     * @param handle The handle number.
     * @return The {@link ServiceHandle} with the given handle number.
     */

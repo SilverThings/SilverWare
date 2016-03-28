@@ -19,10 +19,11 @@
  */
 package io.silverware.microservices.silver.cluster;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.SilverWareException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -105,12 +106,7 @@ public class Invocation {
 
    @Override
    public String toString() {
-      return "Invocation{" +
-            "handle=" + handle +
-            ", method='" + method + '\'' +
-            ", paramTypes=" + Arrays.toString(paramTypes) +
-            ", params=" + Arrays.toString(params) +
-            '}';
+      return "Invocation{" + "handle=" + handle + ", method='" + method + '\'' + ", paramTypes=" + Arrays.toString(paramTypes) + ", params=" + Arrays.toString(params) + '}';
    }
 
    public Object invoke(final Context context) throws Exception {
@@ -128,6 +124,4 @@ public class Invocation {
       return method.invoke(serviceHandle.getService(), params);
    }
 
-
 }
-
