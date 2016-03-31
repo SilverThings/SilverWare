@@ -30,6 +30,7 @@ public interface SilverService {
 
    /**
     * Gets the current context this instance has been created with.
+    *
     * @return The current context this instance has been created with.
     */
    Context getContext();

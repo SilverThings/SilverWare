@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Scanner;
@@ -51,6 +50,7 @@ public class Utils {
 
    /**
     * Logs a shutdown message with the given exception.
+    *
     * @param log A logger where to log the message to.
     * @param ie An exception causing the shutdown.
     */
@@ -63,6 +63,7 @@ public class Utils {
 
    /**
     * Waits for the URL to become available.
+    *
     * @param urlString The URL to check for.
     * @param code The expected HTTP response code.
     * @return Returns true if the URL was available, false otherwise.
@@ -96,6 +97,7 @@ public class Utils {
 
    /**
     * Completely reads the content of the given URL as a string.
+    *
     * @param urlString The URL to read from.
     * @return The content of the given URL.
     * @throws IOException When it was not possible to read from the URL.
@@ -106,6 +108,7 @@ public class Utils {
 
    /**
     * Gets the manifest entry for the given class.
+    *
     * @param clazz The class I want to obtain entry for.
     * @param entryName The name of the entry to obtain.
     * @return The entry from manifest, null if there is no such entry or the manifest file does not exists.
@@ -129,6 +132,7 @@ public class Utils {
 
    /**
     * Gets the class implementation version from manifest.
+    *
     * @param clazz The class I want to obtain version of.
     * @return The class specification version from manifest, null if there is no version information present or the manifest file does not exists.
     */
@@ -146,6 +150,7 @@ public class Utils {
 
    /**
     * Gets the class specification version from manifest.
+    *
     * @param clazz The class I want to obtain version of.
     * @return The class specification version from manifest, null if there is no version information present or the manifest file does not exists.
     */
@@ -163,6 +168,7 @@ public class Utils {
 
    /**
     * Do the best to sleep for the given time. Ignores {@link InterruptedException}.
+    *
     * @param ms The number of milliseconds to sleep for.
     */
    public static void sleep(final long ms) {

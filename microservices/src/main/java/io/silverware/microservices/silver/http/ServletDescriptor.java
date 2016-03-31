@@ -106,11 +106,6 @@ public class ServletDescriptor {
 
    @Override
    public String toString() {
-      return "ServletDescriptor{" +
-            "name='" + name + '\'' +
-            ", servletClass=" + servletClass +
-            ", mapping='" + mapping + '\'' +
-            ", properties=" + properties +
-            '}';
+      return "ServletDescriptor{" + "name='" + name + '\'' + ", servletClass=" + servletClass + ", mapping='" + mapping + '\'' + ", properties=" + properties + '}';
    }
 }

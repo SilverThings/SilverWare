@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-abstract public class AbstractLookupStrategy implements LookupStrategy {
+public abstract class AbstractLookupStrategy implements LookupStrategy {
 
    protected Context context;
    protected MicroserviceMetaData metaData;

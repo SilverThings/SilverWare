@@ -30,6 +30,7 @@ public final class ClassLoaderUtil {
 
    /**
     * Get URLs to basicClassLoaders and also to jars from MANIFEST Class-Path directive.
+    *
     * @param basicClassLoaders Classloaders that we want to examine.
     * @return Set of URL (not null).
     */
@@ -51,22 +52,10 @@ public final class ClassLoaderUtil {
       return result;
    }
 
-   private static Set<ClassLoader> getAlsoParentsClassLoaders(final List<ClassLoader> basicClassLoaders) {
-      final Set<ClassLoader> result = new LinkedHashSet<>(basicClassLoaders);
-      for (final ClassLoader basicClassLoader : basicClassLoaders) {
-         ClassLoader parent = basicClassLoader.getParent();
-         while (parent != null) {
-            result.add(parent);
-            parent = parent.getParent();
-         }
-      }
-      return result;
-   }
-
    private static Set<URL> getAlsoNestedClasspathUrls(ClassLoader cl) throws IOException {
       final Set<URL> result = new LinkedHashSet<>();
 
-      //add standard getURLs() urls.
+      // add standard getURLs() urls.
       if (cl instanceof URLClassLoader) {
          final URL[] urls = ((URLClassLoader) cl).getURLs();
          if (urls != null && urls.length > 0) {
@@ -74,7 +63,7 @@ public final class ClassLoaderUtil {
          }
       }
 
-      //add all other nested urls.
+      // add all other nested urls.
       final Enumeration<URL> eResource = cl.getResources("META-INF");
       while (eResource.hasMoreElements()) {
          final URL urlResource = eResource.nextElement();
@@ -88,6 +77,18 @@ public final class ClassLoaderUtil {
          }
       }
 
+      return result;
+   }
+
+   private static Set<ClassLoader> getAlsoParentsClassLoaders(final List<ClassLoader> basicClassLoaders) {
+      final Set<ClassLoader> result = new LinkedHashSet<>(basicClassLoaders);
+      for (final ClassLoader basicClassLoader : basicClassLoaders) {
+         ClassLoader parent = basicClassLoader.getParent();
+         while (parent != null) {
+            result.add(parent);
+            parent = parent.getParent();
+         }
+      }
       return result;
    }
 }

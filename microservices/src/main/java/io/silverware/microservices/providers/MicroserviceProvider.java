@@ -33,5 +33,6 @@ public interface MicroserviceProvider extends Runnable {
    default void initialize(final Context context) {
    }
 
+   @Override
    void run();
 }
