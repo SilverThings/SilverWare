@@ -54,11 +54,7 @@ public class CdiMicroserviceProviderBasicTest {
       final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName());
       platform.start();
 
-      BeanManager beanManager = null;
-      while (beanManager == null) {
-         beanManager = (BeanManager) bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.BEAN_MANAGER);
-         Thread.sleep(200);
-      }
+      CdiMicroserviceProviderTestUtil.waitForBeanManager(bootUtil);
 
       //testMicroserviceB = (TestMicroserviceB) CdiMicroserviceProvider.getMicroserviceProxy(bootUtil.getContext(), TestMicroserviceB.class);
 

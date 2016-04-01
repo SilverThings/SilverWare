@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2014 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,85 +19,73 @@
  */
 package io.silverware.microservices.providers.cdi;
 
-import io.silverware.microservices.annotations.Microservice;
-import io.silverware.microservices.annotations.MicroserviceReference;
-import io.silverware.microservices.util.BootUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Alternative;
+import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import javax.inject.Named;
+
+import io.silverware.microservices.annotations.Microservice;
+import io.silverware.microservices.util.BootUtil;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-public class CdiMicroserviceProviderAlternativesTest {
+public class CdiMicroserviceProviderProducesTest {
 
-   private static final Logger log = LogManager.getLogger(CdiMicroserviceProviderAlternativesTest.class);
-
+   private static final Logger log = LogManager.getLogger(CdiMicroserviceProviderProducesTest.class);
    private static final Semaphore semaphore = new Semaphore(0);
-   private static String result = "";
 
    @Test
-   public void testQualifiers() throws Exception {
+   public void producesTest() throws InterruptedException {
       final BootUtil bootUtil = new BootUtil();
       final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName());
       platform.start();
 
+      // wait for the CDI provider to start properly
+      // early termination causes REST gateway to fail and log dummy errors
       CdiMicroserviceProviderTestUtil.waitForBeanManager(bootUtil);
 
-      Assert.assertTrue(semaphore.tryAcquire(100, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
-      Assert.assertEquals(result, "alternatealternate");
+      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for test completion.");
 
       platform.interrupt();
       platform.join();
    }
 
    @Microservice
-   public static class TestAlternativesMicroservice {
+   public static class ConsumingBean {
 
       @Inject
-      @MicroserviceReference
-      private AlternativesMicro micro1;
-
-      @Inject
-      @MicroserviceReference
-      private AlternativesMicro micro2;
+      @Named("myCoolPool")
+      private ThreadPoolExecutor pool;
 
       public void eventObserver(@Observes MicroservicesStartedEvent event) {
-         result += micro1.hello();
-         result += micro2.hello();
-
-         semaphore.release();
+         pool.submit(() -> {
+            log.info("Working hard");
+            semaphore.release();
+         });
       }
-   }
 
-   public interface AlternativesMicro {
-      String hello();
    }
 
    @Microservice
-   public static class MyAlternativesMicroBean implements AlternativesMicro {
+   public static class ProducingBean {
 
-      @Override
-      public String hello() {
-         return "normal";
+      @Produces
+      @Named("myCoolPool")
+      public ThreadPoolExecutor getPool() {
+         return (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
       }
-   }
 
-   @Alternative
-   @Microservice
-   public static class AlternateAlternativesMicroBean implements AlternativesMicro {
 
-      @Override
-      public String hello() {
-         return "alternate";
-      }
    }
 }

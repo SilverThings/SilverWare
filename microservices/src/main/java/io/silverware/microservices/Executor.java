@@ -174,17 +174,40 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
     * @param initialContext
     *        The context associated with this platform instance.
     * @throws InterruptedException
-    *         If the main thread fails for any reason.
+    *         If the main thread was interrupted. This does not mean anything wrong has happened - it is a normal shutdown procedure.
     */
    public static void bootHook(final Context initialContext) throws InterruptedException {
       final Executor executor = new Executor();
-      final Thread bootThread = new Thread(executor);
-
       executor.initialize(initialContext);
+      executor.boot();
+   }
+
+   /**
+    * Starts this instance of Executor in a separate thread and makes sure the shutdown hook is properly executed.
+    *
+    * @throws InterruptedException When the execution of the Executor was interrupted. This does not mean anything wrong has happened - it is a normal shutdown procedure.
+    */
+   private void boot() throws InterruptedException {
+      final Thread bootThread = new Thread(this);
 
       bootThread.setName(THREAD_PREFIX + BOOT_THREAD);
       bootThread.start();
-      bootThread.join();
+      try {
+         bootThread.join();
+      } catch (InterruptedException ie) {
+         if (shutdownHook != null) {
+            Runtime.getRuntime().removeShutdownHook(shutdownHook);
+
+            final Thread shutdownThread = new Thread(shutdownHook);
+            shutdownThread.start();
+
+            try {
+               shutdownThread.join();
+            } catch (InterruptedException iee) {
+               // we did our best
+            }
+         }
+      }
    }
 
    /**
@@ -247,7 +270,7 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
 
       context.getProvidersRegistry().put(this.getClass().getName(), this);
 
-      if (Boolean.parseBoolean((String) context.getProperties().getOrDefault(SHUTDOWN_HOOK, "false"))) {
+      if (Boolean.parseBoolean((String) context.getProperties().getOrDefault(SHUTDOWN_HOOK, "true"))) {
          shutdownHook = new Thread(new ShutdownHook(executor));
          Runtime.getRuntime().addShutdownHook(shutdownHook);
       }
