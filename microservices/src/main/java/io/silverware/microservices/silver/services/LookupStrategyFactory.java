@@ -47,7 +47,7 @@ public class LookupStrategyFactory {
       for (Annotation option : options) {
          if (option.annotationType().isAssignableFrom(InvocationPolicy.class)) {
             InvocationPolicy policy = (InvocationPolicy) option;
-            Class<LookupStrategy> clazz = policy.lookupStrategy();
+            Class<? extends LookupStrategy> clazz = policy.lookupStrategy();
 
             try {
                Constructor c = clazz.getConstructor();

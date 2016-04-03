@@ -35,5 +35,5 @@ import java.lang.annotation.Target;
 @Documented
 public @interface InvocationPolicy {
 
-   Class<LookupStrategy> lookupStrategy();
+   Class<? extends LookupStrategy> lookupStrategy();
 }
