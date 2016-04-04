@@ -17,22 +17,21 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.providers;
+package io.silverware.microservices.providers.rest.annotation;
 
-import io.silverware.microservices.Context;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Simple minimalistic microservice implementation interface.
- * Upon boot, the initialize method is called. After a successful initialization, all services will be started in their
- * dedicated thread. A proper shutdown must be part of the run() method.
- *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-public interface MicroserviceProvider extends Runnable {
-
-   default void initialize(final Context context) {
-   }
-
-   @Override
-   void run();
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface JsonService {
+   String endpoint() default "";
+   String httpMethod() default "POST";
 }

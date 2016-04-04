@@ -78,6 +78,7 @@
       <module>monitoring-microservice-provider</module>
       <module>http-invoker-microservice-provider</module>
       <module>drools-microservice-provider</module>
+      <module>rest-client-microservice-provider</module>
    </modules>
    <dependencyManagement>
       <dependencies>

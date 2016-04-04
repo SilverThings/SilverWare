@@ -109,13 +109,13 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
          log.info("Total count of discovered microservice injection points: " + microservicesCDIExtension.getInjectionPointsCount());
 
-         container.event().select(MicroservicesInitEvent.class).fire(new MicroservicesInitEvent(context, container.getBeanManager(), container));
-         container.event().select(MicroservicesStartedEvent.class).fire(new MicroservicesStartedEvent(context, container.getBeanManager(), container));
-
          log.info("Deploying REST gateway services.");
          rest.deploy();
 
          deployed = true;
+
+         container.event().select(MicroservicesInitEvent.class).fire(new MicroservicesInitEvent(context, container.getBeanManager(), container));
+         container.event().select(MicroservicesStartedEvent.class).fire(new MicroservicesStartedEvent(context, container.getBeanManager(), container));
 
          try {
             while (!Thread.currentThread().isInterrupted()) {

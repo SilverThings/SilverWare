@@ -49,7 +49,7 @@ public class MicroserviceProxy implements MethodHandler {
       this.parentBean = parentBean;
 
       final Set<Annotation> qualifiers = parentBean.getQualifiers().stream().filter(qualifier -> !qualifier.annotationType().getName().equals(MicroserviceReference.class.getName())).collect(Collectors.toSet());
-      final MicroserviceMetaData metaData = new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers);
+      final MicroserviceMetaData metaData = new MicroserviceMetaData(parentBean.getMicroserviceName(), parentBean.getServiceInterface(), qualifiers, parentBean.getAnnotations());
 
       this.lookupStrategy = LookupStrategyFactory.getStrategy(parentBean.getContext(), metaData, parentBean.getAnnotations());
    }

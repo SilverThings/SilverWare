@@ -17,22 +17,12 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.providers;
-
-import io.silverware.microservices.Context;
+package io.silverware.microservices.silver;
 
 /**
- * Simple minimalistic microservice implementation interface.
- * Upon boot, the initialize method is called. After a successful initialization, all services will be started in their
- * dedicated thread. A proper shutdown must be part of the run() method.
+ * Allows the injection of REST client.
  *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-public interface MicroserviceProvider extends Runnable {
-
-   default void initialize(final Context context) {
-   }
-
-   @Override
-   void run();
+public interface RestClientSilverService extends ProvidingSilverService {
 }

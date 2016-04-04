@@ -30,6 +30,8 @@ import java.lang.annotation.Annotation;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -51,10 +53,14 @@ public final class MicroserviceMetaData {
    private final Class type;
 
    /**
-    * s
     * Qualifiers of the Microservice.
     */
    private final Set<Annotation> qualifiers;
+
+   /**
+    * Annotations of the Microservice.
+    */
+   private final Set<Annotation> annotations;
 
    /**
     * Microservice specification version.
@@ -75,11 +81,14 @@ public final class MicroserviceMetaData {
     *        The type of the discovered Microservice.
     * @param qualifiers
     *        The qualifiers of the discovered Microservice.
+    * @param annotations
+    *        The annotations of the discovered Microservice.
     */
-   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers) {
+   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers, final Set<Annotation> annotations) {
       this.name = name;
       this.type = type;
       this.qualifiers = qualifiers;
+      this.annotations = annotations;
       this.specVersion = Utils.getClassSpecVersion(type);
       this.implVersion = Utils.getClassImplVersion(type);
 
@@ -97,15 +106,41 @@ public final class MicroserviceMetaData {
     *        The type of the discovered Microservice.
     * @param qualifiers
     *        The qualifiers of the discovered Microservice.
+    */
+   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers) {
+      this.name = name;
+      this.type = type;
+      this.qualifiers = qualifiers;
+      this.annotations = new HashSet<>();
+      this.specVersion = Utils.getClassSpecVersion(type);
+      this.implVersion = Utils.getClassImplVersion(type);
+
+      if (name == null || type == null) {
+         throw new IllegalStateException("Name and type fields cannot be null.");
+      }
+   }
+
+   /**
+    * Create a representation of a discovered Microservice.
+    *
+    * @param name
+    *        The name of the discovered Microservice.
+    * @param type
+    *        The type of the discovered Microservice.
+    * @param qualifiers
+    *        The qualifiers of the discovered Microservice.
+    * @param annotations
+    *        The annotations of the discovered Microservice.
     * @param specVersion
     *        The specification version we are looking for.
     * @param implVersion
     *        The implementation version we are looking for.
     */
-   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers, final String specVersion, final String implVersion) {
+   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers, final Set<Annotation> annotations, final String specVersion, final String implVersion) {
       this.name = name;
       this.type = type;
       this.qualifiers = qualifiers;
+      this.annotations = annotations;
       this.specVersion = specVersion;
       this.implVersion = implVersion;
 
@@ -139,6 +174,15 @@ public final class MicroserviceMetaData {
     */
    public Set<Annotation> getQualifiers() {
       return qualifiers;
+   }
+
+   /**
+    * Gets the annotations of the discovered Microservice.
+    *
+    * @return The annotations of the discovered Microservice.
+    */
+   public Set<Annotation> getAnnotations() {
+      return annotations;
    }
 
    /**
@@ -179,6 +223,9 @@ public final class MicroserviceMetaData {
       if (qualifiers != null ? !qualifiers.equals(that.qualifiers) : that.qualifiers != null) {
          return false;
       }
+      if (annotations != null ? !annotations.equals(that.annotations) : that.annotations != null) {
+         return false;
+      }
       return !(specVersion != null ? !specVersion.equals(that.specVersion) : that.specVersion != null);
 
    }
@@ -188,12 +235,14 @@ public final class MicroserviceMetaData {
       int result = name.hashCode();
       result = 31 * result + type.hashCode();
       result = 31 * result + (qualifiers != null ? qualifiers.hashCode() : 0);
+      result = 31 * result + (annotations != null ? annotations.hashCode() : 0);
       return result;
    }
 
    @Override
    public String toString() {
-      return "microservice " + name + " of type " + type.getCanonicalName() + " with qualifiers " + Arrays.toString(qualifiers.toArray()) + " (version: spec. " + specVersion + ", impl. " + implVersion + ")";
+      return "microservice " + name + " of type " + type.getCanonicalName() + " with qualifiers " + Arrays.toString(qualifiers.toArray())
+            + " and with annotations " + Arrays.toString(annotations.toArray()) + " (version: spec. " + specVersion + ", impl. " + implVersion + ")";
    }
 
    @SuppressWarnings("unchecked")
