@@ -19,26 +19,26 @@
  */
 package io.silverware.microservices.providers.rest;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.testng.Assert;
-import org.testng.annotations.Test;
-
-import java.util.Collections;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-
 import io.silverware.microservices.annotations.Gateway;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.annotations.ParamName;
 import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
-import io.silverware.microservices.providers.cdi.MicroservicesStartedEvent;
 import io.silverware.microservices.providers.rest.annotation.JsonService;
 import io.silverware.microservices.providers.rest.api.RestService;
 import io.silverware.microservices.util.BootUtil;
+
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.jboss.weld.environment.se.WeldContainer;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
+import java.util.Collections;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -57,6 +57,9 @@ public class RestClientMicroserviceProviderTest {
       platform.start();
 
       waitForBeanManager(bootUtil);
+      final WeldContainer container = (WeldContainer) bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.CDI_CONTAINER);
+      container.event().select(StartTestEvent.class).fire(new StartTestEvent());
+
       Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for the camel route deployment."); // wait for the route to be deployed
       Assert.assertEquals(result, "Hello Pepa");
 
@@ -72,6 +75,10 @@ public class RestClientMicroserviceProviderTest {
       }
    }
 
+   public static class StartTestEvent {
+
+   }
+
    @Microservice
    public static class RestClientMicroservice {
 
@@ -80,7 +87,7 @@ public class RestClientMicroserviceProviderTest {
       @JsonService(endpoint = "http://localhost:8081/rest/RestEndpointMicroservice")
       private RestService restEndpointMicroservice;
 
-      public void eventObserver(@Observes MicroservicesStartedEvent event) {
+      public void eventObserver(@Observes StartTestEvent event) {
          log.info("Invoking injected service using REST and JSON...");
 
          try {
