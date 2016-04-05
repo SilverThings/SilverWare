@@ -23,6 +23,7 @@ import static org.testng.Assert.*;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.jboss.weld.environment.se.WeldContainer;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -57,11 +58,18 @@ public class JsonRestServiceProxyTest {
       platform.start();
 
       RestClientMicroserviceProviderTest.waitForBeanManager(bootUtil);
+      final WeldContainer container = (WeldContainer) bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.CDI_CONTAINER);
+      container.event().select(StartTestEvent.class).fire(new StartTestEvent());
+
       Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for the camel route deployment."); // wait for the route to be deployed
       Assert.assertEquals(result, "Hello Pepa");
 
       platform.interrupt();
       platform.join();
+   }
+
+   public static class StartTestEvent {
+
    }
 
    public interface HelloInterface {
@@ -76,7 +84,7 @@ public class JsonRestServiceProxyTest {
       @JsonService(endpoint = "http://localhost:8081/rest/")
       private HelloInterface helloService;
 
-      public void eventObserver(@Observes MicroservicesStartedEvent event) {
+      public void eventObserver(@Observes StartTestEvent event) {
          /*log.info("Invoking injected service using REST and JSON...");
 
          try {
