@@ -33,6 +33,7 @@ import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.providers.rest.annotation.JsonService;
 import io.silverware.microservices.providers.rest.api.RestService;
 import io.silverware.microservices.providers.rest.internal.JsonRestService;
+import io.silverware.microservices.providers.rest.internal.JsonRestServiceProxy;
 import io.silverware.microservices.silver.RestClientSilverService;
 
 /**
@@ -59,20 +60,28 @@ public class RestClientMicroserviceProvider implements MicroserviceProvider, Res
       log.info("Hello from Camel microservice provider!");
    }
 
+   private JsonService getJsonServiceAnnotation(final Set<Annotation> annotations) {
+      for (Annotation a : annotations) {
+         if (a instanceof JsonService) {
+            return (JsonService) a;
+         }
+      }
+
+      return null;
+   }
+
    @Override
    public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
 
-      if (RestService.class.isAssignableFrom(metaData.getType())) {
-         JsonService an = null;
-         for (Annotation a : metaData.getAnnotations()) {
-            if (a instanceof JsonService) {
-               an = (JsonService) a;
-               break;
-            }
-         }
+      if (RestService.class.isAssignableFrom(metaData.getType()) | metaData.getType().isInterface()) {
+         JsonService js = getJsonServiceAnnotation(metaData.getAnnotations());
 
-         if (an != null) {
-            return Collections.singleton(new JsonRestService(an.endpoint(), an.httpMethod()));
+         if (js != null) {
+            if (RestService.class.isAssignableFrom(metaData.getType())) {
+               return Collections.singleton(new JsonRestService(js.endpoint(), js.httpMethod()));
+            } else {
+               return JsonRestServiceProxy.getProxy(metaData.getType(), js);
+            }
          } else {
             log.warn("Attempt to inject RestService without JsonService qualifier.");
          }
