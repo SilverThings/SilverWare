@@ -120,6 +120,11 @@
             <version>${project.version}</version>
          </dependency>
          <dependency>
+            <groupId>io.silverware</groupId>
+            <artifactId>rest-client-microservice-provider</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>${version.reflections}</version>

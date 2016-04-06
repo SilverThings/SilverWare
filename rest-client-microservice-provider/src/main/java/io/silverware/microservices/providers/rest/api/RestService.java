@@ -19,6 +19,8 @@
  */
 package io.silverware.microservices.providers.rest.api;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import io.silverware.microservices.SilverWareException;
@@ -29,4 +31,18 @@ import io.silverware.microservices.SilverWareException;
 public interface RestService {
 
    Object call(final String method, final Map<String, Object> params) throws SilverWareException;
+
+   default Object call(final String method, final String[] paramNames, final Object... params) throws SilverWareException {
+      final Map<String, Object> p = new HashMap<>();
+
+      for (int i = 0; i < paramNames.length; i++) {
+         p.put(paramNames[i], params[i]);
+      }
+
+      return call(method, p);
+   }
+
+   default Object call(final String method, final String paramName, final Object param) throws SilverWareException {
+      return call(method, Collections.singletonMap(paramName, param));
+   }
 }
