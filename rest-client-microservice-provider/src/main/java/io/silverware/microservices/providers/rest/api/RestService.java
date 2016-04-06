@@ -28,5 +28,5 @@ import io.silverware.microservices.SilverWareException;
  */
 public interface RestService {
 
-   String call(final String method, final Map<String, Object> params) throws SilverWareException;
+   Object call(final String method, final Map<String, Object> params) throws SilverWareException;
 }

@@ -36,7 +36,10 @@ import org.testng.annotations.Test;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
+import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -49,6 +52,7 @@ public class RestClientMicroserviceProviderTest {
 
    private static final Semaphore semaphore = new Semaphore(0);
    private static String result;
+   private static MagicBox box;
 
    @Test
    public void restClientMicroserviceProviderTest() throws Exception {
@@ -62,6 +66,9 @@ public class RestClientMicroserviceProviderTest {
 
       Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for the camel route deployment."); // wait for the route to be deployed
       Assert.assertEquals(result, "Hello Pepa");
+
+      Assert.assertEquals(box.getF(), 2.3f);
+      Assert.assertEquals((short) box.getS(), (short) 3);
 
       platform.interrupt();
       platform.join();
@@ -91,7 +98,13 @@ public class RestClientMicroserviceProviderTest {
          log.info("Invoking injected service using REST and JSON...");
 
          try {
-            result = restEndpointMicroservice.call("hello", Collections.singletonMap("name", "Pepa"));
+            Thread.sleep(1000); // give rest gateway a chance to properly start
+            result = (String) restEndpointMicroservice.call("hello", Collections.singletonMap("name", "Pepa"));
+
+            final Map<String, Object> params = new HashMap<>();
+            params.put("s", (short) 3);
+            params.put("f", 2.3f);
+            box = (MagicBox) restEndpointMicroservice.call("castMagic", params);
          } catch (Exception e) {
             log.error("Unable to call REST service: ", e);
          }
@@ -106,6 +119,44 @@ public class RestClientMicroserviceProviderTest {
 
       public String hello(@ParamName("name") final String name) {
          return "Hello " + name;
+      }
+
+      public MagicBox castMagic(@ParamName("s") final Short s, @ParamName("f") final Float f) {
+         final MagicBox box = new MagicBox();
+
+         box.setS(s);
+         box.setF(f);
+
+         return box;
+      }
+   }
+
+   public static class MagicBox implements Serializable {
+      private Short s = Short.MAX_VALUE;
+      private Float f = Float.MAX_VALUE;
+
+      public Short getS() {
+         return s;
+      }
+
+      public void setS(final Short s) {
+         this.s = s;
+      }
+
+      public Float getF() {
+         return f;
+      }
+
+      public void setF(final Float f) {
+         this.f = f;
+      }
+
+      @Override
+      public String toString() {
+         return "MagicBox{" +
+               "s=" + s +
+               ", f=" + f +
+               '}';
       }
    }
 }

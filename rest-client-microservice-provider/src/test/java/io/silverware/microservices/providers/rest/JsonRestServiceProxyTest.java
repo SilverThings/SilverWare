@@ -19,7 +19,12 @@
  */
 package io.silverware.microservices.providers.rest;
 
-import static org.testng.Assert.*;
+import io.silverware.microservices.annotations.Gateway;
+import io.silverware.microservices.annotations.Microservice;
+import io.silverware.microservices.annotations.MicroserviceReference;
+import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
+import io.silverware.microservices.providers.rest.annotation.JsonService;
+import io.silverware.microservices.util.BootUtil;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -27,20 +32,10 @@ import org.jboss.weld.environment.se.WeldContainer;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.Collections;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-
-import io.silverware.microservices.annotations.Gateway;
-import io.silverware.microservices.annotations.Microservice;
-import io.silverware.microservices.annotations.MicroserviceReference;
-import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
-import io.silverware.microservices.providers.cdi.MicroservicesStartedEvent;
-import io.silverware.microservices.providers.rest.annotation.JsonService;
-import io.silverware.microservices.util.BootUtil;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -51,7 +46,7 @@ public class JsonRestServiceProxyTest {
    private static final Semaphore semaphore = new Semaphore(0);
    private static String result;
 
-   @Test(enabled = false)
+   @Test
    public void restClientMicroserviceProviderTest() throws Exception {
       final BootUtil bootUtil = new BootUtil();
       final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName(), CdiMicroserviceProvider.class.getPackage().getName());
@@ -85,7 +80,7 @@ public class JsonRestServiceProxyTest {
       private HelloInterface helloService;
 
       public void eventObserver(@Observes StartTestEvent event) {
-         /*log.info("Invoking injected service using REST and JSON...");
+         log.info("Invoking injected service using REST and JSON...");
 
          try {
             Thread.sleep(1000); // give rest gateway a chance to properly start
@@ -94,7 +89,7 @@ public class JsonRestServiceProxyTest {
             log.error("Unable to call REST service: ", e);
          }
 
-         semaphore.release();*/
+         semaphore.release();
       }
 
    }

@@ -80,7 +80,7 @@ public class RestClientMicroserviceProvider implements MicroserviceProvider, Res
             if (RestService.class.isAssignableFrom(metaData.getType())) {
                return Collections.singleton(new JsonRestService(js.endpoint(), js.httpMethod()));
             } else {
-               return JsonRestServiceProxy.getProxy(metaData.getType(), js);
+               return Collections.singleton(JsonRestServiceProxy.getProxy(metaData.getType(), js));
             }
          } else {
             log.warn("Attempt to inject RestService without JsonService qualifier.");

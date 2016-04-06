@@ -19,7 +19,8 @@
  */
 package io.silverware.microservices.providers.rest.internal;
 
-import org.apache.commons.beanutils.ConvertUtilsBean;
+import io.silverware.microservices.providers.rest.annotation.JsonService;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,7 +29,6 @@ import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.silverware.microservices.providers.rest.annotation.JsonService;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 
@@ -41,7 +41,6 @@ public class JsonRestServiceProxy implements MethodHandler {
 
    private JsonRestService restService;
    private Class iface;
-   private ConvertUtilsBean convertor = new ConvertUtilsBean();
 
    public JsonRestServiceProxy(final Class iface, final JsonService service) {
       this.restService = new JsonRestService(service.endpoint(), service.httpMethod());
@@ -86,9 +85,7 @@ public class JsonRestServiceProxy implements MethodHandler {
          argsMap.put(parameters[i].getName(), args[i]);
       }
 
-      String result = restService.call(thisMethod.getName(), argsMap);
-
-      return convertor.convert(result, thisMethod.getReturnType()) ;
+      return restService.call(thisMethod.getName(), argsMap);
    }
 
 }

@@ -19,11 +19,12 @@
  */
 package io.silverware.microservices.providers.rest.internal;
 
+import io.silverware.microservices.SilverWareException;
+import io.silverware.microservices.providers.rest.api.RestService;
+
 import com.cedarsoftware.util.io.JsonObject;
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -32,9 +33,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
-
-import io.silverware.microservices.SilverWareException;
-import io.silverware.microservices.providers.rest.api.RestService;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -52,7 +50,7 @@ public class JsonRestService implements RestService {
    }
 
    @Override
-   public String call(final String method, final Map<String, Object> params) throws SilverWareException {
+   public Object call(final String method, final Map<String, Object> params) throws SilverWareException {
       try {
          HttpURLConnection con = (HttpURLConnection) new URL(endpoint + "/" + method).openConnection();
          con.setRequestMethod(httpMethod);
@@ -64,11 +62,7 @@ public class JsonRestService implements RestService {
          jsonWriter.write(params);
          JsonReader jsonReader = new JsonReader(con.getInputStream());
          JsonObject jsonResponse = (JsonObject) jsonReader.readObject();
-         String response = StringUtils.strip(jsonResponse.get("result").toString(), " \"'");
-
-         if (jsonResponse.get("exception") != null) {
-            log.error(jsonResponse.get("exception") + ": " + jsonResponse.get("stackTrace"));
-         }
+         Object response = JsonReader.jsonToJava((String) jsonResponse.get("resultPlain"));
 
          con.disconnect();
 

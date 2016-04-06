@@ -19,6 +19,7 @@
  */
 package io.silverware.microservices.providers.cdi.internal;
 
+import com.cedarsoftware.util.io.JsonWriter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.logging.log4j.LogManager;
@@ -195,6 +196,7 @@ public class RestInterface extends AbstractVerticle {
             try {
                Object result = m.invoke(services.iterator().next(), paramValues);
                response.put("result", Json.encodePrettily(result));
+               response.put("resultPlain", JsonWriter.objectToJson(result));
             } catch (Exception e) {
                response.put("exception", e.toString());
                response.put("stackTrace", stackTraceAsString(e));
