@@ -91,7 +91,6 @@ public class RestClientMicroserviceProviderTest {
          log.info("Invoking injected service using REST and JSON...");
 
          try {
-            Thread.sleep(1000); // give rest gateway a chance to properly start
             result = restEndpointMicroservice.call("hello", Collections.singletonMap("name", "Pepa"));
          } catch (Exception e) {
             log.error("Unable to call REST service: ", e);
