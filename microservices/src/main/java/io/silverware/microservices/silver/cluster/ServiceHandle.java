@@ -112,6 +112,7 @@ public class ServiceHandle implements Serializable {
       return "ServiceHandle{" + "handle=" + handle + ", host='" + host + '\'' + ", query=" + query + ", service=" + service + '}';
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public Object invoke(final Context context, final String method, final Class[] paramTypes, final Object[] params) throws Exception {
       String urlBase = "http://" + host + "/" + context.getProperties().get(HttpInvokerSilverService.INVOKER_URL) + "/invoke";
 
@@ -132,6 +133,7 @@ public class ServiceHandle implements Serializable {
       return response;
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public Object invoke(final Context context, final String method, final Object[] params) throws Exception {
       final Class[] paramTypes = new Class[params.length];
       for (int i = 0; i < params.length; i++) {

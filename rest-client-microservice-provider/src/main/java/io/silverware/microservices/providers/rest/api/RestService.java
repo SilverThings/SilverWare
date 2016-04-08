@@ -29,9 +29,11 @@ import io.silverware.microservices.SilverWareException;
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public interface RestService {
-
+   
+   @SuppressWarnings("checkstyle:JavadocMethod")
    Object call(final String method, final Map<String, Object> params) throws SilverWareException;
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    default Object call(final String method, final String[] paramNames, final Object... params) throws SilverWareException {
       final Map<String, Object> p = new HashMap<>();
 
@@ -42,6 +44,7 @@ public interface RestService {
       return call(method, p);
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    default Object call(final String method, final String paramName, final Object param) throws SilverWareException {
       return call(method, Collections.singletonMap(paramName, param));
    }

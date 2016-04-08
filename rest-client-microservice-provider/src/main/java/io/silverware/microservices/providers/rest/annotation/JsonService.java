@@ -32,6 +32,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface JsonService {
+   @SuppressWarnings("checkstyle:JavadocMethod")
    String endpoint() default "";
+   @SuppressWarnings("checkstyle:JavadocMethod")
    String httpMethod() default "POST";
 }

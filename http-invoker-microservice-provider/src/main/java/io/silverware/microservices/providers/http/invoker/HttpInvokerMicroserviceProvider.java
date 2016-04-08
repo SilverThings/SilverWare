@@ -80,9 +80,7 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
 
                      http.deployServlet((String) context.getProperties().get(INVOKER_URL), "", Collections.singletonList(getServletDescriptor()));
 
-                     final String invokerUrl = "http://" + context.getProperties().get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" +
-                           context.getProperties().get(HttpServerSilverService.HTTP_SERVER_PORT) + "/" +
-                           context.getProperties().get(INVOKER_URL) + "/";
+                     final String invokerUrl = "http://" + context.getProperties().get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" + context.getProperties().get(HttpServerSilverService.HTTP_SERVER_PORT) + "/" + context.getProperties().get(INVOKER_URL) + "/";
 
                      if (log.isTraceEnabled()) {
                         log.trace("Waiting for invoker to appear at {}", invokerUrl);

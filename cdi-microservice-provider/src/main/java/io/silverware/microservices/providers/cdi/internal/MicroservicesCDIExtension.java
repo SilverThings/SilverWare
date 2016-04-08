@@ -196,8 +196,8 @@ public class MicroservicesCDIExtension implements Extension {
          /*if (injectionPointField.getType().isInterface()) { // in case of interface use the property name
             serviceName = injectionPointField.getName();
          } else { // else use the type name as does CDI*/
-            final String tmpName = injectionPointField.getType().getSimpleName();
-            serviceName = tmpName.substring(0, 1).toLowerCase() + tmpName.substring(1);
+         final String tmpName = injectionPointField.getType().getSimpleName();
+         serviceName = tmpName.substring(0, 1).toLowerCase() + tmpName.substring(1);
          //}
       }
 
