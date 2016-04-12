@@ -21,6 +21,7 @@ package io.silverware.microservices.providers.cdi.internal;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.silver.services.LookupStrategy;
@@ -64,7 +65,7 @@ public class MicroserviceProxy implements MethodHandler {
       return service;
    }
 
-   @SuppressWarnings("unchecked")
+   @SuppressWarnings({"unchecked", "checkstyle:JavadocMethod"})
    public static <T> T getProxy(final MicroserviceProxyBean parentBean) {
       try {
          ProxyFactory factory = new ProxyFactory();

@@ -95,7 +95,6 @@ public class MonitoringMicroserviceProvider implements MicroserviceProvider, Mon
             }
          } catch (InterruptedException ie) {
             Utils.shutdownLog(log, ie);
-         } finally {
          }
       } catch (Exception e) {
          log.error("Monitoring microservice provider failed: ", e);

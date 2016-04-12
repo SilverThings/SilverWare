@@ -47,7 +47,7 @@ public class JsonRestServiceProxy implements MethodHandler {
       this.iface = iface;
    }
 
-   @SuppressWarnings("unchecked")
+   @SuppressWarnings({"unchecked", "checkstyle:JavadocMethod"})
    public static <T> T getProxy(final Class iface, final JsonService service) {
       try {
          ProxyFactory factory = new ProxyFactory();

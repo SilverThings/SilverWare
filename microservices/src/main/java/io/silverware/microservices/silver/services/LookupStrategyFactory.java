@@ -41,6 +41,7 @@ public class LookupStrategyFactory {
     */
    private static Logger log = LogManager.getLogger(LookupStrategyFactory.class);
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public static LookupStrategy getStrategy(final Context context, final MicroserviceMetaData metaData, final Set<Annotation> options) {
       LookupStrategy strategy = null;
 

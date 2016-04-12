@@ -245,7 +245,7 @@ public final class MicroserviceMetaData {
             + " and with annotations " + Arrays.toString(annotations.toArray()) + " (version: spec. " + specVersion + ", impl. " + implVersion + ")";
    }
 
-   @SuppressWarnings("unchecked")
+   @SuppressWarnings({"unchecked", "checkstyle:JavadocMethod"})
    public List<ServiceHandle> query(final Context context, final String host) throws Exception {
       String urlBase = "http://" + host + "/" + context.getProperties().get(HttpInvokerSilverService.INVOKER_URL) + "/query";
 

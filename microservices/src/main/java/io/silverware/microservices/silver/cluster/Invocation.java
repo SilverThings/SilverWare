@@ -109,6 +109,7 @@ public class Invocation {
       return "Invocation{" + "handle=" + handle + ", method='" + method + '\'' + ", paramTypes=" + Arrays.toString(paramTypes) + ", params=" + Arrays.toString(params) + '}';
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public Object invoke(final Context context) throws Exception {
       if (log.isTraceEnabled()) {
          log.trace("Invoking Microservice with invocation {}.", toString());

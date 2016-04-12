@@ -263,9 +263,10 @@ public class DeploymentScanner {
       }
    }
 
+   @SuppressWarnings("checkstyle:JavadocType")
    public static class TransitiveInterfacesScanner extends SubTypesScanner {
 
-      @SuppressWarnings({"unchecked"})
+      @SuppressWarnings({"unchecked", "checkstyle:JavadocMethod"})
       public void scan(final Object cls) {
          final String className = getMetadataAdapter().getClassName(cls);
 

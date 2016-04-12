@@ -21,6 +21,7 @@ package io.silverware.microservices.providers.cdi.internal;
 
 import com.cedarsoftware.util.io.JsonWriter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,12 +39,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
+
 import javax.enterprise.inject.spi.Bean;
 
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.ParamName;
 import io.silverware.microservices.silver.CdiSilverService;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -67,9 +70,9 @@ public class RestInterface extends AbstractVerticle {
     */
    private static final Logger log = LogManager.getLogger(RestInterface.class);
 
-   final private Context context;
-   final private int port;
-   final private String host;
+   private final Context context;
+   private final int port;
+   private final String host;
    private Vertx vertx;
 
    private Map<String, Bean> gatewayRegistry = new HashMap<>();
@@ -80,10 +83,12 @@ public class RestInterface extends AbstractVerticle {
       host = context.getProperties().getOrDefault(CdiSilverService.CDI_REST_HOST, "").toString();
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public void registerGateway(final String serviceName, final Bean bean) {
       gatewayRegistry.put(serviceName, bean);
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public void deploy() {
       if (gatewayRegistry.size() > 0) {
          VertxOptions vertxOptions = new VertxOptions().setWorkerPoolSize(100);
@@ -93,6 +98,7 @@ public class RestInterface extends AbstractVerticle {
       }
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public void undeploy() {
       if (vertx != null) {
          vertx.close();
@@ -116,6 +122,7 @@ public class RestInterface extends AbstractVerticle {
       }
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public void listBeans(final RoutingContext routingContext) {
       JsonArray beans = new JsonArray();
 
@@ -124,6 +131,7 @@ public class RestInterface extends AbstractVerticle {
       routingContext.response().end(beans.encodePrettily());
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public void listMethods(final RoutingContext routingContext) {
       String microserviceName = routingContext.request().getParam("microservice");
       Bean bean = gatewayRegistry.get(microserviceName);
@@ -158,6 +166,7 @@ public class RestInterface extends AbstractVerticle {
       return sw.toString();
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public void callMethod(final RoutingContext routingContext) {
       final String microserviceName = routingContext.request().getParam("microservice");
       final String methodName = routingContext.request().getParam("method");
@@ -228,7 +237,7 @@ public class RestInterface extends AbstractVerticle {
       return methodParameter.getName();
    }
 
-   @SuppressWarnings("unchecked")
+   @SuppressWarnings({"unchecked", "checkstyle:JavadocMethod"})
    public void callNoParamMethod(final RoutingContext routingContext) {
       String microserviceName = routingContext.request().getParam("microservice");
       String methodName = routingContext.request().getParam("method");

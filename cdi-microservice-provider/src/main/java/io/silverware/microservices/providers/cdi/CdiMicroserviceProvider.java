@@ -49,6 +49,7 @@ import javax.enterprise.util.AnnotationLiteral;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
@@ -137,6 +138,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public Set<Object> lookupMicroservice(final MicroserviceMetaData microserviceMetaData) {
       final String name = microserviceMetaData.getName();
       final Class<?> type = microserviceMetaData.getType();
@@ -253,6 +255,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
    @Dependent
    @Interceptor()
    @Priority(Interceptor.Priority.APPLICATION)
+   @SuppressWarnings("checkstyle:JavadocType")
    public static class LoggingInterceptor {
 
       @AroundInvoke
@@ -262,7 +265,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   @SuppressWarnings("unused")
+   @SuppressWarnings({"unused", "checkstyle:JavadocType"})
    @Microservice
    public static class SilverWareConfiguration implements Configuration {
 
@@ -278,7 +281,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   @SuppressWarnings({"unused", "unchecked"})
+   @SuppressWarnings({"unused", "unchecked", "checkstyle:JavadocType"})
    @Microservice
    public static class SilverWareStorage implements Storage {
 
@@ -308,7 +311,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   @SuppressWarnings("unused")
+   @SuppressWarnings({"unused", "checkstyle:JavadocMethod"})
    @Microservice
    public static class SilverWareCurrentContext implements CurrentContext {
 

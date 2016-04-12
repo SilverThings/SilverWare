@@ -329,6 +329,7 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
       return context;
    }
 
+   @SuppressWarnings("checkstyle:JavadocType")
    public class ShutdownHook implements Runnable {
 
       /**

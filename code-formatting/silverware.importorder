@@ -1,7 +1,12 @@
 #Organize Import Order
 #Tue Mar 29 00:10:35 CEST 2016
-4=javax
-3=java
-2=
+9=javax
+8=java
+7=
+6=sun
+5=org
+4=net
+3=junit
+2=com
 1=io.silverware
 0=\#
