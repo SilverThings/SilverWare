@@ -208,12 +208,14 @@ public class MicroservicesCDIExtension implements Extension {
       // Do we already have a proxy with this service name and type?
       for (MicroserviceProxyBean microserviceProxyBean : microserviceProxyBeans) {
          if (microserviceName.equals(microserviceProxyBean.getMicroserviceName()) && beanClass == microserviceProxyBean.getBeanClass()) {
-            List<String> required = qualifiers.stream().map(q -> q.annotationType().getName()).collect(Collectors.toList());
-            List<String> available = microserviceProxyBean.getQualifiers().stream().map(q -> q.annotationType().getName()).collect(Collectors.toList());
+            List<String> required = qualifiers.stream().map(q -> q.annotationType().getCanonicalName()).collect(Collectors.toList());
+            List<String> available = microserviceProxyBean.getQualifiers().stream().map(q -> q.annotationType().getCanonicalName()).collect(Collectors.toList());
 
             required.forEach(available::remove);
 
-            if (available.size() == 0) {
+            Set<Annotation> requiredAnnotations = new HashSet<>(annotations);
+            Set<Annotation> actualAnnotations = new HashSet<>(microserviceProxyBean.getAnnotations());
+            if (requiredAnnotations.equals(actualAnnotations) && available.size() == 0) {
                // Yes, we have it!
                return;
             }
