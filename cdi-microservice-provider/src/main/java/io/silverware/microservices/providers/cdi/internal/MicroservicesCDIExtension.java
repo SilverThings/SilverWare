@@ -213,9 +213,7 @@ public class MicroservicesCDIExtension implements Extension {
 
             required.forEach(available::remove);
 
-            Set<Annotation> requiredAnnotations = new HashSet<>(annotations);
-            Set<Annotation> actualAnnotations = new HashSet<>(microserviceProxyBean.getAnnotations());
-            if (requiredAnnotations.equals(actualAnnotations) && available.size() == 0) {
+            if (available.size() == 0) {
                // Yes, we have it!
                return;
             }
