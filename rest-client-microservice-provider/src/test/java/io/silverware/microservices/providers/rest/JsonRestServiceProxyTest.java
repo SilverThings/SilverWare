@@ -83,6 +83,7 @@ public class JsonRestServiceProxyTest {
          log.info("Invoking injected service using REST and JSON...");
 
          try {
+            Thread.sleep(1000); // wait for the REST interface to start
             result = helloService.hello("Pepa");
          } catch (Exception e) {
             log.error("Unable to call REST service: ", e);
