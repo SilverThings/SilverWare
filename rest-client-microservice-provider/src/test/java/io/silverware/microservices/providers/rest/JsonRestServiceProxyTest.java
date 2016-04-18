@@ -44,7 +44,7 @@ public class JsonRestServiceProxyTest {
    private static final Logger log = LogManager.getLogger(JsonRestServiceProxyTest.class);
 
    private static final Semaphore semaphore = new Semaphore(0);
-   private static String result;
+   private static volatile String result;
 
    @Test
    public void restClientMicroserviceProviderTest() throws Exception {
@@ -76,14 +76,13 @@ public class JsonRestServiceProxyTest {
 
       @Inject
       @MicroserviceReference
-      @JsonService(endpoint = "http://localhost:8081/rest/")
+      @JsonService(endpoint = "http://localhost:8081/rest/HelloMicroservice")
       private HelloInterface helloService;
 
       public void eventObserver(@Observes StartTestEvent event) {
          log.info("Invoking injected service using REST and JSON...");
 
          try {
-            Thread.sleep(1000); // give rest gateway a chance to properly start
             result = helloService.hello("Pepa");
          } catch (Exception e) {
             log.error("Unable to call REST service: ", e);
