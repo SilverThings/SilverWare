@@ -65,6 +65,8 @@ public class HttpServerMicroserviceProviderTest {
 
       http.deployServlet("test", "", Collections.singletonList(new ServletDescriptor("test", HttpTestServlet.class, "/", servletProperties)));
 
+      Thread.sleep(500);
+
       Assert.assertEquals(Utils.readFromUrl("http://" + platformProperties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" +
             platformProperties.get(HttpServerSilverService.HTTP_SERVER_PORT) + "/test/"), "Hello Mr. Wolf");
 
