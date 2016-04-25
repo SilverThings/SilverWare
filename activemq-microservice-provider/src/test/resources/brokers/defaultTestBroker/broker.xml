@@ -1,0 +1,22 @@
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns="urn:activemq"
+               xsi:schemaLocation="urn:activemq /schema/artemis-server.xsd">
+
+   <core xmlns="urn:activemq:core">
+
+      <persistence-enabled>false</persistence-enabled>
+      <journal-directory>target/data/journal</journal-directory>
+      <security-enabled>false</security-enabled>
+
+      <!-- Default Broker -->
+      <connectors>
+         <connector name="vm">vm://0</connector>
+      </connectors>
+
+      <acceptors>
+         <acceptor name="vm">vm://0</acceptor>
+      </acceptors>
+
+
+   </core>
+</configuration>

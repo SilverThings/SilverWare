@@ -1,0 +1,44 @@
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns="urn:activemq"
+               xsi:schemaLocation="urn:activemq /schema/artemis-server.xsd">
+
+   <core xmlns="urn:activemq:core">
+
+      <persistence-enabled>false</persistence-enabled>
+      <journal-directory>target/data/journal</journal-directory>
+
+      <!-- Default Broker -->
+      <connectors>
+         <connector name="vm">vm://0</connector>
+      </connectors>
+
+      <acceptors>
+         <acceptor name="vm">vm://0</acceptor>
+      </acceptors>
+
+
+      <security-settings>
+         <!--security for example queue-->
+         <security-setting match="jms.queue.durableQueue">
+            <permission type="createDurableQueue" roles="admin"/>
+            <permission type="consume" roles="admin"/>
+         </security-setting>
+         
+         <security-setting match="jms.tempqueue.#">
+            <permission type="createNonDurableQueue" roles="user"/>
+            <permission type="deleteNonDurableQueue" roles="admin"/>
+         </security-setting>
+
+         <security-setting match="jms.queue.sendQueue">
+            <permission type="createDurableQueue" roles="admin"/>
+            <permission type="send" roles="admin"/>
+         </security-setting>
+
+         <security-setting match="jms.queue.manageQueue">
+            <permission type="createDurableQueue" roles="admin"/>
+            <permission type="manage" roles="guest"/>
+         </security-setting>
+      </security-settings>
+
+   </core>
+</configuration>
