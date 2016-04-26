@@ -10,7 +10,8 @@ touch $BUILD_OUTPUT
 
 dump_output() {
    echo Tailing the last 500 lines of output:
-   tail -500 $BUILD_OUTPUT
+   #tail -500 $BUILD_OUTPUT
+   cat $BUILD_OUTPUT
 }
 error_handler() {
   [ -e target/rat.txt ] && cat target/rat.txt
@@ -29,7 +30,7 @@ PING_LOOP_PID=$!
 # My build is using maven, but you could build anything with this, E.g.
 # your_build_command_1 >> $BUILD_OUTPUT 2>&1
 # your_build_command_2 >> $BUILD_OUTPUT 2>&1
-mvn checkstyle::check install 2>&1 | tee $BUILD_OUTPUT
+mvn checkstyle::check install >> $BUILD_OUTPUT 2>&1
 
 # The build finished without returning an error so dump a tail of the output
 dump_output
