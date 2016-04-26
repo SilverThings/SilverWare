@@ -50,6 +50,8 @@
       </repository>
    </distributionManagement>
    <properties>
+      <version.maven.gpg.plugin>1.5</version.maven.gpg.plugin>
+
       <version.reflections>0.9.10</version.reflections>
       <version.log4j>2.5</version.log4j>
       <version.testng>6.9.10</version.testng>
@@ -316,4 +318,27 @@
    </dependencyManagement>
    <build>
    </build>
+   <profiles>
+      <profile>
+         <id>sign</id>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-gpg-plugin</artifactId>
+                  <version>${version.maven.gpg.plugin}</version>
+                  <executions>
+                     <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                           <goal>sign</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
 </project>

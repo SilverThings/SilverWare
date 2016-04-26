@@ -1,6 +1,7 @@
 # Generated files
 *.class
 target
+target_release
 logs
 *.log
 *.log.*
