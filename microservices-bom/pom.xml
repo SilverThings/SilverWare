@@ -2,7 +2,7 @@
    <modelVersion>4.0.0</modelVersion>
    <groupId>io.silverware</groupId>
    <artifactId>microservices-bom</artifactId>
-   <version>2.0-SNAPSHOT</version>
+   <version>2.1-SNAPSHOT</version>
    <packaging>pom</packaging>
    <name>microservices Bill of Materials</name>
    <description>SilverWare Microservices Platform Bill of Materials.</description>
