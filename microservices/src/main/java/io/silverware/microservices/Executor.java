@@ -19,13 +19,14 @@
  */
 package io.silverware.microservices;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.silver.ProvidingSilverService;
 import io.silverware.microservices.util.DeployStats;
 import io.silverware.microservices.util.DeploymentScanner;
 import io.silverware.microservices.util.Utils;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -133,9 +134,10 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
        * Creates new daemon thread with higher priority.
        *
        * @param r
-       *       Runnable for which the thread should be created-
+       *        Runnable for which the thread should be created-
        * @return The new thread.
        */
+      @Override
       public Thread newThread(final Runnable r) {
          Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
          t.setDaemon(true);
@@ -158,7 +160,7 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
     * This creates a default empty context.
     *
     * @throws InterruptedException
-    *       If the main thread fails for any reason.
+    *         If the main thread fails for any reason.
     */
    public static void bootHook() throws InterruptedException {
       final Context context = new Context();
@@ -170,19 +172,42 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
     * Uses an already created context.
     *
     * @param initialContext
-    *       The context associated with this platform instance.
+    *        The context associated with this platform instance.
     * @throws InterruptedException
-    *       If the main thread fails for any reason.
+    *         If the main thread was interrupted. This does not mean anything wrong has happened - it is a normal shutdown procedure.
     */
    public static void bootHook(final Context initialContext) throws InterruptedException {
       final Executor executor = new Executor();
-      final Thread bootThread = new Thread(executor);
-
       executor.initialize(initialContext);
+      executor.boot();
+   }
+
+   /**
+    * Starts this instance of Executor in a separate thread and makes sure the shutdown hook is properly executed.
+    *
+    * @throws InterruptedException When the execution of the Executor was interrupted. This does not mean anything wrong has happened - it is a normal shutdown procedure.
+    */
+   private void boot() throws InterruptedException {
+      final Thread bootThread = new Thread(this);
 
       bootThread.setName(THREAD_PREFIX + BOOT_THREAD);
       bootThread.start();
-      bootThread.join();
+      try {
+         bootThread.join();
+      } catch (InterruptedException ie) {
+         if (shutdownHook != null) {
+            Runtime.getRuntime().removeShutdownHook(shutdownHook);
+
+            final Thread shutdownThread = new Thread(shutdownHook);
+            shutdownThread.start();
+
+            try {
+               shutdownThread.join();
+            } catch (InterruptedException iee) {
+               // we did our best
+            }
+         }
+      }
    }
 
    /**
@@ -190,7 +215,7 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
     * Also counts statistics of the created instances.
     *
     * @param microserviceProviders
-    *       A set of Microservice provider classes to create their instances.
+    *        A set of Microservice provider classes to create their instances.
     */
    private void createInstances(final Set<Class<? extends MicroserviceProvider>> microserviceProviders) {
       log.info(String.format("Found %d microservice providers. Starting...", microserviceProviders.size()));
@@ -245,7 +270,7 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
 
       context.getProvidersRegistry().put(this.getClass().getName(), this);
 
-      if (Boolean.parseBoolean((String) context.getProperties().getOrDefault(SHUTDOWN_HOOK, "false"))) {
+      if (Boolean.parseBoolean((String) context.getProperties().getOrDefault(SHUTDOWN_HOOK, "true"))) {
          shutdownHook = new Thread(new ShutdownHook(executor));
          Runtime.getRuntime().addShutdownHook(shutdownHook);
       }
@@ -304,6 +329,7 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
       return context;
    }
 
+   @SuppressWarnings("checkstyle:JavadocType")
    public class ShutdownHook implements Runnable {
 
       /**

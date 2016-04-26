@@ -54,11 +54,7 @@ public class CdiMicroserviceProviderGatewayTest {
       final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName());
       platform.start();
 
-      BeanManager beanManager = null;
-      while (beanManager == null) {
-         beanManager = (BeanManager) bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.BEAN_MANAGER);
-         Thread.sleep(200);
-      }
+      CdiMicroserviceProviderTestUtil.waitForBeanManager(bootUtil);
 
       final List<String> checksPassed = new ArrayList<>();
 

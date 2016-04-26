@@ -54,11 +54,7 @@ public class CdiMicroserviceProviderQualifiersTest {
       final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName());
       platform.start();
 
-      BeanManager beanManager = null;
-      while (beanManager == null) {
-         beanManager = (BeanManager) bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.BEAN_MANAGER);
-         Thread.sleep(200);
-      }
+      CdiMicroserviceProviderTestUtil.waitForBeanManager(bootUtil);
 
       Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
       Assert.assertEquals(result, "normalmock");

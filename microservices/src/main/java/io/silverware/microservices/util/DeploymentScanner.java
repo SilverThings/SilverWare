@@ -19,10 +19,14 @@
  */
 package io.silverware.microservices.util;
 
+import io.silverware.microservices.Context;
+import io.silverware.microservices.providers.MicroserviceProvider;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
+import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.vfs.SystemDir;
@@ -43,9 +47,6 @@ import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import io.silverware.microservices.Context;
-import io.silverware.microservices.providers.MicroserviceProvider;
 
 /**
  * Scanner of classpath to search for given classes, interface implementations and others.
@@ -92,7 +93,7 @@ public class DeploymentScanner {
     * Creates an instance of the scanner that scans only in the given packages.
     *
     * @param packages
-    *       Packages to limit scanning to.
+    *        Packages to limit scanning to.
     */
    private DeploymentScanner(final String... packages) {
       final ConfigurationBuilder builder = ConfigurationBuilder.build((Object[]) packages);
@@ -119,7 +120,7 @@ public class DeploymentScanner {
     * Gets an instance of the scanner that is limited to the given packages.
     *
     * @param packages
-    *       Packages to limit scanning to.
+    *        Packages to limit scanning to.
     * @return An instance of the scanner that is limited to the given packages.
     */
    public static DeploymentScanner getInstance(final String... packages) {
@@ -127,11 +128,10 @@ public class DeploymentScanner {
    }
 
    /**
-    * Gets an instance of the scanner based on the information already stored in the provided
-    * {@link Context}.
+    * Gets an instance of the scanner based on the information already stored in the provided {@link Context}.
     *
     * @param context
-    *       A {@link Context} carrying the information needed to create the scanner.
+    *        A {@link Context} carrying the information needed to create the scanner.
     * @return An instance of the scanner based on the information already stored in the provided
     */
    public static DeploymentScanner getContextInstance(final Context context) {
@@ -159,19 +159,24 @@ public class DeploymentScanner {
     * Searches for all subtypes of the given class.
     *
     * @param clazz
-    *       A class to search subtypes of.
+    *        A class to search subtypes of.
     * @return All available classes of the given subtype.
     */
    @SuppressWarnings("unchecked")
    public Set lookupSubtypes(final Class clazz) {
       return reflections.getSubTypesOf(clazz);
+      /*final Set s1 = reflections.getSubTypesOf(clazz);
+      final Set s2 = Sets.newHashSet(ReflectionUtils.forNames(
+            reflections.getStore().getAll(TransitiveInterfacesScanner.class.getSimpleName(), Collections.singletonList(clazz.getName())), reflections.getConfiguration().getClassLoaders()));
+
+      return Sets.union(s1, s2);*/
    }
 
    /**
     * Searches for all resources matching the given pattern.
     *
     * @param pattern
-    *       The pattern to match.
+    *        The pattern to match.
     * @return All available resources matching the given pattern.
     */
    @SuppressWarnings("unchecked")
@@ -183,18 +188,18 @@ public class DeploymentScanner {
     * Creates instances of the given classes using default constructor.
     *
     * @param classes
-    *       Classes to create instances of.
+    *        Classes to create instances of.
     * @param <T>
-    *       Common type of the classes.
+    *        Common type of the classes.
     * @return Instances of the given classes.
     * @throws NoSuchMethodException
-    *       When there was no default constructor.
+    *         When there was no default constructor.
     * @throws IllegalAccessException
-    *       When the default constructor is not visible.
+    *         When the default constructor is not visible.
     * @throws InvocationTargetException
-    *       When it was not possible to invoke the constructor.
+    *         When it was not possible to invoke the constructor.
     * @throws InstantiationException
-    *       When it was not possible to create an instance.
+    *         When it was not possible to create an instance.
     */
    public static <T> List<T> instantiate(final Set<Class<T>> classes) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
       final List<T> instances = new ArrayList<>();
@@ -216,7 +221,8 @@ public class DeploymentScanner {
    }
 
    /**
-    * Add ClasspathUrls from MANIFEST Class-Path directive into builder
+    * Add ClasspathUrls from MANIFEST Class-Path directive into builder.
+    *
     * @param builder Reflection ConfigurationBuilder
     */
    private static void addNestedClasspathUrls(final ConfigurationBuilder builder) {
@@ -226,14 +232,13 @@ public class DeploymentScanner {
 
    /**
     * Remove ClasspathUrls like *.so or *.dll
+    *
     * @param builder Reflection ConfigurationBuilder
     */
    private static void removeSysLibUrls(final ConfigurationBuilder builder) {
       final Pattern sysLibPattern = Pattern.compile(".*[.](so|dll)", Pattern.CASE_INSENSITIVE);
 
-      final Set<URL> urls = builder.getUrls().stream().filter(
-            url -> !sysLibPattern.matcher(url.getFile()).matches()
-      ).collect(Collectors.toCollection(LinkedHashSet::new));
+      final Set<URL> urls = builder.getUrls().stream().filter(url -> !sysLibPattern.matcher(url.getFile()).matches()).collect(Collectors.toCollection(LinkedHashSet::new));
       builder.setUrls(urls);
    }
 
@@ -256,5 +261,34 @@ public class DeploymentScanner {
             return new ZipDir(new JarFile(file));
          }
       }
+   }
+
+   @SuppressWarnings("checkstyle:JavadocType")
+   public static class TransitiveInterfacesScanner extends SubTypesScanner {
+
+      @SuppressWarnings({"unchecked", "checkstyle:JavadocMethod"})
+      public void scan(final Object cls) {
+         final String className = getMetadataAdapter().getClassName(cls);
+
+         try {
+            Class clazz = Class.forName(className);
+
+            while (!clazz.getCanonicalName().startsWith("javax.") && !clazz.getCanonicalName().startsWith("java.") && !clazz.getCanonicalName().startsWith("com.sun.") && !clazz.getCanonicalName().startsWith("sun.")) {
+
+               for (Class anInterface : clazz.getInterfaces()) {
+                  if (acceptResult(anInterface.getCanonicalName())) {
+                     getStore().put(anInterface.getCanonicalName(), className);
+                  }
+               }
+
+               clazz = clazz.getSuperclass();
+            }
+         } catch (Throwable ex) {
+            if (log.isTraceEnabled()) {
+               log.trace("Could not load class {}", className);
+            }
+         }
+      }
+
    }
 }

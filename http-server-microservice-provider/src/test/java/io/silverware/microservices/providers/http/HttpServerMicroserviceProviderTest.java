@@ -47,6 +47,8 @@ public class HttpServerMicroserviceProviderTest {
    public void httpServerMicroserviceProviderTest() throws Exception {
       final BootUtil bootUtil = new BootUtil();
       final Map<String, Object> platformProperties = bootUtil.getContext().getProperties();
+      platformProperties.put(HttpServerSilverService.HTTP_SERVER_PORT, 8282);
+
       final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName());
       platform.start();
 
@@ -64,6 +66,8 @@ public class HttpServerMicroserviceProviderTest {
       Assert.assertNotNull(http, "Unable to obtain Http Server Silverservice.");
 
       http.deployServlet("test", "", Collections.singletonList(new ServletDescriptor("test", HttpTestServlet.class, "/", servletProperties)));
+
+      Thread.sleep(500);
 
       Assert.assertEquals(Utils.readFromUrl("http://" + platformProperties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" +
             platformProperties.get(HttpServerSilverService.HTTP_SERVER_PORT) + "/test/"), "Hello Mr. Wolf");

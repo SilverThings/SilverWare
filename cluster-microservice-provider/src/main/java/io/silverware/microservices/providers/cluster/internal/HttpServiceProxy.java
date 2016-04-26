@@ -40,7 +40,7 @@ public class HttpServiceProxy implements MethodHandler {
       this.serviceHandle = serviceHandle;
    }
 
-   @SuppressWarnings("unchecked")
+   @SuppressWarnings({"unchecked", "checkstyle:JavadocMethod"})
    public static <T> T getProxy(final Context context, final ServiceHandle serviceHandle) {
       try {
          ProxyFactory factory = new ProxyFactory();

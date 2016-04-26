@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<vertx>
+   <verticles>
+      <verticle>io.vertx.core.AbstractVerticle</verticle>
+      <verticle>io.silverware.microservices.providers.cdi.internal.RestInterface</verticle>
+      <verticle>io.vertx.lang.groovy.GroovyVerticle$1</verticle>
+      <verticle>io.vertx.lang.groovy.ScriptVerticle</verticle>
+      <verticle>io.vertx.lang.js.JSVerticleFactory$JSVerticle</verticle>
+   </verticles>
+</vertx>

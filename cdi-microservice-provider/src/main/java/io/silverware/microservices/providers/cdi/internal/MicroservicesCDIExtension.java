@@ -196,8 +196,8 @@ public class MicroservicesCDIExtension implements Extension {
          /*if (injectionPointField.getType().isInterface()) { // in case of interface use the property name
             serviceName = injectionPointField.getName();
          } else { // else use the type name as does CDI*/
-            final String tmpName = injectionPointField.getType().getSimpleName();
-            serviceName = tmpName.substring(0, 1).toLowerCase() + tmpName.substring(1);
+         final String tmpName = injectionPointField.getType().getSimpleName();
+         serviceName = tmpName.substring(0, 1).toLowerCase() + tmpName.substring(1);
          //}
       }
 
@@ -208,8 +208,8 @@ public class MicroservicesCDIExtension implements Extension {
       // Do we already have a proxy with this service name and type?
       for (MicroserviceProxyBean microserviceProxyBean : microserviceProxyBeans) {
          if (microserviceName.equals(microserviceProxyBean.getMicroserviceName()) && beanClass == microserviceProxyBean.getBeanClass()) {
-            List<String> required = qualifiers.stream().map(q -> q.annotationType().getName()).collect(Collectors.toList());
-            List<String> available = microserviceProxyBean.getQualifiers().stream().map(q -> q.annotationType().getName()).collect(Collectors.toList());
+            List<String> required = qualifiers.stream().map(q -> q.annotationType().getCanonicalName()).collect(Collectors.toList());
+            List<String> available = microserviceProxyBean.getQualifiers().stream().map(q -> q.annotationType().getCanonicalName()).collect(Collectors.toList());
 
             required.forEach(available::remove);
 

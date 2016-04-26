@@ -30,3 +30,8 @@ lib/plugins/*.jar
 
 src/main/native/*.so
 
+#Build log
+/build.out
+
+#Vertx
+.vertx

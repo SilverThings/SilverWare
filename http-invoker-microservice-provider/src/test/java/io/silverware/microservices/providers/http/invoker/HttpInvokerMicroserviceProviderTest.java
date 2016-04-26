@@ -1,7 +1,5 @@
 package io.silverware.microservices.providers.http.invoker;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
@@ -13,6 +11,10 @@ import io.silverware.microservices.silver.cluster.Invocation;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
 import io.silverware.microservices.util.BootUtil;
 import io.silverware.microservices.util.Utils;
+
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -51,9 +53,7 @@ public class HttpInvokerMicroserviceProviderTest {
          Thread.sleep(200);
       }
 
-      String urlBase = "http://" + platformProperties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" +
-            platformProperties.get(HttpServerSilverService.HTTP_SERVER_PORT) + "/" +
-            platformProperties.get(HttpInvokerSilverService.INVOKER_URL) + "/";
+      String urlBase = "http://" + platformProperties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" + platformProperties.get(HttpServerSilverService.HTTP_SERVER_PORT) + "/" + platformProperties.get(HttpInvokerSilverService.INVOKER_URL) + "/";
 
       Assert.assertTrue(Utils.waitForHttp(urlBase, 204));
 
@@ -75,7 +75,7 @@ public class HttpInvokerMicroserviceProviderTest {
       con.disconnect();
 
       final ServiceHandle handle = handles.get(0);
-      long l = (Long) handle.invoke(bootUtil.getContext(), "sum", new Class[] { short.class, int.class }, new Object[] { (short) 3, 4 });
+      long l = (Long) handle.invoke(bootUtil.getContext(), "sum", new Class[] {short.class, int.class}, new Object[] {(short) 3, 4});
       Assert.assertEquals(l, 7L);
 
       con = (HttpURLConnection) new URL(urlBase + "invoke").openConnection();
@@ -84,7 +84,7 @@ public class HttpInvokerMicroserviceProviderTest {
       con.setDoOutput(true);
       con.connect();
 
-      Invocation invocation = new Invocation(handles.get(0).getHandle(), "sum", new Class[] { short.class, int.class }, new Object[] { (short) 3, 4 });
+      Invocation invocation = new Invocation(handles.get(0).getHandle(), "sum", new Class[] {short.class, int.class}, new Object[] {(short) 3, 4});
       jsonWriter = new JsonWriter(con.getOutputStream());
       jsonWriter.write(invocation);
       jsonReader = new JsonReader(con.getInputStream());
@@ -100,9 +100,7 @@ public class HttpInvokerMicroserviceProviderTest {
       con.setDoOutput(true);
       con.connect();
 
-      invocation = new Invocation(handles.get(0).getHandle(), "allTypes",
-            new Class[] { byte.class, short.class, int.class, long.class, float.class, double.class, boolean.class, char.class },
-            new Object[] { Byte.MAX_VALUE, Short.MAX_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE, Float.MIN_VALUE, Double.MIN_VALUE, true, 'c' });
+      invocation = new Invocation(handles.get(0).getHandle(), "allTypes", new Class[] {byte.class, short.class, int.class, long.class, float.class, double.class, boolean.class, char.class}, new Object[] {Byte.MAX_VALUE, Short.MAX_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE, Float.MIN_VALUE, Double.MIN_VALUE, true, 'c'});
 
       jsonWriter = new JsonWriter(con.getOutputStream());
       jsonWriter.write(invocation);
@@ -113,16 +111,13 @@ public class HttpInvokerMicroserviceProviderTest {
 
       con.disconnect();
 
-
       con = (HttpURLConnection) new URL(urlBase + "invoke").openConnection();
       con.setRequestMethod("POST");
       con.setDoInput(true);
       con.setDoOutput(true);
       con.connect();
 
-      invocation = new Invocation(handles.get(0).getHandle(), "allTypes2",
-            new Class[] { Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, Boolean.class, Character.class },
-            new Object[] { Byte.MAX_VALUE, Short.MAX_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE, Float.MIN_VALUE, Double.MIN_VALUE, true, 'c' });
+      invocation = new Invocation(handles.get(0).getHandle(), "allTypes2", new Class[] {Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, Boolean.class, Character.class}, new Object[] {Byte.MAX_VALUE, Short.MAX_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE, Float.MIN_VALUE, Double.MIN_VALUE, true, 'c'});
 
       jsonWriter = new JsonWriter(con.getOutputStream());
       jsonWriter.write(invocation);
@@ -141,7 +136,7 @@ public class HttpInvokerMicroserviceProviderTest {
 
       MagicBox box = new MagicBox();
 
-      invocation = new Invocation(handles.get(0).getHandle(), "doMagic", new Class[] { MagicBox.class }, new Object[] { box });
+      invocation = new Invocation(handles.get(0).getHandle(), "doMagic", new Class[] {MagicBox.class}, new Object[] {box});
 
       jsonWriter = new JsonWriter(con.getOutputStream());
       jsonWriter.write(invocation);
@@ -161,12 +156,10 @@ public class HttpInvokerMicroserviceProviderTest {
    @Test
    public void testIpAddresses() throws Exception {
       Enumeration e = NetworkInterface.getNetworkInterfaces();
-      while(e.hasMoreElements())
-      {
+      while (e.hasMoreElements()) {
          NetworkInterface n = (NetworkInterface) e.nextElement();
          Enumeration ee = n.getInetAddresses();
-         while (ee.hasMoreElements())
-         {
+         while (ee.hasMoreElements()) {
             InetAddress i = (InetAddress) ee.nextElement();
             System.out.println(i.isLoopbackAddress() + " - " + (i instanceof Inet4Address) + " " + i.getHostAddress());
          }
@@ -195,10 +188,7 @@ public class HttpInvokerMicroserviceProviderTest {
 
       @Override
       public String toString() {
-         return "MagicBox{" +
-               "s=" + s +
-               ", f=" + f +
-               '}';
+         return "MagicBox{" + "s=" + s + ", f=" + f + '}';
       }
    }
 

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+   <xs:element name="vertx">
+      <xs:complexType>
+         <xs:sequence>
+            <xs:element name="verticles">
+               <xs:complexType>
+                  <xs:sequence>
+                     <xs:element name="verticle" type="verticleElement" maxOccurs="unbounded" minOccurs="0"/>
+                  </xs:sequence>
+               </xs:complexType>
+            </xs:element>
+         </xs:sequence>
+      </xs:complexType>
+   </xs:element>
+
+   <xs:complexType name="verticleElement">
+      <xs:simpleContent>
+         <xs:extension base="xs:string">
+            <xs:attribute name="type" type="verticleType"/>
+            <xs:attribute name="instances" type="xs:integer"/>
+            <xs:attribute name="isolationGroup" type="xs:string"/>
+            <xs:attribute name="isolatedClasses" type="stringlist"/>
+            <xs:attribute name="extraClasspath" type="stringlist"/>
+            <xs:attribute name="ha" type="xs:boolean"/>
+            <xs:attribute name="config" type="xs:string"/>
+         </xs:extension>
+      </xs:simpleContent>
+   </xs:complexType>
+
+   <xs:simpleType name="verticleType">
+      <xs:restriction base="xs:string">
+         <xs:enumeration value="standard"/>
+         <xs:enumeration value="worker"/>
+         <xs:enumeration value="multi-threaded-worker"/>
+      </xs:restriction>
+   </xs:simpleType>
+
+   <xs:simpleType name="stringlist">
+      <xs:list itemType="xs:string"/>
+   </xs:simpleType>
+</xs:schema>

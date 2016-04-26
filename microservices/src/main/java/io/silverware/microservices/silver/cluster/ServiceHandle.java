@@ -19,11 +19,12 @@
  */
 package io.silverware.microservices.silver.cluster;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.silver.HttpInvokerSilverService;
+
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 
 import java.io.Serializable;
 import java.net.HttpURLConnection;
@@ -40,15 +41,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ServiceHandle implements Serializable {
 
-   final static transient private AtomicInteger handleSource = new AtomicInteger(0);
+   private static final transient AtomicInteger handleSource = new AtomicInteger(0);
 
-   final private int handle;
+   private final int handle;
 
-   final private String host;
+   private final String host;
 
-   final private MicroserviceMetaData query;
+   private final MicroserviceMetaData query;
 
-   final private transient Object service;
+   private final transient Object service;
 
    public ServiceHandle(final String host, final MicroserviceMetaData query, final Object service) {
       this.handle = handleSource.getAndIncrement();
@@ -108,14 +109,10 @@ public class ServiceHandle implements Serializable {
 
    @Override
    public String toString() {
-      return "ServiceHandle{" +
-            "handle=" + handle +
-            ", host='" + host + '\'' +
-            ", query=" + query +
-            ", service=" + service +
-            '}';
+      return "ServiceHandle{" + "handle=" + handle + ", host='" + host + '\'' + ", query=" + query + ", service=" + service + '}';
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public Object invoke(final Context context, final String method, final Class[] paramTypes, final Object[] params) throws Exception {
       String urlBase = "http://" + host + "/" + context.getProperties().get(HttpInvokerSilverService.INVOKER_URL) + "/invoke";
 
@@ -136,6 +133,7 @@ public class ServiceHandle implements Serializable {
       return response;
    }
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public Object invoke(final Context context, final String method, final Object[] params) throws Exception {
       final Class[] paramTypes = new Class[params.length];
       for (int i = 0; i < params.length; i++) {

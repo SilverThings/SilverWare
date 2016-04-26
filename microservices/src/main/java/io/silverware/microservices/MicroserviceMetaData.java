@@ -19,17 +19,19 @@
  */
 package io.silverware.microservices;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
 import io.silverware.microservices.silver.HttpInvokerSilverService;
-import io.silverware.microservices.silver.cluster.Invocation;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
 import io.silverware.microservices.util.Utils;
+
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 
 import java.lang.annotation.Annotation;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,7 +40,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-final public class MicroserviceMetaData {
+public final class MicroserviceMetaData {
 
    /**
     * Name of the Microservice.
@@ -50,10 +52,15 @@ final public class MicroserviceMetaData {
     */
    private final Class type;
 
-   /**s
+   /**
     * Qualifiers of the Microservice.
     */
    private final Set<Annotation> qualifiers;
+
+   /**
+    * Annotations of the Microservice.
+    */
+   private final Set<Annotation> annotations;
 
    /**
     * Microservice specification version.
@@ -69,16 +76,19 @@ final public class MicroserviceMetaData {
     * Create a representation of a discovered Microservice.
     *
     * @param name
-    *       The name of the discovered Microservice.
+    *        The name of the discovered Microservice.
     * @param type
-    *       The type of the discovered Microservice.
+    *        The type of the discovered Microservice.
     * @param qualifiers
-    *       The qualifiers of the discovered Microservice.
+    *        The qualifiers of the discovered Microservice.
+    * @param annotations
+    *        The annotations of the discovered Microservice.
     */
-   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers) {
+   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers, final Set<Annotation> annotations) {
       this.name = name;
       this.type = type;
       this.qualifiers = qualifiers;
+      this.annotations = annotations;
       this.specVersion = Utils.getClassSpecVersion(type);
       this.implVersion = Utils.getClassImplVersion(type);
 
@@ -91,20 +101,46 @@ final public class MicroserviceMetaData {
     * Create a representation of a discovered Microservice.
     *
     * @param name
-    *       The name of the discovered Microservice.
+    *        The name of the discovered Microservice.
     * @param type
-    *       The type of the discovered Microservice.
+    *        The type of the discovered Microservice.
     * @param qualifiers
-    *       The qualifiers of the discovered Microservice.
-    * @param specVersion
-    *       The specification version we are looking for.
-    * @param implVersion
-    *       The implementation version we are looking for.
+    *        The qualifiers of the discovered Microservice.
     */
-   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers, final String specVersion, final String implVersion) {
+   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers) {
       this.name = name;
       this.type = type;
       this.qualifiers = qualifiers;
+      this.annotations = new HashSet<>();
+      this.specVersion = Utils.getClassSpecVersion(type);
+      this.implVersion = Utils.getClassImplVersion(type);
+
+      if (name == null || type == null) {
+         throw new IllegalStateException("Name and type fields cannot be null.");
+      }
+   }
+
+   /**
+    * Create a representation of a discovered Microservice.
+    *
+    * @param name
+    *        The name of the discovered Microservice.
+    * @param type
+    *        The type of the discovered Microservice.
+    * @param qualifiers
+    *        The qualifiers of the discovered Microservice.
+    * @param annotations
+    *        The annotations of the discovered Microservice.
+    * @param specVersion
+    *        The specification version we are looking for.
+    * @param implVersion
+    *        The implementation version we are looking for.
+    */
+   public MicroserviceMetaData(final String name, final Class type, final Set<Annotation> qualifiers, final Set<Annotation> annotations, final String specVersion, final String implVersion) {
+      this.name = name;
+      this.type = type;
+      this.qualifiers = qualifiers;
+      this.annotations = annotations;
       this.specVersion = specVersion;
       this.implVersion = implVersion;
 
@@ -141,7 +177,17 @@ final public class MicroserviceMetaData {
    }
 
    /**
+    * Gets the annotations of the discovered Microservice.
+    *
+    * @return The annotations of the discovered Microservice.
+    */
+   public Set<Annotation> getAnnotations() {
+      return annotations;
+   }
+
+   /**
     * Gets the Microservice specification version.
+    *
     * @return The Microservice specification version.
     */
    public String getSpecVersion() {
@@ -150,6 +196,7 @@ final public class MicroserviceMetaData {
 
    /**
     * Gets the Microservice implementation version.
+    *
     * @return The Microservice implementation version.
     */
    public String getImplVersion() {
@@ -158,19 +205,27 @@ final public class MicroserviceMetaData {
 
    @Override
    public boolean equals(Object o) {
-      if (this == o)
+      if (this == o) {
          return true;
-      if (o == null || getClass() != o.getClass())
+      }
+      if (o == null || getClass() != o.getClass()) {
          return false;
+      }
 
       MicroserviceMetaData that = (MicroserviceMetaData) o;
 
-      if (!name.equals(that.name))
+      if (!name.equals(that.name)) {
          return false;
-      if (!type.equals(that.type))
+      }
+      if (!type.equals(that.type)) {
          return false;
-      if (qualifiers != null ? !qualifiers.equals(that.qualifiers) : that.qualifiers != null)
+      }
+      if (qualifiers != null ? !qualifiers.equals(that.qualifiers) : that.qualifiers != null) {
          return false;
+      }
+      if (annotations != null ? !annotations.equals(that.annotations) : that.annotations != null) {
+         return false;
+      }
       return !(specVersion != null ? !specVersion.equals(that.specVersion) : that.specVersion != null);
 
    }
@@ -180,16 +235,17 @@ final public class MicroserviceMetaData {
       int result = name.hashCode();
       result = 31 * result + type.hashCode();
       result = 31 * result + (qualifiers != null ? qualifiers.hashCode() : 0);
+      result = 31 * result + (annotations != null ? annotations.hashCode() : 0);
       return result;
    }
 
    @Override
    public String toString() {
       return "microservice " + name + " of type " + type.getCanonicalName() + " with qualifiers " + Arrays.toString(qualifiers.toArray())
-            + " (version: spec. " + specVersion + ", impl. " + implVersion + ")";
+            + " and with annotations " + Arrays.toString(annotations.toArray()) + " (version: spec. " + specVersion + ", impl. " + implVersion + ")";
    }
 
-   @SuppressWarnings("unchecked")
+   @SuppressWarnings({"unchecked", "checkstyle:JavadocMethod"})
    public List<ServiceHandle> query(final Context context, final String host) throws Exception {
       String urlBase = "http://" + host + "/" + context.getProperties().get(HttpInvokerSilverService.INVOKER_URL) + "/query";
 

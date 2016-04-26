@@ -38,6 +38,7 @@ public class CamelCdiContextFactory implements CamelContextFactory {
 
    private static final Logger log = LogManager.getLogger(CamelCdiContextFactory.class);
 
+   @SuppressWarnings("checkstyle:JavadocMethod")
    public CamelContext createCamelContext(final Context context) {
       CdiSilverService cdiSilverService = null;
       log.info("Camel CDI extension is present, waiting for 5s for CDI initialization...");

@@ -26,8 +26,7 @@ import java.util.List;
 
 /**
  * Provider of an HTTP Server.
- * Typically needed by {@link MonitoringSilverService} and or
- * {@link HttpInvokerSilverService}.
+ * Typically needed by {@link MonitoringSilverService} and or {@link HttpInvokerSilverService}.
  *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
@@ -50,6 +49,7 @@ public interface HttpServerSilverService extends SilverService {
 
    /**
     * Deploys a servlet on the HTTP server.
+    *
     * @param contextPath Context path where the servlet should be bound.
     * @param deploymentName Name of the deployment.
     * @param servletDescriptors A list of descriptions of the servlet(s).

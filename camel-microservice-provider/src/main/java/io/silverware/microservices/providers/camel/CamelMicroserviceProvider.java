@@ -68,7 +68,7 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
       @SuppressWarnings("unchecked")
       Set<Class<CamelContextFactory>> camelContextFactories = DeploymentScanner.getContextInstance(context).lookupSubtypes(CamelContextFactory.class);
 
-      if(camelContextFactories.size() >= 2) {
+      if (camelContextFactories.size() >= 2) {
          throw new SilverWareException("More than one CamelContextFactories found.");
       } else if (camelContextFactories.size() == 1) {
          Class<CamelContextFactory> clazz = camelContextFactories.iterator().next();
@@ -177,7 +177,11 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
             } catch (InterruptedException ie) {
                Utils.shutdownLog(log, ie);
             } finally {
-               camelContext.stop();
+               try {
+                  camelContext.stop();
+               } catch (Exception e) {
+                  log.trace("Weld was shut down before Camel and destroyed the context: ", e);
+               }
             }
          } catch (Exception e) {
             log.error("Camel microservice provider failed: ", e);

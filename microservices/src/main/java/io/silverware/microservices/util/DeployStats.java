@@ -48,6 +48,7 @@ public class DeployStats implements Serializable {
 
    /**
     * Sets the number of discovered instances.
+    *
     * @param found The number of discovered instances.
     */
    public void setFound(long found) {
@@ -70,6 +71,7 @@ public class DeployStats implements Serializable {
 
    /**
     * Gets the number of discovered instances.
+    *
     * @return The number of discovered instances.
     */
    public long getFound() {
@@ -78,6 +80,7 @@ public class DeployStats implements Serializable {
 
    /**
     * Gets the number of skipped instances.
+    *
     * @return The number of skipped instances.
     */
    public long getSkipped() {
@@ -86,6 +89,7 @@ public class DeployStats implements Serializable {
 
    /**
     * Gets the number of deployed instances.
+    *
     * @return The number of deployed instances.
     */
    public long getDeployed() {
@@ -94,8 +98,10 @@ public class DeployStats implements Serializable {
 
    /**
     * Gets the string representation of the statistics in a user friendly format.
+    *
     * @return Tthe string representation of the statistics in a user friendly format.
     */
+   @Override
    public String toString() {
       return String.format("found %d, deployed %d, skipped deployment %d", getFound(), getDeployed(), getSkipped());
    }
