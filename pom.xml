@@ -19,17 +19,17 @@
       </developer>
    </developers>
    <issueManagement>
-      <url>https://github.com/px3/SilverWare/issues</url>
+      <url>https://github.com/SilverThings/SilverWare/issues</url>
       <system>github</system>
    </issueManagement>
    <organization>
-      <name>px3</name>
+      <name>SilverThings</name>
       <url>http://www.silverware.io</url>
    </organization>
    <scm>
-      <url>https://github.com/px3/SilverWare</url>
-      <connection>scm:git:git://github.com/px3/SilverWare.git</connection>
-      <developerConnection>scm:git:git@github.com:px3/SilverWare.git</developerConnection>
+      <url>https://github.com/SilverThings/SilverWare</url>
+      <connection>scm:git:git://github.com/SilverThings/SilverWare.git</connection>
+      <developerConnection>scm:git:git@github.com:SilverThings/SilverWare.git</developerConnection>
       <tag>v2.0</tag>
    </scm>
    <licenses>

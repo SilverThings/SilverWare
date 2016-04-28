@@ -1,7 +1,7 @@
 [![Build Status][Travis badge]][Travis build]
 
-[Travis badge]: https://travis-ci.org/px3/SilverWare.svg?branch=devel
-[Travis build]: https://travis-ci.org/px3/SilverWare
+[Travis badge]: https://travis-ci.org/SilverThings/SilverWare.svg?branch=devel
+[Travis build]: https://travis-ci.org/SilverThings/SilverWare
 
 # SilverWare
 
@@ -39,4 +39,4 @@ Enabling the following technologies in on our near-term roadmap.
 
 ## How Does It Work?
 
-Just have a look on [our quickstarts](https://github.com/px3/SilverWare-Demos)! It is very easy, just a few maven goals and you have your first service running.
+Just have a look on [our quickstarts](https://github.com/SilverThings/SilverWare-Demos)! It is very easy, just a few maven goals and you have your first service running.
