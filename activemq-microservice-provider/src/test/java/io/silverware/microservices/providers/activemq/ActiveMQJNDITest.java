@@ -154,9 +154,6 @@ public class ActiveMQJNDITest {
          session.close();
          session1.close();
          session2.close();
-
-         semaphore.release();
-
       }
 
       private void receiveMessage11(MessageConsumer consumer) throws JMSException {
@@ -202,7 +199,6 @@ public class ActiveMQJNDITest {
          receiveMessage20(jmsConsumer);
 
          jmsConsumer.close();
-
       }
 
       private void receiveMessage20(JMSConsumer consumer) throws JMSException {

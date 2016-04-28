@@ -5,6 +5,7 @@ package io.silverware.microservices.utils;
  */
 public class ActiveMQConstants {
    public static final String CONNECTION_FACTORY = "connectionFactory.ConnectionFactory";
+   public static final String PROVIDER_URL = "java.naming.provider.url";
    public static final String CONNECTION_FACTORY_JNDI = "ConnectionFactory";
    public static final String DEFAULT_CONNECTION = "";
    public static final int DEFAULT_SESSION_TYPE = -1;

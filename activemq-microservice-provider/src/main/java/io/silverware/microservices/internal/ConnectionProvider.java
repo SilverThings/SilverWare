@@ -284,7 +284,9 @@ public class ConnectionProvider {
          }
 
          for (JMSContext sharedContext : sharedSessionModeJMSContexts.values()) {
-            sharedContext.close();
+            if (sharedContext != null) {
+               sharedContext.close();
+            }
          }
 
          for (JMSContext securedContext : sharedSecuredJMSContexts.values()) {
