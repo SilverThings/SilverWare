@@ -86,7 +86,7 @@
 
 	});
 
-    $.get( "https://api.github.com/repos/px3/SilverWare/issues?state=open", function( data ) {
+    $.get( "https://api.github.com/repos/SilverThings/SilverWare/issues?state=open", function( data ) {
  		$("#issues .badge")[0].innerHTML = data.length + ' Open Issues';
     });
 
