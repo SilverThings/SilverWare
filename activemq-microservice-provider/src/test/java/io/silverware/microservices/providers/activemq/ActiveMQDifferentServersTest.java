@@ -71,8 +71,9 @@ public class ActiveMQDifferentServersTest {
       log.info("Started Embedded Artemis JMS Server");
 
       activeMQServer = new BrokerService();
-      activeMQServer.setBrokerName("ActiveMQ Embedded Broker");
+      activeMQServer.setBrokerName("ActiveMQ_Embedded_Broker");
       activeMQServer.addConnector("vm://1");
+      activeMQServer.setUseJmx(false);
 
       activeMQServer.start();
       log.info("Started Embedded ActiveMQ JMS Server");
