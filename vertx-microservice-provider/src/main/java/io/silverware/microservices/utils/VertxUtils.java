@@ -55,7 +55,7 @@ import javax.xml.validation.Validator;
 /**
  * @author <a href="mailto:stefankomartin6@gmail.com">Martin Štefanko</a>
  */
-public class VertxUtils {
+public abstract class VertxUtils {
 
    private static final Logger log = LogManager.getLogger(VertxUtils.class);
 

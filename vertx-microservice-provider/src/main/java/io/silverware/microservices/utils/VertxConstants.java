@@ -3,7 +3,7 @@ package io.silverware.microservices.utils;
 /**
  * @author <a href="mailto:stefankomartin6@gmail.com">Martin Štefanko</a>
  */
-public class VertxConstants {
+public abstract class VertxConstants {
 
    public static final String NOT_AVAILABLE = "N/A";
    public static final String FORBIDDEN_VERTICLES = "forbidden-verticles.xml";
