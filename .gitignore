@@ -36,3 +36,6 @@ src/main/native/*.so
 
 #Vertx
 .vertx
+
+#ActiveMQ
+activemq-data
