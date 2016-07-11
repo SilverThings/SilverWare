@@ -151,14 +151,12 @@ public class MicroservicesCDIExtension implements Extension {
 
 
       if (!current.contains(Any.class.getName())) {
-         processed.add(new AnnotationLiteral<Any>() {
-         });
+         processed.add(new AnyAnnotationLiteral());
          current.add(Any.class.getName());
       }
 
       if (current.size() < 3) {
-         processed.add(new AnnotationLiteral<Default>() {
-         });
+         processed.add(new DefaultAnnotationLiteral());
       }
 
       return processed;
@@ -241,5 +239,19 @@ public class MicroservicesCDIExtension implements Extension {
     */
    private MicroserviceMetaData getMicroserviceMetaData(final String microserviceName, final Bean<?> bean) {
       return new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers());
+   }
+
+   /**
+    * Annotation literal for type Any.
+    */
+   public static class AnyAnnotationLiteral extends AnnotationLiteral<Any> {
+
+   }
+
+   /**
+    * Annotation literal for type Default that can be serialized.
+    */
+   public static class DefaultAnnotationLiteral extends AnnotationLiteral<Default> {
+
    }
 }
