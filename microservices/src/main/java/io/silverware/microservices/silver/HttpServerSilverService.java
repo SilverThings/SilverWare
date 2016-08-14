@@ -48,6 +48,16 @@ public interface HttpServerSilverService extends SilverService {
    String HTTP_SERVER_ADDRESS = "silverware.http.address";
 
    /**
+    * Context path to which REST requests are routed
+    * */
+   String HTTP_SERVER_REST_CONTEXT_PATH = "silverware.http.rest.context.path";
+
+   /**
+    * Mapping of the base REST Servlet
+    * */
+   String HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX = "silverware.http.rest.servlet.mapping.prefix";
+
+   /**
     * Deploys a servlet on the HTTP server.
     *
     * @param contextPath Context path where the servlet should be bound.
