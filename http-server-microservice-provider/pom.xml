@@ -17,6 +17,7 @@
       <dependency>
          <groupId>io.silverware</groupId>
          <artifactId>cdi-microservice-provider</artifactId>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.apache.logging.log4j</groupId>
@@ -53,6 +54,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
+            <version>${version.maven.dependency.plugin}</version>
          </plugin>
       </plugins>
    </build>

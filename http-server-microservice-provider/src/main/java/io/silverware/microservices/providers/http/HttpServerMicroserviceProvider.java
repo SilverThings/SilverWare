@@ -22,8 +22,8 @@ package io.silverware.microservices.providers.http;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.SilverWareException;
 import io.silverware.microservices.providers.MicroserviceProvider;
-import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
 import io.silverware.microservices.providers.http.resteasy.SilverwareResourceFactory;
+import io.silverware.microservices.silver.CdiSilverService;
 import io.silverware.microservices.silver.HttpServerSilverService;
 import io.silverware.microservices.silver.http.ServletDescriptor;
 import io.silverware.microservices.util.Utils;
@@ -75,7 +75,8 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
 
    @Override
    @SuppressWarnings("unchecked")
-   public void deployServlet(final String contextPath, final String deploymentName, final List<ServletDescriptor> servletDescriptors) throws SilverWareException {
+   public void deployServlet(final String contextPath, final String deploymentName,
+         final List<ServletDescriptor> servletDescriptors) throws SilverWareException {
       final DeploymentInfo servletBuilder = Servlets
             .deployment()
             .setClassLoader(this.getClass().getClassLoader())
@@ -136,11 +137,11 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
    }
 
    /**
-    * Waits until {@link CdiMicroserviceProvider} has registered all Microservices to {@link Context}.
+    * Waits until {@link CdiSilverService} is deployed, thus all Microservices have been registered to {@link Context}.
     */
    private void waitForCDIProvider() throws InterruptedException {
-      while (this.context.getProvider(CdiMicroserviceProvider.class) == null || !((CdiMicroserviceProvider) this.context
-            .getProvider(CdiMicroserviceProvider.class)).isDeployed()) {
+      while (this.context.getProvider(CdiSilverService.class) == null || !((CdiSilverService) this.context
+            .getProvider(CdiSilverService.class)).isDeployed()) {
          Thread.sleep(200);
       }
    }
