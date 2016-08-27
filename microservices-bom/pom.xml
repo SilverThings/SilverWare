@@ -74,6 +74,7 @@
       <version.drools>6.3.0.Final</version.drools>
       <version.org.assertj>3.5.2</version.org.assertj>
       <version.org.jboss.resteasy>3.0.17.Final</version.org.jboss.resteasy>
+      <version.jandex>2.0.3.Final</version.jandex>
       <java.level>1.8</java.level>
    </properties>
    <dependencyManagement>
@@ -336,6 +337,11 @@
             <artifactId>assertj-core</artifactId>
             <version>${version.org.assertj}</version>
             <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jandex</artifactId>
+            <version>${version.jandex}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

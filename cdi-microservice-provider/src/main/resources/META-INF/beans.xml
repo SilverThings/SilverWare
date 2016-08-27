@@ -1,4 +1,4 @@
-<beans>
+<beans bean-discovery-mode="annotated">
    <!--alternatives>
       <class>io.silverware.microservices.providers.cdi.CdiMicroserviceProviderAlternativesTest$AlternateAlternativesMicroBean</class>
    </alternatives-->
