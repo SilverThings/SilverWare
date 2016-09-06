@@ -71,9 +71,10 @@ public class HttpServerMicroserviceProviderTest {
             Collections.singletonList(new ServletDescriptor("test", HttpTestServlet.class, "/", servletProperties)));
 
       Thread.sleep(500);
-      Assert.assertEquals(Utils.readFromUrl("http://" + platformProperties
-            .get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" + platformProperties
-            .get(HttpServerSilverService.HTTP_SERVER_PORT) + "/test/"), "Hello Mr. Wolf");
+      Assert.assertEquals(
+            Utils.readFromUrl(
+                  new SilverWareURI(platformProperties).http() + "/test/"),
+            "Hello Mr. Wolf");
 
       platform.interrupt();
       platform.join();
@@ -82,8 +83,8 @@ public class HttpServerMicroserviceProviderTest {
    public static class HttpTestServlet extends HttpServlet {
 
       @Override
-      protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException,
-            IOException {
+      protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
+            throws ServletException, IOException {
          resp.getWriter().append("Hello " + getInitParameter("greeting"));
       }
    }

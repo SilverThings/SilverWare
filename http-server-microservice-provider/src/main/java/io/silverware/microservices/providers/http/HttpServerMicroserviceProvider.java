@@ -39,9 +39,11 @@ import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.ServletInfo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.net.ssl.SSLContext;
 import javax.servlet.Servlet;
 import javax.ws.rs.Path;
 
@@ -60,6 +62,7 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
       this.context = context;
 
       context.getProperties().putIfAbsent(HTTP_SERVER_PORT, 8080);
+      context.getProperties().putIfAbsent(HTTPS_SERVER_PORT, 10443);
       context.getProperties().putIfAbsent(HTTP_SERVER_ADDRESS, "localhost");
       context.getProperties().putIfAbsent(HTTP_SERVER_REST_CONTEXT_PATH, "/silverware");
       context.getProperties().putIfAbsent(HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX, "rest");
@@ -84,12 +87,12 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
             .setDeploymentName(deploymentName);
       if (servletDescriptors != null) {
          servletDescriptors.forEach(servletDescriptor -> {
-            final ServletInfo servletInfo = Servlets.servlet(
-                  servletDescriptor.getName(),
-                  (Class<Servlet>) servletDescriptor.getServletClass());
+            final ServletInfo servletInfo = Servlets
+                  .servlet(servletDescriptor.getName(), (Class<Servlet>) servletDescriptor.getServletClass());
             servletInfo.addMapping(servletDescriptor.getMapping());
-            servletDescriptor.getProperties().forEach(
-                  (key, value) -> servletInfo.addInitParam((String) key, (String) value));
+            servletDescriptor
+                  .getProperties()
+                  .forEach((key, value) -> servletInfo.addInitParam((String) key, (String) value));
 
             servletBuilder.addServlet(servletInfo);
          });
@@ -102,11 +105,17 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
    public void run() {
       try {
          log.info("Hello from Http Server microservice provider!");
-
          try {
-            this.server.start(Undertow.builder().addHttpListener(
-                  (int) this.context.getProperties().get(HTTP_SERVER_PORT),
-                  (String) this.context.getProperties().get(HTTP_SERVER_ADDRESS)));
+            this.server.start(
+                  Undertow
+                        .builder()
+                        .addHttpListener(
+                              (int) this.context.getProperties().get(HTTP_SERVER_PORT),
+                              (String) this.context.getProperties().get(HTTP_SERVER_ADDRESS))
+                        .addHttpsListener(
+                              (int) this.context.getProperties().get(HTTPS_SERVER_PORT),
+                              (String) this.context.getProperties().get(HTTP_SERVER_ADDRESS),
+                              sslContext()));
             this.server.deploy(deploymentInfo());
             log.info("Started Http Server.");
 
@@ -115,6 +124,9 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
             }
          } catch (final InterruptedException ie) {
             Utils.shutdownLog(log, ie);
+         } catch (final Exception ie) {
+            log.error("Error while initializing.", ie);
+            ;
          } finally {
             this.server.stop();
          }
@@ -140,8 +152,9 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
     * Waits until {@link CdiSilverService} is deployed, thus all Microservices have been registered to {@link Context}.
     */
    private void waitForCDIProvider() throws InterruptedException {
-      while (this.context.getProvider(CdiSilverService.class) == null || !((CdiSilverService) this.context
-            .getProvider(CdiSilverService.class)).isDeployed()) {
+      while (this.context.getProvider(
+            CdiSilverService.class) == null || !((CdiSilverService) this.context.getProvider(CdiSilverService.class))
+                  .isDeployed()) {
          Thread.sleep(200);
       }
    }
@@ -163,5 +176,13 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
          });
       });
       return factories;
+   }
+
+   private SSLContext sslContext() throws IOException {
+      return new SSLContextFactory(
+            (String) this.context.getProperties().get(HTTP_SERVER_KEY_STORE),
+            (String) this.context.getProperties().get(HTTP_SERVER_KEY_STORE_PASSWORD),
+            (String) this.context.getProperties().get(HTTP_SERVER_TRUST_STORE),
+            (String) this.context.getProperties().get(HTTP_SERVER_TRUST_STORE_PASSWORD)).createSSLContext();
    }
 }
