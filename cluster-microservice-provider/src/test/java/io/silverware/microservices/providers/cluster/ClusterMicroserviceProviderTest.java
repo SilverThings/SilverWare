@@ -19,29 +19,66 @@
  */
 package io.silverware.microservices.providers.cluster;
 
-import static org.testng.Assert.*;
-
-import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
-import io.silverware.microservices.providers.http.HttpServerMicroserviceProvider;
-import io.silverware.microservices.providers.http.invoker.HttpInvokerMicroserviceProvider;
-import io.silverware.microservices.silver.HttpServerSilverService;
-import io.silverware.microservices.util.BootUtil;
+import io.silverware.microservices.providers.cluster.internal.JgroupsMessageSender;
+import static io.silverware.microservices.providers.cluster.internal.RemoteServiceHandleStoreTest.META_DATA;
+import io.silverware.microservices.providers.cluster.internal.message.response.MicroserviceSearchResponse;
+import io.silverware.microservices.silver.cluster.RemoteServiceHandlesStore;
+import io.silverware.microservices.silver.cluster.ServiceHandle;
+import mockit.Expectations;
+import mockit.Injectable;
+import mockit.Tested;
+import static org.assertj.core.api.Assertions.assertThat;
+import org.jgroups.Address;
+import org.jgroups.util.FutureListener;
+import org.jgroups.util.RspList;
 import org.testng.annotations.Test;
 
-import java.util.Map;
+import java.util.Set;
 
 /**
- * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ * Test for ClusterMicroserviceProvider
+ *   @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
 public class ClusterMicroserviceProviderTest {
 
-   @Test(enabled = false)
-   public void testHttpInvoker() throws Exception {
-      System.getProperties().setProperty(HttpServerSilverService.HTTP_SERVER_ADDRESS, "1.2.3.4");
-      final BootUtil bootUtil = new BootUtil();
-      final Map<String, Object> platformProperties = bootUtil.getContext().getProperties();
-      final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName(), HttpServerMicroserviceProvider.class.getPackage().getName(), HttpInvokerMicroserviceProvider.class.getPackage().getName(), CdiMicroserviceProvider.class.getPackage().getName());
-      platform.start();
+   public static final RemoteServiceHandlesStore REMOTE_SERVICE_HANDLES_STORE = new RemoteServiceHandlesStore();
+
+   @Tested
+   private ClusterMicroserviceProvider clusterMicroserviceProvider;
+   @Injectable
+   private RemoteServiceHandlesStore store;
+   @Injectable
+   private JgroupsMessageSender sender;
+
+
+   @Test
+   public void testLookupMicroservice() throws Exception {
+      Set<ServiceHandle> mockHandles = Util.createSetFrom(Util.createHandle("1"), Util.createHandle("2"));
+      Set<Object> services = Util.createSetFrom(new Object(), new Object());
+
+
+      new Expectations() {{
+         sender.sendToClusterAsync(META_DATA, (Set<Address>) any, (FutureListener<RspList<MicroserviceSearchResponse>>) any);
+         times = 1;
+         result = mockHandles;
+         // TODO: 9/9/16 test this again
+//         store.addHandles(META_DATA, mockHandles);
+//         times = 1;
+         store.getServices(META_DATA);
+         result = services;
+         times = 1;
+
+      }};
+      Set<Object> objects = clusterMicroserviceProvider.lookupMicroservice(META_DATA);
+      assertThat(objects).isNotEmpty().isEqualTo(services);
    }
 
+   @Test
+   public void testLookupLocalMicroservice() throws Exception {
+      Set<Object> objects = clusterMicroserviceProvider.lookupLocalMicroservice(META_DATA);
+      assertThat(objects)
+              .isNotNull()
+              .isEmpty();
+
+   }
 }

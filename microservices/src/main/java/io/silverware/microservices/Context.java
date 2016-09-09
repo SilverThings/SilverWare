@@ -23,8 +23,8 @@ import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.silver.HttpServerSilverService;
 import io.silverware.microservices.silver.ProvidingSilverService;
 import io.silverware.microservices.silver.SilverService;
-import io.silverware.microservices.silver.cluster.ServiceHandle;
-
+import io.silverware.microservices.silver.cluster.LocalServiceHandle;
+import io.silverware.microservices.silver.cluster.RemoteServiceHandlesStore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -69,7 +69,7 @@ public class Context {
    /**
     * Global properties.
     */
-   private final Map<String, Object> properties = new HashMap<>();
+   private final HashMap<String, Object> properties = new HashMap<>();
 
    /**
     * Providers registry.
@@ -84,7 +84,13 @@ public class Context {
    /**
     * Handles created for incoming service queries.
     */
-   private List<ServiceHandle> inboundHandles = new ArrayList<>();
+   private List<LocalServiceHandle> inboundHandles = new ArrayList<>();
+
+
+   /**
+    * store remote microservices
+    */
+   private final RemoteServiceHandlesStore remoteServiceHandlesStore;
 
    /**
     * Creates the context and binds the registries to global properties.
@@ -92,6 +98,8 @@ public class Context {
    public Context() {
       properties.put(MICROSERVICE_PROVIDERS_REGISTRY, providers);
       properties.put(MICROSERVICES, microservices);
+      remoteServiceHandlesStore = new RemoteServiceHandlesStore();
+
    }
 
    /**
@@ -108,7 +116,6 @@ public class Context {
     *
     * @return The registry of Microservices providers.
     */
-   @SuppressWarnings("unchecked")
    public Map<String, MicroserviceProvider> getProvidersRegistry() {
       return (Map<String, MicroserviceProvider>) properties.get(MICROSERVICE_PROVIDERS_REGISTRY);
    }
@@ -194,17 +201,17 @@ public class Context {
     * (we do not want to just pass through calls).
     *
     * @param metaData The query for which to look up the service handles.
-    * @return A list of {@link ServiceHandle Service Handles} that meet the specified query.
+    * @return A list of {@link LocalServiceHandle Service Handles} that meet the specified query.
     */
-   public List<ServiceHandle> assureHandles(final MicroserviceMetaData metaData) {
-      List<ServiceHandle> result = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getQuery().equals(metaData)).collect(Collectors.toList());
+   public List<LocalServiceHandle> assureHandles(final MicroserviceMetaData metaData) {
+      List<LocalServiceHandle> result = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getQuery().equals(metaData)).collect(Collectors.toList());
       Set<Object> microservices = lookupLocalMicroservice(metaData);
-      Set<Object> haveHandles = result.stream().map(ServiceHandle::getService).collect(Collectors.toSet());
+      Set<Object> haveHandles = result.stream().map(LocalServiceHandle::getService).collect(Collectors.toSet());
       microservices.removeAll(haveHandles);
 
       microservices.forEach(microservice -> {
          final String host = properties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" + properties.get(HttpServerSilverService.HTTP_SERVER_PORT);
-         final ServiceHandle handle = new ServiceHandle(host, metaData, microservice);
+         final LocalServiceHandle handle = new LocalServiceHandle(host, metaData, microservice);
          result.add(handle);
          inboundHandles.add(handle);
       });
@@ -213,12 +220,22 @@ public class Context {
    }
 
    /**
-    * Gets the {@link ServiceHandle} for the given handle number.
+    * Gets the {@link LocalServiceHandle} for the given handle number.
     *
     * @param handle The handle number.
-    * @return The {@link ServiceHandle} with the given handle number.
+    * @return The {@link LocalServiceHandle} with the given handle number.
     */
-   public ServiceHandle getInboundServiceHandle(final int handle) {
+   public LocalServiceHandle getInboundServiceHandle(final int handle) {
       return inboundHandles.stream().filter(serviceHandle -> serviceHandle.getHandle() == handle).findFirst().get();
    }
+
+   /**
+    * Gets store for remote handles
+    *
+    * @return instance of {@link RemoteServiceHandlesStore} which is used in this context
+    */
+   public RemoteServiceHandlesStore getRemoteServiceHandlesStore() {
+      return remoteServiceHandlesStore;
+   }
+
 }

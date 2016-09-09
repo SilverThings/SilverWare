@@ -19,21 +19,20 @@
  */
 package io.silverware.microservices.providers.cdi.internal;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.MicroserviceReference;
+import io.silverware.microservices.silver.cluster.ServiceHandle;
 import io.silverware.microservices.silver.services.LookupStrategy;
 import io.silverware.microservices.silver.services.LookupStrategyFactory;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyFactory;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -65,7 +64,13 @@ public class MicroserviceProxy implements MethodHandler {
       return service;
    }
 
-   @SuppressWarnings({"unchecked", "checkstyle:JavadocMethod"})
+   /**
+    * returns proxy for a bean of a provided type
+    *
+    * @param parentBean bean for which a proxy is created
+    * @param <T>        provided type
+    * @return proxy
+    */
    public static <T> T getProxy(final MicroserviceProxyBean parentBean) {
       try {
          ProxyFactory factory = new ProxyFactory();
@@ -100,6 +105,14 @@ public class MicroserviceProxy implements MethodHandler {
       if (log.isDebugEnabled()) {
          log.debug("Invocation of " + thisMethod + ", proceed " + proceed);
       }
-      return thisMethod.invoke(getService(), args);
+
+      Object service = getService();
+      // TODO: 9/8/16 FIXME just workaround for a remote invocation (context is not necessary)
+      if (service instanceof ServiceHandle) {
+         return ((ServiceHandle) service).invoke(null, thisMethod.getName(), thisMethod.getParameterTypes(), args);
+      } else {
+
+         return thisMethod.invoke(service, args);
+      }
    }
 }

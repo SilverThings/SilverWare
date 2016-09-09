@@ -19,22 +19,20 @@
  */
 package io.silverware.microservices.providers.http.invoker.internal;
 
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.silver.HttpInvokerSilverService;
 import io.silverware.microservices.silver.cluster.Invocation;
-import io.silverware.microservices.silver.cluster.ServiceHandle;
-
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
-
-import java.io.IOException;
-import java.util.List;
+import io.silverware.microservices.silver.cluster.LocalServiceHandle;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -58,7 +56,7 @@ public class HttpInvokerServlet extends HttpServlet {
       if (req.getRequestURI().endsWith(HttpInvokerSilverService.QUERY_COMMAND)) {
          final JsonReader jsonReader = new JsonReader(req.getInputStream());
          final MicroserviceMetaData metaData = (MicroserviceMetaData) jsonReader.readObject();
-         final List<ServiceHandle> handles = context.assureHandles(metaData);
+         final List<LocalServiceHandle> handles = context.assureHandles(metaData);
          final JsonWriter jsonWriter = new JsonWriter(resp.getOutputStream());
          jsonWriter.write(handles);
       } else if (req.getRequestURI().endsWith(HttpInvokerSilverService.INVOKE_COMMAND)) {

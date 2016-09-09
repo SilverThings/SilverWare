@@ -19,18 +19,17 @@
  */
 package io.silverware.microservices;
 
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 import io.silverware.microservices.silver.HttpInvokerSilverService;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
 import io.silverware.microservices.util.Utils;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
-
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,7 +39,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-public final class MicroserviceMetaData {
+public final class MicroserviceMetaData implements Serializable {
 
    /**
     * Name of the Microservice.
@@ -245,7 +244,14 @@ public final class MicroserviceMetaData {
             + " and with annotations " + Arrays.toString(annotations.toArray()) + " (version: spec. " + specVersion + ", impl. " + implVersion + ")";
    }
 
-   @SuppressWarnings({"unchecked", "checkstyle:JavadocMethod"})
+   /**
+    * Queries host and retrieves all service handles
+    *
+    * @param context context of a host
+    * @param host    address of a host
+    * @return a list of a service handles
+    * @throws Exception when something went wrong
+    */
    public List<ServiceHandle> query(final Context context, final String host) throws Exception {
       String urlBase = "http://" + host + "/" + context.getProperties().get(HttpInvokerSilverService.INVOKER_URL) + "/query";
 
