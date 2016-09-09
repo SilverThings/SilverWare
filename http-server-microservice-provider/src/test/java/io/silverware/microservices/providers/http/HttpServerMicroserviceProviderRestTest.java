@@ -64,6 +64,7 @@ public class HttpServerMicroserviceProviderRestTest {
    private Map<String, Object> platformProperties;
    private Client client;
    private Thread platform;
+   private SilverWareURI silverWareURI;
 
    @BeforeClass
    public void setUpPlatforn() throws InterruptedException {
@@ -75,6 +76,7 @@ public class HttpServerMicroserviceProviderRestTest {
             this.getClass().getPackage().getName(),
             CdiMicroserviceProvider.class.getPackage().getName());
       this.platform.start();
+      this.silverWareURI = new SilverWareURI(this.platformProperties);
 
       while (bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.BEAN_MANAGER) == null) {
          Thread.sleep(200);
@@ -93,19 +95,20 @@ public class HttpServerMicroserviceProviderRestTest {
    public void lookupMicroserviceForRESTTest() throws Exception {
       assertThat(
             this.client
-                  .target(baseURI(this.platformProperties) + "/helloservice/hello")
+                  .target(this.silverWareURI.httpREST() + "/helloservice/hello")
                   .request(MediaType.TEXT_PLAIN)
                   .get()
-                  .readEntity(String.class)).as(
-            "Rest microservice should return 'Hello from " + MicroserviceA.class.getName() + "'").isEqualTo(
-            "Hello from " + MicroserviceA.class.getName());
+                  .readEntity(String.class))
+                        .as(
+                              "Rest microservice should return 'Hello from " + MicroserviceA.class.getName() + "'")
+                        .isEqualTo("Hello from " + MicroserviceA.class.getName());
    }
 
    @Test
    public void microserviceQueryParamsTest() throws Exception {
       assertThat(
             this.client
-                  .target(baseURI(this.platformProperties) + "/helloservice/test_query_params?name=Radek&age=25")
+                  .target(this.silverWareURI.httpREST() + "/helloservice/test_query_params?name=Radek&age=25")
                   .request(MediaType.TEXT_PLAIN)
                   .get()
                   .readEntity(String.class)).as("Rest microservice should return 'Radek;25'").isEqualTo("Radek;25");
@@ -115,7 +118,7 @@ public class HttpServerMicroserviceProviderRestTest {
    public void microserviceDefaultQueryParamsTest() throws Exception {
       assertThat(
             this.client
-                  .target(baseURI(this.platformProperties) + "/helloservice/test_query_params")
+                  .target(this.silverWareURI.httpREST() + "/helloservice/test_query_params")
                   .request(MediaType.TEXT_PLAIN)
                   .get()
                   .readEntity(String.class)).as("Rest microservice should return 'John;25'").isEqualTo("John;21");
@@ -125,7 +128,7 @@ public class HttpServerMicroserviceProviderRestTest {
    public void microservicePathParamTest() throws Exception {
       assertThat(
             this.client
-                  .target(baseURI(this.platformProperties) + "/helloservice/5")
+                  .target(this.silverWareURI.httpREST() + "/helloservice/5")
                   .request(MediaType.TEXT_PLAIN)
                   .get()
                   .readEntity(String.class)).as("Rest microservice should return '5' as path param.").isEqualTo("5");
@@ -136,7 +139,7 @@ public class HttpServerMicroserviceProviderRestTest {
       final Person person = new Person("John", "Collins", 30);
       assertThat(
             this.client
-                  .target(baseURI(this.platformProperties) + "/helloservice/test_json")
+                  .target(this.silverWareURI.httpREST() + "/helloservice/test_json")
                   .request(MediaType.APPLICATION_JSON)
                   .post(Entity.json(person))
                   .readEntity(Person.class)).as("Rest microservice should return:" + person).isEqualTo(person);
@@ -147,21 +150,10 @@ public class HttpServerMicroserviceProviderRestTest {
       final Person person = new Person("John", "Collins", 30);
       assertThat(
             this.client
-                  .target(baseURI(this.platformProperties) + "/helloservice/test_xml")
+                  .target(this.silverWareURI.httpREST() + "/helloservice/test_xml")
                   .request(MediaType.APPLICATION_XML)
                   .post(Entity.xml(person))
                   .readEntity(Person.class)).as("Rest microservice should return:" + person).isEqualTo(person);
-   }
-
-   /**
-    * @param platformProperties
-    * @return base URI
-    */
-   private String baseURI(final Map<String, Object> platformProperties) {
-      return "http://" + platformProperties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" + platformProperties
-            .get(HttpServerSilverService.HTTP_SERVER_PORT) + platformProperties
-            .get(HttpServerSilverService.HTTP_SERVER_REST_CONTEXT_PATH) + "/" + platformProperties
-            .get(HttpServerSilverService.HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX);
    }
 
    @Path("helloservice")

@@ -38,9 +38,14 @@ public interface HttpServerSilverService extends SilverService {
    String HTTP_SERVER = "silverware.http.server";
 
    /**
-    * Property with the port number on which the server listens.
+    * Property with the HTTP port number on which the server listens.
     */
    String HTTP_SERVER_PORT = "silverware.http.port";
+
+   /**
+    * Property with the HTTPS port number on which the server listens.
+    */
+   String HTTPS_SERVER_PORT = "silverware.https.port";
 
    /**
     * Property with the hostname/IP address on which the server listens.
@@ -49,13 +54,33 @@ public interface HttpServerSilverService extends SilverService {
 
    /**
     * Context path to which REST requests are routed
-    * */
+    */
    String HTTP_SERVER_REST_CONTEXT_PATH = "silverware.http.rest.context.path";
 
    /**
     * Mapping of the base REST Servlet
-    * */
+    */
    String HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX = "silverware.http.rest.servlet.mapping.prefix";
+
+   /**
+    * Place where server keystore file is stored
+    */
+   String HTTP_SERVER_KEY_STORE = "silverware.http.server.keystore";
+
+   /**
+    * Password to the server keystore file
+    */
+   String HTTP_SERVER_KEY_STORE_PASSWORD = "silverware.http.server.keystore.password";
+
+   /**
+    * Place where server truststore file is stored
+    */
+   String HTTP_SERVER_TRUST_STORE = "silverware.http.server.truststore";
+
+   /**
+    * Password to the server truststore file
+    */
+   String HTTP_SERVER_TRUST_STORE_PASSWORD = "silverware.http.server.truststore.password";
 
    /**
     * Deploys a servlet on the HTTP server.
@@ -65,5 +90,6 @@ public interface HttpServerSilverService extends SilverService {
     * @param servletDescriptors A list of descriptions of the servlet(s).
     * @throws SilverWareException When it was not possible to deploy the servlet(s).
     */
-   void deployServlet(final String contextPath, final String deploymentName, final List<ServletDescriptor> servletDescriptors) throws SilverWareException;
+   void deployServlet(final String contextPath, final String deploymentName,
+         final List<ServletDescriptor> servletDescriptors) throws SilverWareException;
 }
