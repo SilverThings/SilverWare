@@ -74,6 +74,7 @@
       <version.drools>6.3.0.Final</version.drools>
       <version.jmockit>1.8</version.jmockit>
       <version.assertj>3.5.2</version.assertj>
+      <version.org.jboss.resteasy>3.0.17.Final</version.org.jboss.resteasy>
       <java.level>1.8</java.level>
    </properties>
    <dependencyManagement>
@@ -327,6 +328,21 @@
             <groupId>org.drools</groupId>
             <artifactId>drools-compiler</artifactId>
             <version>${version.drools}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-undertow</artifactId>
+            <version>${version.org.jboss.resteasy}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson2-provider</artifactId>
+            <version>${version.org.jboss.resteasy}</version>
+         </dependency>
+         <dependency>
+             <groupId>org.jboss.resteasy</groupId>
+             <artifactId>resteasy-jaxb-provider</artifactId>
+             <version>${version.org.jboss.resteasy}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

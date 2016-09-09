@@ -33,10 +33,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Any;
@@ -238,7 +240,8 @@ public class MicroservicesCDIExtension implements Extension {
     * @return Microservice meta-data.
     */
    private MicroserviceMetaData getMicroserviceMetaData(final String microserviceName, final Bean<?> bean) {
-      return new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers());
+      return new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers(), new HashSet<>(
+            Arrays.asList(bean.getBeanClass().getAnnotations())));
    }
 
    /**

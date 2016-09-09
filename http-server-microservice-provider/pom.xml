@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <parent>
       <groupId>io.silverware</groupId>
@@ -14,6 +15,11 @@
          <artifactId>microservices</artifactId>
       </dependency>
       <dependency>
+         <groupId>io.silverware</groupId>
+         <artifactId>cdi-microservice-provider</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>org.apache.logging.log4j</groupId>
          <artifactId>log4j-web</artifactId>
       </dependency>
@@ -24,6 +30,23 @@
       <dependency>
          <groupId>io.undertow</groupId>
          <artifactId>undertow-servlet</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.resteasy</groupId>
+         <artifactId>resteasy-undertow</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.resteasy</groupId>
+         <artifactId>resteasy-jackson2-provider</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.jboss.resteasy</groupId>
+          <artifactId>resteasy-jaxb-provider</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.assertj</groupId>
+         <artifactId>assertj-core</artifactId>
+         <scope>test</scope>
       </dependency>
    </dependencies>
    <build>
