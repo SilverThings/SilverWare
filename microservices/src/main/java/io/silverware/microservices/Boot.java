@@ -19,8 +19,6 @@
  */
 package io.silverware.microservices;
 
-import io.silverware.microservices.util.Utils;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -37,6 +35,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
+
+import io.silverware.microservices.util.Utils;
 
 /**
  * Main class to boot the Microservices platforms.
@@ -77,6 +77,7 @@ public final class Boot {
     * Performs some quick system settings for a smooth run.
     */
    private static void preMainConfig() {
+      System.setProperty("java.net.preferIPv4Stack", "true");
       Thread.currentThread().setName(Executor.THREAD_PREFIX + Executor.MAIN_THREAD);
    }
 

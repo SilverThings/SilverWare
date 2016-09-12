@@ -17,22 +17,14 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.silver.cluster;
-
-import io.silverware.microservices.Context;
+package io.silverware.microservices.providers.cluster.internal.message.request;
 
 import java.io.Serializable;
 
 /**
- *  This class represents a handle for a service object
+ * Interface for all request messages (contains Serializable so no other classes need to specify this)
+ *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
-public interface ServiceHandle extends Serializable {
-
-   String getHost();
-
-   Object invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception;
-
-   @Deprecated
-   Object invoke(Context context, String method, Object[] params) throws Exception;
+public interface RequestMessage extends Serializable {
 }

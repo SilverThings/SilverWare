@@ -17,22 +17,45 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.silver.cluster;
-
-import io.silverware.microservices.Context;
+package io.silverware.microservices.providers.cluster.internal.message.response;
 
 import java.io.Serializable;
 
 /**
- *  This class represents a handle for a service object
+ * Message sent as response for a {@link io.silverware.microservices.MicroserviceMetaData}
+ *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
-public interface ServiceHandle extends Serializable {
+public class MicroserviceSearchResponse implements Serializable {
+   /**
+    * This enum represents result of a search on a cluster
+    */
+   public enum Result {
+      FOUND(true), NOT_FOUND(false), WRONG_VESION(false);
+      private boolean usable;
 
-   String getHost();
+      Result(boolean canBeUsed) {
+         this.usable = canBeUsed;
+      }
 
-   Object invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception;
+      public boolean canBeUsed() {
+         return usable;
+      }
+   }
 
-   @Deprecated
-   Object invoke(Context context, String method, Object[] params) throws Exception;
+   private final Integer handle;
+   private final Result result;
+
+   public MicroserviceSearchResponse(Integer handle, Result result) {
+      this.handle = handle;
+      this.result = result;
+   }
+
+   public Result getResult() {
+      return result;
+   }
+
+   public Integer getHandle() {
+      return handle;
+   }
 }

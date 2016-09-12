@@ -17,22 +17,24 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.silver.cluster;
+package io.silverware.microservices.providers.cluster.internal.message.request;
 
-import io.silverware.microservices.Context;
-
-import java.io.Serializable;
+import io.silverware.microservices.silver.cluster.Invocation;
 
 /**
- *  This class represents a handle for a service object
+ * Represents message which is sent as invocation of a remote method
+ *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
-public interface ServiceHandle extends Serializable {
+public class MicroserviceRemoteCallRequest implements RequestMessage {
+   private final Invocation invocation;
 
-   String getHost();
+   public MicroserviceRemoteCallRequest(Invocation invocation) {
+      this.invocation = invocation;
+   }
 
-   Object invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception;
+   public Invocation getInvocation() {
+      return invocation;
+   }
 
-   @Deprecated
-   Object invoke(Context context, String method, Object[] params) throws Exception;
 }

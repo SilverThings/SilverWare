@@ -1,5 +1,7 @@
 package io.silverware.microservices.providers.http.invoker;
 
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
@@ -8,13 +10,9 @@ import io.silverware.microservices.silver.CdiSilverService;
 import io.silverware.microservices.silver.HttpInvokerSilverService;
 import io.silverware.microservices.silver.HttpServerSilverService;
 import io.silverware.microservices.silver.cluster.Invocation;
-import io.silverware.microservices.silver.cluster.ServiceHandle;
+import io.silverware.microservices.silver.cluster.LocalServiceHandle;
 import io.silverware.microservices.util.BootUtil;
 import io.silverware.microservices.util.Utils;
-
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
-
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -37,7 +35,6 @@ public class HttpInvokerMicroserviceProviderTest {
    private HttpInvokerSilverService httpInvokerSilverService = null;
 
    @Test
-   @SuppressWarnings("unchecked")
    public void testHttpInvoker() throws Exception {
       final BootUtil bootUtil = new BootUtil();
       final Map<String, Object> platformProperties = bootUtil.getContext().getProperties();
@@ -69,12 +66,12 @@ public class HttpInvokerMicroserviceProviderTest {
 
       Assert.assertEquals(con.getResponseMessage(), "OK");
       JsonReader jsonReader = new JsonReader(con.getInputStream());
-      final List<ServiceHandle> handles = (List<ServiceHandle>) jsonReader.readObject();
+      final List<LocalServiceHandle> handles = (List<LocalServiceHandle>) jsonReader.readObject();
       Assert.assertEquals(handles.size(), 1);
 
       con.disconnect();
 
-      final ServiceHandle handle = handles.get(0);
+      final LocalServiceHandle handle = handles.get(0);
       long l = (Long) handle.invoke(bootUtil.getContext(), "sum", new Class[] {short.class, int.class}, new Object[] {(short) 3, 4});
       Assert.assertEquals(l, 7L);
 

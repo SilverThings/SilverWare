@@ -72,7 +72,8 @@
       <version.jsonio>4.3.0</version.jsonio>
       <version.beanutils>1.9.2</version.beanutils>
       <version.drools>6.3.0.Final</version.drools>
-      <version.org.assertj>3.5.2</version.org.assertj>
+      <version.jmockit>1.8</version.jmockit>
+      <version.assertj>3.5.2</version.assertj>
       <version.org.jboss.resteasy>3.0.17.Final</version.org.jboss.resteasy>
       <java.level>1.8</java.level>
    </properties>
@@ -197,6 +198,18 @@
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>${version.testng}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.jmockit</groupId>
+            <artifactId>jmockit</artifactId>
+            <version>${version.jmockit}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${version.assertj}</version>
             <scope>test</scope>
          </dependency>
          <dependency>
@@ -330,12 +343,6 @@
              <groupId>org.jboss.resteasy</groupId>
              <artifactId>resteasy-jaxb-provider</artifactId>
              <version>${version.org.jboss.resteasy}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>${version.org.assertj}</version>
-            <scope>test</scope>
          </dependency>
       </dependencies>
    </dependencyManagement>

@@ -17,22 +17,17 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.silver.cluster;
+package io.silverware.microservices.providers.cluster.internal.message.responder;
 
-import io.silverware.microservices.Context;
-
-import java.io.Serializable;
+import org.jgroups.Message;
 
 /**
- *  This class represents a handle for a service object
+ * Interface specifying processor class for responses
+ *
+ * @param <R> response class
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
-public interface ServiceHandle extends Serializable {
+public interface Responder<R> {
 
-   String getHost();
-
-   Object invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception;
-
-   @Deprecated
-   Object invoke(Context context, String method, Object[] params) throws Exception;
+   R processMessage(Message msg);
 }

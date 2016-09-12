@@ -17,22 +17,40 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.silver.cluster;
+package io.silverware.microservices.providers.cluster.internal.message.responder;
 
 import io.silverware.microservices.Context;
-
-import java.io.Serializable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jgroups.Address;
+import org.jgroups.Message;
 
 /**
- *  This class represents a handle for a service object
+ * Provides basic functionality and logging of messages.
+ *
+ * @param <C> message content type
+ * @param <R> message response type
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
-public interface ServiceHandle extends Serializable {
+public abstract class AbstractResponder<C, R> implements Responder {
 
-   String getHost();
+   /**
+    * Logger.
+    */
+   protected static Logger log = LogManager.getLogger(AbstractResponder.class);
+   protected Context context;
 
-   Object invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception;
 
-   @Deprecated
-   Object invoke(Context context, String method, Object[] params) throws Exception;
+   public AbstractResponder(Context context) {
+      this.context = context;
+
+   }
+
+   @Override
+   public final R processMessage(Message msg) {
+      log.trace("Processing msg: " + msg);
+      return doProcessMessage(msg.getSrc(), (C) msg.getObject());
+   }
+
+   abstract R doProcessMessage(Address source, C content);
 }

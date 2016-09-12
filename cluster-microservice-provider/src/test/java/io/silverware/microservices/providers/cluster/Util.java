@@ -17,22 +17,28 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.silver.cluster;
+package io.silverware.microservices.providers.cluster;
 
-import io.silverware.microservices.Context;
+import io.silverware.microservices.providers.cluster.internal.RemoteServiceHandleStoreTest;
+import io.silverware.microservices.silver.cluster.LocalServiceHandle;
 
-import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- *  This class represents a handle for a service object
+ * Basic Utils used in tests
+ *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
-public interface ServiceHandle extends Serializable {
+public class Util {
+   public static LocalServiceHandle createHandle(String host) {
+      return new LocalServiceHandle(host, RemoteServiceHandleStoreTest.META_DATA, new Object());
+   }
 
-   String getHost();
+   public static <T> Set<T> createSetFrom(T... components) {
+      return new HashSet<>(Arrays.asList(components));
+   }
 
-   Object invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception;
 
-   @Deprecated
-   Object invoke(Context context, String method, Object[] params) throws Exception;
 }
