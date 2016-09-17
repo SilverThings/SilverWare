@@ -19,8 +19,10 @@
  */
 package io.silverware.microservices.providers.http;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -48,9 +50,9 @@ public class SSLContextFactory {
    /**
     * Ctor.
     *
-    * @param keystore keystore name
-    * @param keystorePwd keystore password
-    * @param truststore truststore name
+    * @param keystore a string representing path to a keystore on filesystem or on classpath
+    * @param keystorePwd password to the keystore
+    * @param truststore a string representing path to a truststore on filesystem or on classpath
     * @param truststorePwd truststore password
     */
    public SSLContextFactory(final String keystore, final String keystorePwd, final String truststore,
@@ -105,13 +107,35 @@ public class SSLContextFactory {
       }
    }
 
-   private KeyStore keyStore(final String name, final char[] password) throws IOException {
-      try (InputStream ksStream = getClass().getClassLoader().getResourceAsStream(name);) {
-         final KeyStore keyStore = KeyStore.getInstance("JKS");
-         keyStore.load(ksStream, password);
-         return keyStore;
+   /**
+    * Tries to load keystore from local filesystem or classpath.
+    *
+    * @param location keystore location
+    * @param password password to the keystore
+    * @return keystore
+    * @throws IOException if the keystore cannot be loaded
+    */
+   private KeyStore keyStore(final String location, final char[] password) throws IOException {
+      InputStream ksStream = null;
+      try {
+         if (Paths.get(location).toFile().exists()) {
+            ksStream = new FileInputStream(Paths.get(location).toFile());
+         } else {
+            ksStream = getClass().getClassLoader().getResourceAsStream(location);
+         }
+         if (ksStream != null) {
+            final KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(ksStream, password);
+            return keyStore;
+         } else {
+            throw new IOException(String.format("Cannot find KeyStore %s", location));
+         }
       } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
-         throw new IOException(String.format("Unable to load KeyStore %s", name), e);
+         throw new IOException(String.format("Unable to load KeyStore %s", location), e);
+      } finally {
+         if (ksStream != null) {
+            ksStream.close();
+         }
       }
    }
 }
