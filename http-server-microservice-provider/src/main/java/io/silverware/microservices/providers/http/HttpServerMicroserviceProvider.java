@@ -28,6 +28,7 @@ import io.silverware.microservices.silver.HttpServerSilverService;
 import io.silverware.microservices.silver.http.ServletDescriptor;
 import io.silverware.microservices.util.Utils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.resteasy.plugins.server.undertow.UndertowJaxrsServer;
@@ -35,6 +36,7 @@ import org.jboss.resteasy.spi.ResourceFactory;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 
 import io.undertow.Undertow;
+import io.undertow.Undertow.Builder;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.ServletInfo;
@@ -53,22 +55,25 @@ import javax.ws.rs.Path;
 public class HttpServerMicroserviceProvider implements MicroserviceProvider, HttpServerSilverService {
 
    private static final Logger log = LogManager.getLogger(HttpServerMicroserviceProvider.class);
-
    private Context context;
    private UndertowJaxrsServer server;
+   private Boolean sslEnabled = false;
 
    @Override
    public void initialize(final Context context) {
       this.context = context;
-
       context.getProperties().putIfAbsent(HTTP_SERVER_PORT, 8080);
-      context.getProperties().putIfAbsent(HTTPS_SERVER_PORT, 10443);
       context.getProperties().putIfAbsent(HTTP_SERVER_ADDRESS, "localhost");
       context.getProperties().putIfAbsent(HTTP_SERVER_REST_CONTEXT_PATH, "/silverware");
       context.getProperties().putIfAbsent(HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX, "rest");
+
+      if (Boolean.valueOf(String.valueOf(context.getProperties().get(HTTP_SERVER_SSL_ENABLED)))) {
+         log.info("Property 'silverware.http.server.ssl.enable' set to 'true', enabling SSL.");
+         this.sslEnabled = true;
+         configureSSL();
+      }
       this.server = new UndertowJaxrsServer();
       context.getProperties().put(HTTP_SERVER, this.server);
-
    }
 
    @Override
@@ -106,16 +111,16 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
       try {
          log.info("Hello from Http Server microservice provider!");
          try {
-            this.server.start(
-                  Undertow
-                        .builder()
-                        .addHttpListener(
-                              (int) this.context.getProperties().get(HTTP_SERVER_PORT),
-                              (String) this.context.getProperties().get(HTTP_SERVER_ADDRESS))
-                        .addHttpsListener(
-                              (int) this.context.getProperties().get(HTTPS_SERVER_PORT),
-                              (String) this.context.getProperties().get(HTTP_SERVER_ADDRESS),
-                              sslContext()));
+            final Builder builder = Undertow.builder().addHttpListener(
+                  (int) this.context.getProperties().get(HTTP_SERVER_PORT),
+                  String.valueOf(this.context.getProperties().get(HTTP_SERVER_ADDRESS)));
+            if (this.sslEnabled) {
+               builder.addHttpsListener(
+                     (int) this.context.getProperties().get(HTTPS_SERVER_PORT),
+                     String.valueOf(this.context.getProperties().get(HTTP_SERVER_ADDRESS)),
+                     sslContext());
+            }
+            this.server.start(builder);
             this.server.deploy(deploymentInfo());
             log.info("Started Http Server.");
 
@@ -179,10 +184,61 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
    }
 
    private SSLContext sslContext() throws IOException {
-      return new SSLContextFactory(
-            (String) this.context.getProperties().get(HTTP_SERVER_KEY_STORE),
-            (String) this.context.getProperties().get(HTTP_SERVER_KEY_STORE_PASSWORD),
-            (String) this.context.getProperties().get(HTTP_SERVER_TRUST_STORE),
-            (String) this.context.getProperties().get(HTTP_SERVER_TRUST_STORE_PASSWORD)).createSSLContext();
+      return new SSLContextFactory(keystore(), keystorePwd(), truststore(), truststorePwd()).createSSLContext();
+   }
+
+   private void configureSSL() {
+      this.context.getProperties().putIfAbsent(HTTPS_SERVER_PORT, 10443);
+      if (!sslConfigured()) {
+         log.info("All mandatory SSL properties are not configured, using the default configuration.");
+         this.context.getProperties().put(HTTP_SERVER_KEY_STORE, DEFAULT_SSL_KEYSTORE);
+         this.context.getProperties().put(HTTP_SERVER_KEY_STORE_PASSWORD, DEFAULT_SSL_STORE_PASSWORD);
+         this.context.getProperties().put(HTTP_SERVER_TRUST_STORE, DEFAULT_SSL_TRUSTSTORE);
+         this.context.getProperties().put(HTTP_SERVER_TRUST_STORE_PASSWORD, DEFAULT_SSL_STORE_PASSWORD);
+      } else {
+         log.info("SSL configuration provided by user:");
+         log.info("Keystore: " + keystore());
+         log.info("Truststore: " + truststore());
+      }
+   }
+
+   /**
+    * Checks if all mandatory SSL configuration properties are set.
+    */
+   private boolean sslConfigured() {
+      return StringUtils.isNotBlank(keystore()) && StringUtils.isNotBlank(keystorePwd()) && StringUtils
+            .isNotBlank(truststore()) && StringUtils.isNotBlank(truststorePwd());
+   }
+
+   private String keystore() {
+      if (this.context.getProperties().get(HTTP_SERVER_KEY_STORE) == null) {
+         return null;
+      } else {
+         return String.valueOf(this.context.getProperties().get(HTTP_SERVER_KEY_STORE));
+      }
+   }
+
+   private String keystorePwd() {
+      if (this.context.getProperties().get(HTTP_SERVER_KEY_STORE_PASSWORD) == null) {
+         return null;
+      } else {
+         return String.valueOf(this.context.getProperties().get(HTTP_SERVER_KEY_STORE_PASSWORD));
+      }
+   }
+
+   private String truststore() {
+      if (this.context.getProperties().get(HTTP_SERVER_TRUST_STORE) == null) {
+         return null;
+      } else {
+         return String.valueOf(this.context.getProperties().get(HTTP_SERVER_TRUST_STORE));
+      }
+   }
+
+   private String truststorePwd() {
+      if (this.context.getProperties().get(HTTP_SERVER_TRUST_STORE_PASSWORD) == null) {
+         return null;
+      } else {
+         return String.valueOf(this.context.getProperties().get(HTTP_SERVER_TRUST_STORE_PASSWORD));
+      }
    }
 }

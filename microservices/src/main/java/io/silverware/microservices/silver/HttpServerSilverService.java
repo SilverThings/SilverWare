@@ -53,34 +53,54 @@ public interface HttpServerSilverService extends SilverService {
    String HTTP_SERVER_ADDRESS = "silverware.http.address";
 
    /**
-    * Context path to which REST requests are routed
+    * Context path to which REST requests are routed.
     */
    String HTTP_SERVER_REST_CONTEXT_PATH = "silverware.http.rest.context.path";
 
    /**
-    * Mapping of the base REST Servlet
+    * Mapping of the base REST Servlet.
     */
    String HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX = "silverware.http.rest.servlet.mapping.prefix";
 
    /**
-    * Place where server keystore file is stored
+    * Place where server keystore file is stored.
     */
    String HTTP_SERVER_KEY_STORE = "silverware.http.server.keystore";
 
    /**
-    * Password to the server keystore file
+    * Password to the server keystore file.
     */
    String HTTP_SERVER_KEY_STORE_PASSWORD = "silverware.http.server.keystore.password";
 
    /**
-    * Place where server truststore file is stored
+    * Place where server truststore file is stored.
     */
    String HTTP_SERVER_TRUST_STORE = "silverware.http.server.truststore";
 
    /**
-    * Password to the server truststore file
+    * Password to the server truststore file.
     */
    String HTTP_SERVER_TRUST_STORE_PASSWORD = "silverware.http.server.truststore.password";
+
+   /**
+    * Enables/Disables SSL.
+    */
+   String HTTP_SERVER_SSL_ENABLED = "silverware.http.server.ssl.enabled";
+
+   /**
+    * Default Keystore.
+    */
+   String DEFAULT_SSL_KEYSTORE = "silverware-server.keystore";
+
+   /**
+    * DefaultTruststore.
+    */
+   String DEFAULT_SSL_TRUSTSTORE = "silverware-server.truststore";
+
+   /**
+    * Password to the default Keystore and Truststore
+    */
+   String DEFAULT_SSL_STORE_PASSWORD = "silverware";
 
    /**
     * Deploys a servlet on the HTTP server.
