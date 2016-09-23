@@ -49,17 +49,7 @@ public class RemoteServiceHandle implements ServiceHandle {
       return address.toString();
    }
 
-   /**
-    * Method overload which would retrieve classes and call <code>invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception</code>
-    * and
-    *
-    * @param context    is ignored for this invocation
-    * @param method     name of the method to be called
-    * @param params     parameters of method called
-    * @param paramTypes classes of parameters
-    * @return result of call
-    * @throws Exception if exception has occured
-    */
+
    @Override
    public Object invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception {
       Invocation invocation = new Invocation(handle, method, paramTypes, params);
@@ -68,29 +58,6 @@ public class RemoteServiceHandle implements ServiceHandle {
 
    }
 
-   /**
-    * Method overload which would retrieve classes and call <code>invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception</code>
-    * and
-    *
-    * @param context is ignored for this invocation
-    * @param method  name of the method to be called
-    * @param params  parameters of method called
-    * @return result of call
-    * @throws Exception if exception has occured
-    */
-   @Override
-   public Object invoke(Context context, String method, Object[] params) throws Exception {
-      Class[] paramTypes = new Class[params.length];
-      for (int i = 0; i < params.length; i++) {
-         // TODO: 9/9/16 primitive types or null is not possible to resolve
-         if (params[i] != null) {
-            paramTypes[i] = params[i].getClass();
-         }
-
-      }
-      return invoke(context, method, paramTypes, params);
-
-   }
 
    @Override
    public boolean equals(Object o) {

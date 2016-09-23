@@ -24,15 +24,25 @@ import io.silverware.microservices.Context;
 import java.io.Serializable;
 
 /**
- *  This class represents a handle for a service object
+ * This class represents a handle for a service object
+ *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
 public interface ServiceHandle extends Serializable {
 
    String getHost();
 
+   /**
+    * This method invokes requested method for a given handle
+    * and
+    *
+    * @param context    of the
+    * @param method     name of the method to be called
+    * @param params     parameters of method called
+    * @param paramTypes classes of parameters
+    * @return result of call
+    * @throws Exception if exception has occurred during invocation
+    */
    Object invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception;
 
-   @Deprecated
-   Object invoke(Context context, String method, Object[] params) throws Exception;
 }

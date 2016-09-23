@@ -31,7 +31,7 @@ public class SilverWareClusteringException extends RuntimeException {
     * Errors that can possibly happen in clustering
     */
    public enum SilverWareClusteringError {
-      JGROUPS_ERROR, UNEXPECTED_CONTENT, INVOCATION_EXCEPTION, RECIPIENT_SAME_AS_SENDER, MULTIPLE_IMPLEMENTATIONS_FOUND
+      JGROUPS_ERROR, UNEXPECTED_CONTENT, INVOCATION_EXCEPTION, RECIPIENT_SAME_AS_SENDER, MULTIPLE_IMPLEMENTATIONS_FOUND, INITIALIZATION_ERROR
 
    }
 

@@ -133,14 +133,5 @@ public class LocalServiceHandle implements ServiceHandle {
       return response;
    }
 
-   @Override
-   public Object invoke(final Context context, final String method, final Object[] params) throws Exception {
-      final Class[] paramTypes = new Class[params.length];
-      for (int i = 0; i < params.length; i++) {
-         paramTypes[i] = params[i].getClass();
-      }
-
-      return invoke(context, method, paramTypes, params);
-   }
 
 }

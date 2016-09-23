@@ -26,13 +26,11 @@ import io.silverware.microservices.providers.cluster.internal.FutureListenerHelp
 import io.silverware.microservices.providers.cluster.internal.JgroupsMessageReceiver;
 import io.silverware.microservices.providers.cluster.internal.JgroupsMessageSender;
 import io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException;
-import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.JGROUPS_ERROR;
 import io.silverware.microservices.providers.cluster.internal.message.KnownImplementation;
 import io.silverware.microservices.providers.cluster.internal.message.response.MicroserviceSearchResponse;
 import io.silverware.microservices.silver.ClusterSilverService;
 import io.silverware.microservices.silver.cluster.RemoteServiceHandlesStore;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
-import static java.util.Collections.emptySet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jgroups.Address;
@@ -47,10 +45,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.INITIALIZATION_ERROR;
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.JGROUPS_ERROR;
+import static java.util.Collections.emptySet;
 
 /**
  * @author Slavomir Krupa (slavomir.krupa@gmail.com)
@@ -91,7 +91,7 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
          receiver.setMyAddress(channel.getAddress());
       } catch (Exception e) {
          log.error("Cluster microservice initialization failed.", e);
-         throw new RuntimeException(e);
+         throw new SilverWareClusteringException(INITIALIZATION_ERROR, e);
       }
    }
 
@@ -127,9 +127,13 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
                  new FutureListenerHelper<MicroserviceSearchResponse>(rspList -> {
                     try {
                        RspList<MicroserviceSearchResponse> responseRspList = rspList.get(10, TimeUnit.SECONDS);
-                       log.trace("Response retrieved!  {}", responseRspList);
+                       if (log.isTraceEnabled()) {
+                          log.trace("Response retrieved!  {}", responseRspList);
+                       }
                        Collection<Rsp<MicroserviceSearchResponse>> result = responseRspList.values();
-                       log.trace("Size of a responses is : {} ", responseRspList.getResults().size());
+                       if (log.isTraceEnabled()) {
+                          log.trace("Size of a responses is : {} ", responseRspList.getResults().size());
+                       }
                        Set<ServiceHandle> remoteServiceHandles = result.stream()
                                .filter(rsp -> rsp.wasReceived() && rsp.getValue().getResult().canBeUsed())
                                .map((rsp) -> new RemoteServiceHandle(rsp.getSender(), rsp.getValue().getHandle(), sender))
@@ -138,15 +142,16 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
                        addressesForMetadata.addAll(responseRspList.values().stream().map(Rsp::getSender).collect(Collectors.toSet()));
                        alreadyQueriedAdresses.put(metaData, addressesForMetadata);
                        this.remoteServiceHandlesStore.addHandles(metaData, remoteServiceHandles);
-                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                       throw new SilverWareClusteringException(JGROUPS_ERROR, "Error while looking up microservices.", e);
+                    } catch (Throwable e) {
+                       log.error("Error while looking up microservices.", e);
                     }
 
                  }));
 
          return this.remoteServiceHandlesStore.getServices(metaData);
-      } catch (Exception e) {
-         throw new SilverWareClusteringException(JGROUPS_ERROR, "Error while looking up microservices.", e);
+      } catch (Throwable e) {
+         log.error("Error while looking up microservices.", e);
+         return emptySet();
       }
    }
 

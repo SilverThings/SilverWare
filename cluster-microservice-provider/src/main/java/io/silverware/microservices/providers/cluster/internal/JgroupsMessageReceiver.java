@@ -20,8 +20,6 @@
 package io.silverware.microservices.providers.cluster.internal;
 
 import io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException;
-import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.RECIPIENT_SAME_AS_SENDER;
-import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.UNEXPECTED_CONTENT;
 import io.silverware.microservices.providers.cluster.internal.message.responder.Responder;
 import io.silverware.microservices.silver.cluster.RemoteServiceHandlesStore;
 import org.apache.logging.log4j.LogManager;
@@ -37,6 +35,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.RECIPIENT_SAME_AS_SENDER;
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.UNEXPECTED_CONTENT;
+
 /**
  * Class responsible for retrieving messages
  *
@@ -46,7 +47,7 @@ public class JgroupsMessageReceiver extends ReceiverAdapter implements RequestHa
 
    private static final Logger log = LogManager.getLogger(JgroupsMessageReceiver.class);
    private Map<Class, Responder> responders = new HashMap<>();
-   private RemoteServiceHandlesStore store;
+   private final RemoteServiceHandlesStore store;
    private Address myAddress;
 
    public JgroupsMessageReceiver(Map<Class, Responder> responders, RemoteServiceHandlesStore store) {
@@ -70,14 +71,11 @@ public class JgroupsMessageReceiver extends ReceiverAdapter implements RequestHa
 
    @Override
    public void receive(final Message msg) {
-      log.error("This method should not be called!");
-      Object content = msg.getObject();
-      Responder responder = this.responders.get(content.getClass());
-      if (responder != null) {
-         responder.processMessage(msg);
-      } else {
-         log.error("Unexpected content type : {} calling toString:  {} ", content.getClass(), content);
-         throw new SilverWareClusteringException(UNEXPECTED_CONTENT, content.getClass().toString());
+      log.error("This method is for user option to send messages!");
+      try {
+         handle(msg);
+      } catch (Exception e) {
+         log.error("Error processing message", e);
       }
    }
 
@@ -85,9 +83,7 @@ public class JgroupsMessageReceiver extends ReceiverAdapter implements RequestHa
    public void viewAccepted(final View view) {
       Set<String> addresses = view.getMembers().stream().map(Address::toString).collect(Collectors.toSet());
       store.keepHandlesFor(addresses);
-      if (log.isDebugEnabled()) {
-         log.debug("Cluster view changed: " + view);
-      }
+      log.info("Cluster view change: " + view);
    }
 
 
