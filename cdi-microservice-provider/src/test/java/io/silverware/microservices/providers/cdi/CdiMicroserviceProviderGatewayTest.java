@@ -19,6 +19,14 @@
  */
 package io.silverware.microservices.providers.cdi;
 
+import io.silverware.microservices.annotations.Gateway;
+import io.silverware.microservices.annotations.Microservice;
+import io.silverware.microservices.annotations.ParamName;
+import io.silverware.microservices.util.BootUtil;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
@@ -28,16 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import javax.enterprise.inject.spi.BeanManager;
-
-import io.silverware.microservices.annotations.Gateway;
-import io.silverware.microservices.annotations.Microservice;
-import io.silverware.microservices.annotations.ParamName;
-import io.silverware.microservices.util.BootUtil;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -55,7 +53,7 @@ public class CdiMicroserviceProviderGatewayTest {
       platform.start();
 
       CdiMicroserviceProviderTestUtil.waitForBeanManager(bootUtil);
-
+      Thread.sleep(100);
       final List<String> checksPassed = new ArrayList<>();
 
       Vertx vertx = Vertx.vertx();
