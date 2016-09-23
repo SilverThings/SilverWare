@@ -84,7 +84,7 @@ public class Context {
    /**
     * Handles created for incoming service queries.
     */
-   private List<LocalServiceHandle> inboundHandles = new ArrayList<>();
+   private final List<LocalServiceHandle> inboundHandles = new ArrayList<>();
 
 
    /**
@@ -206,7 +206,7 @@ public class Context {
    public List<LocalServiceHandle> assureHandles(final MicroserviceMetaData metaData) {
       List<LocalServiceHandle> result = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getQuery().equals(metaData)).collect(Collectors.toList());
       Set<Object> microservices = lookupLocalMicroservice(metaData);
-      Set<Object> haveHandles = result.stream().map(LocalServiceHandle::getService).collect(Collectors.toSet());
+      Set<Object> haveHandles = result.stream().map(LocalServiceHandle::getProxy).collect(Collectors.toSet());
       microservices.removeAll(haveHandles);
 
       microservices.forEach(microservice -> {

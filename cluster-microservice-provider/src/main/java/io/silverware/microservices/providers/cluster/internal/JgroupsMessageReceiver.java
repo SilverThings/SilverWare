@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.PROCESSING_ERROR;
 import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.RECIPIENT_SAME_AS_SENDER;
 import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.UNEXPECTED_CONTENT;
 
@@ -75,7 +76,7 @@ public class JgroupsMessageReceiver extends ReceiverAdapter implements RequestHa
       try {
          handle(msg);
       } catch (Exception e) {
-         log.error("Error processing message", e);
+         throw new SilverWareClusteringException(PROCESSING_ERROR, e);
       }
    }
 
@@ -89,7 +90,7 @@ public class JgroupsMessageReceiver extends ReceiverAdapter implements RequestHa
 
    @Override
    public Object handle(Message msg) throws Exception {
-      if (msg.getSrc().equals(myAddress)) {
+      if (msg.getSrc() != null && msg.getSrc().equals(myAddress)) {
          log.error("Skipping message sent from this node.");
          throw new SilverWareClusteringException(RECIPIENT_SAME_AS_SENDER);
       }

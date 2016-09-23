@@ -30,6 +30,11 @@ import java.io.Serializable;
  */
 public interface ServiceHandle extends Serializable {
 
+   /**
+    * @return proxy for a given service handle
+    */
+   Object getProxy();
+
    String getHost();
 
    /**

@@ -20,28 +20,51 @@
 package io.silverware.microservices.providers.cluster;
 
 import io.silverware.microservices.Context;
+import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.providers.cluster.internal.JgroupsMessageSender;
+import io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException;
 import io.silverware.microservices.providers.cluster.internal.message.request.MicroserviceRemoteCallRequest;
 import io.silverware.microservices.providers.cluster.internal.message.response.MicroserviceRemoteCallResponse;
 import io.silverware.microservices.silver.cluster.Invocation;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
 import org.jgroups.Address;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.PROCESSING_ERROR;
 
 /**
  * This class represent remote handle which allows invocation remote services
  *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
-public class RemoteServiceHandle implements ServiceHandle {
+public class RemoteServiceHandle implements ServiceHandle, InvocationHandler, MethodHandler {
 
    private final Address address;
    private final int handle;
    private final JgroupsMessageSender sender;
+   private final Object proxy;
 
-   public RemoteServiceHandle(Address address, int handle, JgroupsMessageSender sender) {
+   public RemoteServiceHandle(Address address, int handle, JgroupsMessageSender sender, MicroserviceMetaData metaData) {
       this.address = address;
       this.handle = handle;
       this.sender = sender;
+      ProxyFactory factory = new ProxyFactory();
+      Class type = metaData.getType();
+      if (type.isInterface()) {
+         factory.setInterfaces(new Class[]{type});
+      } else {
+         factory.setSuperclass(type);
+      }
+      try {
+         proxy = factory.create(new Class[0], new Object[0], this);
+      } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
+         throw new SilverWareClusteringException(PROCESSING_ERROR, e);
+      }
    }
 
    @Override
@@ -49,13 +72,36 @@ public class RemoteServiceHandle implements ServiceHandle {
       return address.toString();
    }
 
+   @Override
+   public Object getProxy() {
+      return proxy;
+   }
 
    @Override
    public Object invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception {
+      // FIXME: 23-Sep-16 these methods are called by set when returned from remote handles store.
+      // But what would happen if someone override methods in their bean and would like to use that implementation ?
+      if (method.equals("hashCode")) {
+         return this.hashCode();
+      } else {
+         if (method.equals("equals") && params.length == 1) {
+            return this.equals(params[0]);
+         }
+      }
       Invocation invocation = new Invocation(handle, method, paramTypes, params);
       MicroserviceRemoteCallResponse response = sender.sendToAddressSync(address, new MicroserviceRemoteCallRequest(invocation));
       return response.getMessageCallResult();
 
+   }
+
+   @Override
+   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+      return this.invoke(null, method.getName(), method.getParameterTypes(), args);
+   }
+
+   @Override
+   public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
+      return invoke(null, thisMethod.getName(), thisMethod.getParameterTypes(), args);
    }
 
 
@@ -83,4 +129,6 @@ public class RemoteServiceHandle implements ServiceHandle {
       result = 31 * result + handle;
       return result;
    }
+
+
 }

@@ -21,7 +21,6 @@ package io.silverware.microservices.providers.cdi.internal;
 
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.MicroserviceReference;
-import io.silverware.microservices.silver.cluster.ServiceHandle;
 import io.silverware.microservices.silver.services.LookupStrategy;
 import io.silverware.microservices.silver.services.LookupStrategyFactory;
 import javassist.util.proxy.MethodHandler;
@@ -41,9 +40,9 @@ public class MicroserviceProxy implements MethodHandler {
 
    private static final Logger log = LogManager.getLogger(MicroserviceProxy.class);
 
-   private MicroserviceProxyBean parentBean;
+   private final MicroserviceProxyBean parentBean;
 
-   private LookupStrategy lookupStrategy;
+   private final LookupStrategy lookupStrategy;
 
    private MicroserviceProxy(final MicroserviceProxyBean parentBean) throws Exception {
       this.parentBean = parentBean;
@@ -75,7 +74,7 @@ public class MicroserviceProxy implements MethodHandler {
       try {
          ProxyFactory factory = new ProxyFactory();
          if (parentBean.getServiceInterface().isInterface()) {
-            factory.setInterfaces(new Class[] { parentBean.getServiceInterface() });
+            factory.setInterfaces(new Class[]{parentBean.getServiceInterface()});
          } else {
             factory.setSuperclass(parentBean.getServiceInterface());
          }
@@ -107,12 +106,6 @@ public class MicroserviceProxy implements MethodHandler {
       }
 
       Object service = getService();
-      // TODO: 9/8/16 FIXME just workaround for a remote invocation (context is not necessary)
-      if (service instanceof ServiceHandle) {
-         return ((ServiceHandle) service).invoke(null, thisMethod.getName(), thisMethod.getParameterTypes(), args);
-      } else {
-
-         return thisMethod.invoke(service, args);
-      }
+      return thisMethod.invoke(service, args);
    }
 }

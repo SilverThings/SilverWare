@@ -66,16 +66,17 @@ public class LocalServiceHandle implements ServiceHandle {
    }
 
    @Override
+   public Object getProxy() {
+      return service;
+   }
+
+   @Override
    public String getHost() {
       return host;
    }
 
    public MicroserviceMetaData getQuery() {
       return query;
-   }
-
-   public Object getService() {
-      return service;
    }
 
    @Override
@@ -132,6 +133,5 @@ public class LocalServiceHandle implements ServiceHandle {
 
       return response;
    }
-
 
 }

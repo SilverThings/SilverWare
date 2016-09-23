@@ -136,7 +136,7 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
                        }
                        Set<ServiceHandle> remoteServiceHandles = result.stream()
                                .filter(rsp -> rsp.wasReceived() && rsp.getValue().getResult().canBeUsed())
-                               .map((rsp) -> new RemoteServiceHandle(rsp.getSender(), rsp.getValue().getHandle(), sender))
+                               .map((rsp) -> new RemoteServiceHandle(rsp.getSender(), rsp.getValue().getHandle(), sender, metaData))
                                .collect(Collectors.toSet());
                        // this is to save jgroups traffic for a given metadata
                        addressesForMetadata.addAll(responseRspList.values().stream().map(Rsp::getSender).collect(Collectors.toSet()));
