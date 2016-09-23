@@ -31,7 +31,6 @@ import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import org.jgroups.Address;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -42,17 +41,19 @@ import static io.silverware.microservices.providers.cluster.internal.exception.S
  *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
-public class RemoteServiceHandle implements ServiceHandle, InvocationHandler, MethodHandler {
+public class RemoteServiceHandle implements ServiceHandle, MethodHandler {
 
    private final Address address;
    private final int handle;
    private final JgroupsMessageSender sender;
    private final Object proxy;
+   private final Class type;
 
    public RemoteServiceHandle(Address address, int handle, JgroupsMessageSender sender, MicroserviceMetaData metaData) {
       this.address = address;
       this.handle = handle;
       this.sender = sender;
+      this.type = metaData.getType();
       ProxyFactory factory = new ProxyFactory();
       Class type = metaData.getType();
       if (type.isInterface()) {
@@ -79,14 +80,15 @@ public class RemoteServiceHandle implements ServiceHandle, InvocationHandler, Me
 
    @Override
    public Object invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception {
-      // FIXME: 23-Sep-16 these methods are called by set when returned from remote handles store.
-      // But what would happen if someone override methods in their bean and would like to use that implementation ?
-      if (method.equals("hashCode")) {
+      int paramCount = params.length;
+      if ("toString".equals(method) && paramCount == 0) {
+         return toString();
+      } else if ("hashCode".equals(method) && paramCount == 0) {
          return this.hashCode();
-      } else {
-         if (method.equals("equals") && params.length == 1) {
-            return this.equals(params[0]);
-         }
+      } else if ("equals".equals(method) && paramCount == 1) {
+         return this.equals(params[0]);
+      } else if ("getClass".equals(method) && paramCount == 0) {
+         return type;
       }
       Invocation invocation = new Invocation(handle, method, paramTypes, params);
       MicroserviceRemoteCallResponse response = sender.sendToAddressSync(address, new MicroserviceRemoteCallRequest(invocation));
@@ -94,14 +96,10 @@ public class RemoteServiceHandle implements ServiceHandle, InvocationHandler, Me
 
    }
 
-   @Override
-   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-      return this.invoke(null, method.getName(), method.getParameterTypes(), args);
-   }
 
    @Override
-   public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
-      return invoke(null, thisMethod.getName(), thisMethod.getParameterTypes(), args);
+   public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
+      return invoke(null, method.getName(), method.getParameterTypes(), args);
    }
 
 
@@ -130,5 +128,10 @@ public class RemoteServiceHandle implements ServiceHandle, InvocationHandler, Me
       return result;
    }
 
-
+   @Override
+   public String toString() {
+      return "RemoteServiceHandle for " +
+              "address: " + address +
+              "and type: " + type + " .";
+   }
 }
