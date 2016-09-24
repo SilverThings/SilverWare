@@ -37,4 +37,9 @@ public interface ClusterSilverService extends ProvidingSilverService {
     */
    String CLUSTER_CONFIGURATION = "silverware.cluster.configuration";
 
+   /**
+    * Timeout in milliseconds for lookup in a cluster.
+    */
+   String CLUSTER_LOOKUP_TIMEOUT = "silverware.cluster.lookup.timeout";
+
 }

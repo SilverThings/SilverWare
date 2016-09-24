@@ -66,6 +66,7 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
 
    private JgroupsMessageSender sender;
    private MessageDispatcher messageDispatcher;
+   private Long timeout = 500L;
 
 
    @Override
@@ -77,9 +78,11 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
          this.alreadyQueriedAdresses = new HashMap<>();
          context.getProperties().putIfAbsent(CLUSTER_GROUP, "SilverWare");
          context.getProperties().putIfAbsent(CLUSTER_CONFIGURATION, "udp.xml");
+         context.getProperties().putIfAbsent(CLUSTER_LOOKUP_TIMEOUT, timeout);
          // get jgroups configuration
          final String clusterGroup = (String) this.context.getProperties().get(CLUSTER_GROUP);
          final String clusterConfiguration = (String) this.context.getProperties().get(CLUSTER_CONFIGURATION);
+         this.timeout = Long.valueOf(this.context.getProperties().get(CLUSTER_LOOKUP_TIMEOUT).toString());
          log.info("Hello from Cluster microservice provider!");
          log.info("Loading cluster configuration from: {} ", clusterConfiguration);
          JChannel channel = new JChannel(clusterConfiguration);
@@ -109,13 +112,12 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
       } catch (final Exception e) {
          log.error("Cluster microservice provider failed.", e);
       } finally {
+         log.info("Bye from Cluster microservice provider!");
          try {
             this.messageDispatcher.close();
          } catch (IOException e) {
             throw new SilverWareClusteringException(JGROUPS_ERROR, "Unexpected error while closing MessageDispatcher", e);
-
          }
-         log.info("Bye from Cluster microservice provider!");
       }
    }
 
@@ -147,6 +149,10 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
                     }
 
                  }));
+         // If this is first query for the metadata we should wait for a response
+         if (addressesForMetadata.isEmpty()) {
+            Thread.sleep(timeout);
+         }
 
          return this.remoteServiceHandlesStore.getServices(metaData);
       } catch (Throwable e) {
