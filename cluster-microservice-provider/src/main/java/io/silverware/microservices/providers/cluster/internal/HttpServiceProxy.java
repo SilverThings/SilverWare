@@ -64,6 +64,6 @@ public class HttpServiceProxy implements MethodHandler {
 
    @Override
    public Object invoke(final Object o, final Method method, final Method method1, final Object[] objects) throws Throwable {
-      return serviceHandle.invoke(context, method.getName(), objects);
+      return serviceHandle.invoke(context, method.getName(),method.getParameterTypes(), objects);
    }
 }

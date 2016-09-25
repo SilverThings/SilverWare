@@ -48,11 +48,11 @@ public class JgroupsMessageSender {
    private static final Logger log = LogManager.getLogger(JgroupsMessageSender.class);
 
 
-   private static RequestOptions SYNC_OPTIONS = RequestOptions.SYNC();
-   private static RequestOptions ASYNC_OPTIONS = RequestOptions.ASYNC();
+   private static final RequestOptions SYNC_OPTIONS = RequestOptions.SYNC();
+   private static final RequestOptions ASYNC_OPTIONS = RequestOptions.ASYNC();
 
 
-   private MessageDispatcher dispatcher;
+   private final MessageDispatcher dispatcher;
    private Set<Address> filteredAdresses;
 
    public JgroupsMessageSender(MessageDispatcher dispatcher) {
@@ -93,7 +93,9 @@ public class JgroupsMessageSender {
       if (!othertMembersAdresses.isEmpty()) {
          this.dispatcher.castMessageWithFuture(othertMembersAdresses, new Message(null, content), SYNC_OPTIONS, listener);
       } else {
-         log.debug("No message sent.");
+         if (log.isDebugEnabled()) {
+            log.debug("No message sent.");
+         }
       }
    }
 

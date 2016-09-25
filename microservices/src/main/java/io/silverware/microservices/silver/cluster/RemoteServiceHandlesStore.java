@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  */
 public class RemoteServiceHandlesStore {
 
-   private Map<MicroserviceMetaData, Set<ServiceHandle>> outboundHandles;
+   private final Map<MicroserviceMetaData, Set<ServiceHandle>> outboundHandles;
 
    public RemoteServiceHandlesStore() {
       this.outboundHandles = new ConcurrentHashMap<>();
@@ -86,6 +86,6 @@ public class RemoteServiceHandlesStore {
     * @return collection of services which can be called for given metadata
     */
    public Set<Object> getServices(MicroserviceMetaData metaData) {
-      return outboundHandles.getOrDefault(metaData, Collections.emptySet()).stream().collect(Collectors.toSet());
+      return outboundHandles.getOrDefault(metaData, Collections.emptySet()).stream().map(ServiceHandle::getProxy).collect(Collectors.toSet());
    }
 }

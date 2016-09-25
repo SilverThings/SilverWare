@@ -36,7 +36,7 @@ import java.util.Arrays;
  */
 public class Invocation implements Serializable {
 
-   private static Logger log = LogManager.getLogger(Invocation.class);
+   private static final Logger log = LogManager.getLogger(Invocation.class);
 
    private final int handle;
 
@@ -127,8 +127,8 @@ public class Invocation implements Serializable {
          throw new SilverWareException(String.format("Handle no. %d. No such handle found.", getHandle()));
       }
 
-      final Method method = serviceHandle.getService().getClass().getDeclaredMethod(getMethod(), paramTypes);
-      return method.invoke(serviceHandle.getService(), params);
+      final Method method = serviceHandle.getProxy().getClass().getDeclaredMethod(getMethod(), paramTypes);
+      return method.invoke(serviceHandle.getProxy(), params);
    }
 
 }

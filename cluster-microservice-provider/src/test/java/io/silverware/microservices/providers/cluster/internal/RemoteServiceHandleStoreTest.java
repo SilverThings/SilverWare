@@ -24,13 +24,14 @@ import io.silverware.microservices.providers.cluster.Util;
 import io.silverware.microservices.silver.cluster.LocalServiceHandle;
 import io.silverware.microservices.silver.cluster.RemoteServiceHandlesStore;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
-import static org.assertj.core.api.Assertions.assertThat;
 import org.testng.annotations.Test;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Basic Unit tests for remote handles store
@@ -50,7 +51,7 @@ public class RemoteServiceHandleStoreTest {
       RemoteServiceHandlesStore store = new RemoteServiceHandlesStore();
       store.addHandle(META_DATA, SERVICE_HANDLE);
       Set<Object> services = store.getServices(META_DATA);
-      assertThat(services).containsOnly(SERVICE_HANDLE);
+      assertThat(services).containsOnly(SERVICE_HANDLE.getProxy());
    }
 
    @Test
@@ -61,7 +62,7 @@ public class RemoteServiceHandleStoreTest {
       store.keepHandlesFor(Util.createSetFrom("host"));
 
       Set<Object> services = store.getServices(META_DATA);
-      assertThat(services).containsOnly(SERVICE_HANDLE);
+      assertThat(services).containsOnly(SERVICE_HANDLE.getProxy());
    }
 
    @Test

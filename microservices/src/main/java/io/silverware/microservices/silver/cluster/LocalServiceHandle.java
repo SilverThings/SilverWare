@@ -66,16 +66,17 @@ public class LocalServiceHandle implements ServiceHandle {
    }
 
    @Override
+   public Object getProxy() {
+      return service;
+   }
+
+   @Override
    public String getHost() {
       return host;
    }
 
    public MicroserviceMetaData getQuery() {
       return query;
-   }
-
-   public Object getService() {
-      return service;
    }
 
    @Override
@@ -131,16 +132,6 @@ public class LocalServiceHandle implements ServiceHandle {
       con.disconnect();
 
       return response;
-   }
-
-   @Override
-   public Object invoke(final Context context, final String method, final Object[] params) throws Exception {
-      final Class[] paramTypes = new Class[params.length];
-      for (int i = 0; i < params.length; i++) {
-         paramTypes[i] = params[i].getClass();
-      }
-
-      return invoke(context, method, paramTypes, params);
    }
 
 }

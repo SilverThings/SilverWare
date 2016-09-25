@@ -20,28 +20,52 @@
 package io.silverware.microservices.providers.cluster;
 
 import io.silverware.microservices.Context;
+import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.providers.cluster.internal.JgroupsMessageSender;
+import io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException;
 import io.silverware.microservices.providers.cluster.internal.message.request.MicroserviceRemoteCallRequest;
 import io.silverware.microservices.providers.cluster.internal.message.response.MicroserviceRemoteCallResponse;
 import io.silverware.microservices.silver.cluster.Invocation;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
 import org.jgroups.Address;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.PROCESSING_ERROR;
 
 /**
  * This class represent remote handle which allows invocation remote services
  *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
-public class RemoteServiceHandle implements ServiceHandle {
+public class RemoteServiceHandle implements ServiceHandle, MethodHandler {
 
    private final Address address;
    private final int handle;
    private final JgroupsMessageSender sender;
+   private final Object proxy;
+   private final Class type;
 
-   public RemoteServiceHandle(Address address, int handle, JgroupsMessageSender sender) {
+   public RemoteServiceHandle(Address address, int handle, JgroupsMessageSender sender, MicroserviceMetaData metaData) {
       this.address = address;
       this.handle = handle;
       this.sender = sender;
+      this.type = metaData.getType();
+      ProxyFactory factory = new ProxyFactory();
+      Class type = metaData.getType();
+      if (type.isInterface()) {
+         factory.setInterfaces(new Class[]{type});
+      } else {
+         factory.setSuperclass(type);
+      }
+      try {
+         proxy = factory.create(new Class[0], new Object[0], this);
+      } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
+         throw new SilverWareClusteringException(PROCESSING_ERROR, e);
+      }
    }
 
    @Override
@@ -49,48 +73,35 @@ public class RemoteServiceHandle implements ServiceHandle {
       return address.toString();
    }
 
-   /**
-    * Method overload which would retrieve classes and call <code>invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception</code>
-    * and
-    *
-    * @param context    is ignored for this invocation
-    * @param method     name of the method to be called
-    * @param params     parameters of method called
-    * @param paramTypes classes of parameters
-    * @return result of call
-    * @throws Exception if exception has occured
-    */
+   @Override
+   public Object getProxy() {
+      return proxy;
+   }
+
    @Override
    public Object invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception {
+      int paramCount = params.length;
+      if ("toString".equals(method) && paramCount == 0) {
+         return toString();
+      } else if ("hashCode".equals(method) && paramCount == 0) {
+         return this.hashCode();
+      } else if ("equals".equals(method) && paramCount == 1) {
+         return this.equals(params[0]);
+      } else if ("getClass".equals(method) && paramCount == 0) {
+         return type;
+      }
       Invocation invocation = new Invocation(handle, method, paramTypes, params);
       MicroserviceRemoteCallResponse response = sender.sendToAddressSync(address, new MicroserviceRemoteCallRequest(invocation));
       return response.getMessageCallResult();
 
    }
 
-   /**
-    * Method overload which would retrieve classes and call <code>invoke(Context context, String method, Class[] paramTypes, Object[] params) throws Exception</code>
-    * and
-    *
-    * @param context is ignored for this invocation
-    * @param method  name of the method to be called
-    * @param params  parameters of method called
-    * @return result of call
-    * @throws Exception if exception has occured
-    */
+
    @Override
-   public Object invoke(Context context, String method, Object[] params) throws Exception {
-      Class[] paramTypes = new Class[params.length];
-      for (int i = 0; i < params.length; i++) {
-         // TODO: 9/9/16 primitive types or null is not possible to resolve
-         if (params[i] != null) {
-            paramTypes[i] = params[i].getClass();
-         }
-
-      }
-      return invoke(context, method, paramTypes, params);
-
+   public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
+      return invoke(null, method.getName(), method.getParameterTypes(), args);
    }
+
 
    @Override
    public boolean equals(Object o) {
@@ -115,5 +126,12 @@ public class RemoteServiceHandle implements ServiceHandle {
       int result = address.hashCode();
       result = 31 * result + handle;
       return result;
+   }
+
+   @Override
+   public String toString() {
+      return "RemoteServiceHandle for " +
+              "address: " + address +
+              "and type: " + type + " .";
    }
 }
