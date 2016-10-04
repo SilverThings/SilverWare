@@ -57,7 +57,7 @@ public class RestClientMicroserviceProvider implements MicroserviceProvider, Res
 
    @Override
    public void run() {
-      log.info("Hello from Camel microservice provider!");
+      log.info("Hello from REST client microservice provider!");
    }
 
    private JsonService getJsonServiceAnnotation(final Set<Annotation> annotations) {
