@@ -19,16 +19,14 @@
  */
 package io.silverware.microservices.providers.cdi.internal;
 
-import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
-import org.reflections.util.ConfigurationBuilder;
-
 import java.lang.reflect.Constructor;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Priority;
 
+import io.silverware.microservices.util.DeploymentScanner;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 
@@ -45,14 +43,12 @@ public class MicroserviceProxyFactory {
    private static final List<Class<? extends MicroserviceMethodHandler>> HANDLER_CLASSES;
 
    static {
-      ConfigurationBuilder builder = ConfigurationBuilder.build("").addScanners(new ResourcesScanner());
-      Reflections reflections = new Reflections(builder);
+      Set<Class<? extends MicroserviceMethodHandler>> handlerClasses = DeploymentScanner.getDefaultInstance().lookupSubtypes(MicroserviceMethodHandler.class);
 
-      HANDLER_CLASSES = reflections.getSubTypesOf(MicroserviceMethodHandler.class)
-                                   .stream()
-                                   .filter(handler -> handler != DefaultMethodHandler.class)
-                                   .sorted(new MethodHandlerPrioritizer())
-                                   .collect(Collectors.toList());
+      HANDLER_CLASSES = handlerClasses.stream()
+                                      .filter(handler -> handler != DefaultMethodHandler.class)
+                                      .sorted(new MethodHandlerPrioritizer())
+                                      .collect(Collectors.toList());
    }
 
    private MicroserviceProxyFactory() {

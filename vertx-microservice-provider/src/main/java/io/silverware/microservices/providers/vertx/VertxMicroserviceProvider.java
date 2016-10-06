@@ -131,12 +131,9 @@ public class VertxMicroserviceProvider implements MicroserviceProvider, VertxSil
    }
 
    private void loadJavaVerticles() {
+      Set<Class<? extends Verticle>> verticleClasses = DeploymentScanner.getContextInstance(context).lookupSubtypes(Verticle.class);
 
-      @SuppressWarnings("unchecked")
-      Set<Class<Verticle>> verticleClasses = (Set<Class<Verticle>>) DeploymentScanner.getContextInstance(context)
-              .lookupSubtypes(Verticle.class);
-
-      for (Class<Verticle> verticleClass : verticleClasses) {
+      for (Class<? extends Verticle> verticleClass : verticleClasses) {
 
          Deployment deployment = verticleClass.getAnnotation(Deployment.class);
 
@@ -150,12 +147,9 @@ public class VertxMicroserviceProvider implements MicroserviceProvider, VertxSil
    }
 
    private void loadGroovyVerticles() {
+      Set<Class<? extends GroovyVerticle>> groovyVerticleClasses = DeploymentScanner.getContextInstance(context).lookupSubtypes(GroovyVerticle.class);
 
-      @SuppressWarnings("unchecked")
-      Set<Class<GroovyVerticle>> groovyVerticleClasses = (Set<Class<GroovyVerticle>>) DeploymentScanner
-              .getContextInstance(context).lookupSubtypes(GroovyVerticle.class);
-
-      for (Class<GroovyVerticle> groovyVerticleClass : groovyVerticleClasses) {
+      for (Class<? extends GroovyVerticle> groovyVerticleClass : groovyVerticleClasses) {
 
          Deployment deployment = groovyVerticleClass.getAnnotation(Deployment.class);
 
