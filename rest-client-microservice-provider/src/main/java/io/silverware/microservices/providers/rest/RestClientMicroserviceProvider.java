@@ -27,14 +27,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.providers.MicroserviceProvider;
-import io.silverware.microservices.providers.rest.annotation.JsonService;
+import io.silverware.microservices.providers.http.SilverWareURI;
+import io.silverware.microservices.providers.rest.annotation.ServiceConfiguration;
 import io.silverware.microservices.providers.rest.api.RestService;
-import io.silverware.microservices.providers.rest.internal.JsonRestService;
-import io.silverware.microservices.providers.rest.internal.JsonRestServiceProxy;
+import io.silverware.microservices.providers.rest.internal.DefaultRestService;
 import io.silverware.microservices.silver.RestClientSilverService;
+import io.silverware.microservices.util.Utils;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -44,10 +49,14 @@ public class RestClientMicroserviceProvider implements MicroserviceProvider, Res
    private static final Logger log = LogManager.getLogger(RestClientMicroserviceProvider.class);
 
    private Context context;
+   private Client client;
+   private SilverWareURI silverWareURI;
 
    @Override
    public void initialize(final Context context) {
       this.context = context;
+      this.client = ClientBuilder.newClient();
+      this.silverWareURI = new SilverWareURI(this.context.getProperties());
    }
 
    @Override
@@ -58,12 +67,23 @@ public class RestClientMicroserviceProvider implements MicroserviceProvider, Res
    @Override
    public void run() {
       log.info("Hello from REST client microservice provider!");
+
+      try {
+         while (!Thread.currentThread().isInterrupted()) {
+            Thread.sleep(1000);
+         }
+      } catch (InterruptedException ie) {
+         Utils.shutdownLog(log, ie);
+      } finally {
+         log.info("Closing Rest client...");
+         this.client.close();
+      }
    }
 
-   private JsonService getJsonServiceAnnotation(final Set<Annotation> annotations) {
+   private ServiceConfiguration getConfigurationAnnotation(final Set<Annotation> annotations) {
       for (Annotation a : annotations) {
-         if (a instanceof JsonService) {
-            return (JsonService) a;
+         if (a instanceof ServiceConfiguration) {
+            return (ServiceConfiguration) a;
          }
       }
 
@@ -72,22 +92,31 @@ public class RestClientMicroserviceProvider implements MicroserviceProvider, Res
 
    @Override
    public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
-
-      if (RestService.class.isAssignableFrom(metaData.getType()) | metaData.getType().isInterface()) {
-         JsonService js = getJsonServiceAnnotation(metaData.getAnnotations());
-
-         if (js != null) {
-            if (RestService.class.isAssignableFrom(metaData.getType())) {
-               return Collections.singleton(new JsonRestService(js.endpoint(), js.httpMethod()));
-            } else {
-               return Collections.singleton(JsonRestServiceProxy.getProxy(metaData.getType(), js));
-            }
+      ServiceConfiguration configuration = getConfigurationAnnotation(metaData.getAnnotations());
+      if (RestService.class.isAssignableFrom(metaData.getType()) || metaData.getType().isInterface()) {
+         if (configuration != null) {
+            return Collections.singleton(initRestService(configuration));
          } else {
-            log.warn("Attempt to inject RestService without JsonService qualifier.");
+            log.warn("Attempt to inject RestService without ServiceConfiguration qualifier.");
          }
+
       }
 
       return new HashSet<>();
+   }
+
+   private RestService initRestService(final ServiceConfiguration configuration) {
+      if (configuration.endpoint().isEmpty()) {
+         log.warn(
+               "Endpoint for the injected Rest service is not provided, provide endpoint or specify your custom path "
+                     + "for the Rest service.");
+      }
+      if ("default".equals(configuration.type())) {
+         return new DefaultRestService(this.client.target(silverWareURI.httpREST() + "/" + configuration.endpoint()));
+      }
+      throw new UnsupportedOperationException(String.format(
+            "Requested Rest service implementation: %s is no provided. Currently, we support only default service "
+                  + "implementation", configuration.type()));
    }
 
 }
