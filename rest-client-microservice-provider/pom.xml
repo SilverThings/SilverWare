@@ -22,6 +22,10 @@
          <artifactId>cdi-microservice-provider</artifactId>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>io.silverware</groupId>
+         <artifactId>http-server-microservice-provider</artifactId>
+      </dependency>
    </dependencies>
    <build>
       <plugins>

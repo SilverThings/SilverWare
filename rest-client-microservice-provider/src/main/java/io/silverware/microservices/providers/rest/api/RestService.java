@@ -23,29 +23,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.ws.rs.client.WebTarget;
+
 import io.silverware.microservices.SilverWareException;
 
 /**
+ * Represents a client of a Rest service endpoint to which request are sent.
+ *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ * @author Radek Koubsky (radek.koubsky@gmail.com)
  */
 public interface RestService {
-   
-   @SuppressWarnings("checkstyle:JavadocMethod")
-   Object call(final String method, final Map<String, Object> params) throws SilverWareException;
 
-   @SuppressWarnings("checkstyle:JavadocMethod")
-   default Object call(final String method, final String[] paramNames, final Object... params) throws SilverWareException {
-      final Map<String, Object> p = new HashMap<>();
-
-      for (int i = 0; i < paramNames.length; i++) {
-         p.put(paramNames[i], params[i]);
-      }
-
-      return call(method, p);
-   }
-
-   @SuppressWarnings("checkstyle:JavadocMethod")
-   default Object call(final String method, final String paramName, final Object param) throws SilverWareException {
-      return call(method, Collections.singletonMap(paramName, param));
-   }
+   /**
+    * Returns {@link WebTarget} that is used to create requests
+    * to the service endpoint defined by {@link io.silverware.microservices.providers.rest.annotation.ServiceConfiguration}
+    */
+   WebTarget target();
 }
