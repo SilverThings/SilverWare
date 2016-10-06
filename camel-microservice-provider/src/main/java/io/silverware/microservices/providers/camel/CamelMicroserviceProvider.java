@@ -65,13 +65,12 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
    private final DeployStats stats = new DeployStats();
 
    private void createCamelContext() throws SilverWareException {
-      @SuppressWarnings("unchecked")
-      Set<Class<CamelContextFactory>> camelContextFactories = DeploymentScanner.getContextInstance(context).lookupSubtypes(CamelContextFactory.class);
+      Set<Class<? extends CamelContextFactory>> camelContextFactories = DeploymentScanner.getContextInstance(context).lookupSubtypes(CamelContextFactory.class);
 
       if (camelContextFactories.size() >= 2) {
          throw new SilverWareException("More than one CamelContextFactories found.");
       } else if (camelContextFactories.size() == 1) {
-         Class<CamelContextFactory> clazz = camelContextFactories.iterator().next();
+         Class<? extends CamelContextFactory> clazz = camelContextFactories.iterator().next();
          try {
             CamelContextFactory camelContextFactory = clazz.newInstance();
             camelContext = camelContextFactory.createCamelContext(context);
@@ -86,14 +85,13 @@ public class CamelMicroserviceProvider implements MicroserviceProvider, CamelSil
    }
 
    private void loadRoutesFromClasses() {
-      @SuppressWarnings("unchecked")
-      final Set<Class<RouteBuilder>> routeBuilders = (Set<Class<RouteBuilder>>) DeploymentScanner.getContextInstance(context).lookupSubtypes(RouteBuilder.class);
+      final Set<Class<? extends RouteBuilder>> routeBuilders = DeploymentScanner.getContextInstance(context).lookupSubtypes(RouteBuilder.class);
       if (log.isDebugEnabled()) {
          log.debug("Initializing Camel route resources...");
       }
       stats.setFound(routeBuilders.size());
 
-      for (Class<RouteBuilder> clazz : routeBuilders) {
+      for (Class<? extends RouteBuilder> clazz : routeBuilders) {
          if (log.isDebugEnabled()) {
             log.debug("Creating Camel route builder: " + clazz.getName());
          }
