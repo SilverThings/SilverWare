@@ -1,3 +1,22 @@
+/*
+ * -----------------------------------------------------------------------\
+ * SilverWare
+ *  
+ * Copyright (C) 2014 - 2016 the original author or authors.
+ *  
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * -----------------------------------------------------------------------/
+ */
 package io.silverware.microservices.providers.rest.annotation;
 
 import java.lang.annotation.Documented;
@@ -7,31 +26,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Provides configuration for the injected {@link io.silverware.microservices.providers.rest.api.RestService}
+ * Provides configuration for a REST service that is represented by an injected interface.
  *
- * @author Radek Koubsky (radek.koubsky@gmail.com)
+ * @author Radek Koubsky (radekkoubsky@gmail.com)
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ServiceConfiguration {
    /**
-    * An endpoint where a service is accessed. The base URL (hostname, port, context etc.) for the Rest services
-    * within Silverware is defined in global properties.
+    * An endpoint where a REST service is accessed.
     *
     * @return the endpoint of the service
-    * @see io.silverware.microservices.silver.HttpServerSilverService
     */
    String endpoint() default "";
-
-   /**
-    * Defines what implementation of the {@link io.silverware.microservices.providers.rest.api.RestService}
-    * interface is used. Default value is <b>"default"</b> for default implementation.
-    * <p><b>NOTE:</b>
-    * Currently, there is only default implementation provided.
-    * </p>
-    *
-    * @return type of the rest service implementation
-    */
-   String type() default "default";
 }
