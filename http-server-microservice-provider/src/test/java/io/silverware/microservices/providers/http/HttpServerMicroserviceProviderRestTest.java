@@ -21,15 +21,8 @@ package io.silverware.microservices.providers.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.silverware.microservices.annotations.Microservice;
-import io.silverware.microservices.annotations.MicroserviceReference;
-import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
-import io.silverware.microservices.silver.HttpServerSilverService;
-import io.silverware.microservices.util.BootUtil;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.annotations.AfterClass;
@@ -37,7 +30,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.Map;
-
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -56,8 +48,14 @@ import javax.ws.rs.core.Response;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import io.silverware.microservices.annotations.Microservice;
+import io.silverware.microservices.annotations.MicroserviceReference;
+import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
+import io.silverware.microservices.silver.HttpServerSilverService;
+import io.silverware.microservices.util.BootUtil;
+
 /**
- * @author Radek Koubsky (radek.koubsky@gmail.com)
+ * @author Radek Koubsky (radekkoubsky@gmail.com)
  */
 public class HttpServerMicroserviceProviderRestTest {
    private static final Logger log = LogManager.getLogger(HttpServerMicroserviceProviderRestTest.class);
@@ -99,9 +97,9 @@ public class HttpServerMicroserviceProviderRestTest {
                   .request(MediaType.TEXT_PLAIN)
                   .get()
                   .readEntity(String.class))
-                        .as(
-                              "Rest microservice should return 'Hello from " + MicroserviceA.class.getName() + "'")
-                        .isEqualTo("Hello from " + MicroserviceA.class.getName());
+            .as(
+                  "Rest microservice should return 'Hello from " + MicroserviceA.class.getName() + "'")
+            .isEqualTo("Hello from " + MicroserviceA.class.getName());
    }
 
    @Test
@@ -209,7 +207,9 @@ public class HttpServerMicroserviceProviderRestTest {
    public static class MicroserviceA {
       public String hello() {
          return "Hello from " + this.getClass().getName();
-      };
+      }
+
+      ;
    }
 
    @XmlRootElement
@@ -265,25 +265,33 @@ public class HttpServerMicroserviceProviderRestTest {
 
       @Override
       public boolean equals(final Object obj) {
-         if (this == obj)
+         if (this == obj) {
             return true;
-         if (obj == null)
+         }
+         if (obj == null) {
             return false;
-         if (getClass() != obj.getClass())
+         }
+         if (getClass() != obj.getClass()) {
             return false;
+         }
          final Person other = (Person) obj;
-         if (this.age != other.age)
+         if (this.age != other.age) {
             return false;
+         }
          if (this.name == null) {
-            if (other.name != null)
+            if (other.name != null) {
                return false;
-         } else if (!this.name.equals(other.name))
+            }
+         } else if (!this.name.equals(other.name)) {
             return false;
+         }
          if (this.surname == null) {
-            if (other.surname != null)
+            if (other.surname != null) {
                return false;
-         } else if (!this.surname.equals(other.surname))
+            }
+         } else if (!this.surname.equals(other.surname)) {
             return false;
+         }
          return true;
       }
 

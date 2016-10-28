@@ -29,7 +29,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -39,7 +38,7 @@ import javax.net.ssl.TrustManagerFactory;
 /**
  * Class for creating {@link SSLContext}.
  *
- * @author Radek Koubsky (radek.koubsky@gmail.com)
+ * @author Radek Koubsky (radekkoubsky@gmail.com)
  */
 public class SSLContextFactory {
    private final String keystore;
@@ -50,10 +49,14 @@ public class SSLContextFactory {
    /**
     * Ctor.
     *
-    * @param keystore a string representing path to a keystore on filesystem or on classpath
-    * @param keystorePwd password to the keystore
-    * @param truststore a string representing path to a truststore on filesystem or on classpath
-    * @param truststorePwd truststore password
+    * @param keystore
+    *       a string representing path to a keystore on filesystem or on classpath
+    * @param keystorePwd
+    *       password to the keystore
+    * @param truststore
+    *       a string representing path to a truststore on filesystem or on classpath
+    * @param truststorePwd
+    *       truststore password
     */
    public SSLContextFactory(final String keystore, final String keystorePwd, final String truststore,
          final String truststorePwd) {
@@ -69,7 +72,7 @@ public class SSLContextFactory {
     * @return initialized instance of ssl context
     */
    public SSLContext createSSLContext() throws IOException {
-      SSLContext sslContext;
+      final SSLContext sslContext;
       try {
          sslContext = SSLContext.getInstance("TLS");
          sslContext.init(keyManagers(), trustManagers(), null);
@@ -83,7 +86,7 @@ public class SSLContextFactory {
       if (this.keystore == null || this.keystore.isEmpty()) {
          return null;
       }
-      KeyManagerFactory keyManagerFactory;
+      final KeyManagerFactory keyManagerFactory;
       try {
          keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
          keyManagerFactory.init(keyStore(this.keystore, this.keystorePwd), this.keystorePwd);
@@ -97,7 +100,7 @@ public class SSLContextFactory {
       if (this.truststore == null || this.truststore.isEmpty()) {
          return null;
       }
-      TrustManagerFactory trustManagerFactory;
+      final TrustManagerFactory trustManagerFactory;
       try {
          trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
          trustManagerFactory.init(keyStore(this.truststore, this.truststorePwd));
@@ -110,10 +113,13 @@ public class SSLContextFactory {
    /**
     * Tries to load keystore from local filesystem or classpath.
     *
-    * @param location keystore location
-    * @param password password to the keystore
+    * @param location
+    *       keystore location
+    * @param password
+    *       password to the keystore
     * @return keystore
-    * @throws IOException if the keystore cannot be loaded
+    * @throws IOException
+    *       if the keystore cannot be loaded
     */
    private KeyStore keyStore(final String location, final char[] password) throws IOException {
       InputStream ksStream = null;

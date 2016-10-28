@@ -21,47 +21,44 @@ package io.silverware.microservices.providers.rest;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
+import io.silverware.microservices.SilverWareException;
 import io.silverware.microservices.providers.MicroserviceProvider;
-import io.silverware.microservices.providers.http.SilverWareURI;
 import io.silverware.microservices.providers.rest.annotation.ServiceConfiguration;
-import io.silverware.microservices.providers.rest.api.RestService;
-import io.silverware.microservices.providers.rest.internal.DefaultRestService;
 import io.silverware.microservices.silver.RestClientSilverService;
 import io.silverware.microservices.util.Utils;
 
 /**
+ * Provides a wrapper for calling arbitrary REST service that is deployed anywhere.
+ * The REST service is injected into a SilverWare microservice as an interface that describes the REST
+ * service itself.
+ *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ * @author Radek Koubsky (radekkoubsky@gmail.com)
  */
 public class RestClientMicroserviceProvider implements MicroserviceProvider, RestClientSilverService {
-
    private static final Logger log = LogManager.getLogger(RestClientMicroserviceProvider.class);
-
    private Context context;
-   private Client client;
-   private SilverWareURI silverWareURI;
+   private ResteasyClient client;
 
    @Override
    public void initialize(final Context context) {
       this.context = context;
-      this.client = ClientBuilder.newClient();
-      this.silverWareURI = new SilverWareURI(this.context.getProperties());
+      this.client = new ResteasyClientBuilder().build();
    }
 
    @Override
    public Context getContext() {
-      return context;
+      return this.context;
    }
 
    @Override
@@ -72,16 +69,16 @@ public class RestClientMicroserviceProvider implements MicroserviceProvider, Res
          while (!Thread.currentThread().isInterrupted()) {
             Thread.sleep(1000);
          }
-      } catch (InterruptedException ie) {
+      } catch (final InterruptedException ie) {
          Utils.shutdownLog(log, ie);
       } finally {
-         log.info("Closing Rest client...");
+         log.info("Closing the Rest client...");
          this.client.close();
       }
    }
 
    private ServiceConfiguration getConfigurationAnnotation(final Set<Annotation> annotations) {
-      for (Annotation a : annotations) {
+      for (final Annotation a : annotations) {
          if (a instanceof ServiceConfiguration) {
             return (ServiceConfiguration) a;
          }
@@ -92,31 +89,27 @@ public class RestClientMicroserviceProvider implements MicroserviceProvider, Res
 
    @Override
    public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
-      ServiceConfiguration configuration = getConfigurationAnnotation(metaData.getAnnotations());
-      if (RestService.class.isAssignableFrom(metaData.getType()) || metaData.getType().isInterface()) {
-         if (configuration != null) {
-            return Collections.singleton(initRestService(configuration));
-         } else {
-            log.warn("Attempt to inject RestService without ServiceConfiguration qualifier.");
-         }
-
+      final ServiceConfiguration configuration = getConfigurationAnnotation(metaData.getAnnotations());
+      if (configuration != null) {
+         return Collections.singleton(initRestService(metaData, configuration));
       }
 
       return new HashSet<>();
    }
 
-   private RestService initRestService(final ServiceConfiguration configuration) {
+   private Object initRestService(final MicroserviceMetaData metaData, final ServiceConfiguration configuration) {
       if (configuration.endpoint().isEmpty()) {
-         log.warn(
-               "Endpoint for the injected Rest service is not provided, provide endpoint or specify your custom path "
-                     + "for the Rest service.");
+         new SilverWareException(
+               String.format(
+                     "The endpoint for the injected Rest service: %s is not provided. Specify the endpoint within the "
+                           + "%s annotation.",
+                     metaData.getType(), configuration.getClass()));
       }
-      if ("default".equals(configuration.type())) {
-         return new DefaultRestService(this.client.target(silverWareURI.httpREST() + "/" + configuration.endpoint()));
-      }
-      throw new UnsupportedOperationException(String.format(
-            "Requested Rest service implementation: %s is no provided. Currently, we support only default service "
-                  + "implementation", configuration.type()));
+
+      final Object restService = this.client.target(configuration.endpoint()).proxy(metaData.getType());
+      log.debug("Proxy for the Rest service: {} successfully created.", metaData.getType());
+
+      return restService;
    }
 
 }
