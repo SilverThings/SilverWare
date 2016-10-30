@@ -19,6 +19,13 @@
  */
 package io.silverware.microservices.providers.rest;
 
+import io.silverware.microservices.Context;
+import io.silverware.microservices.MicroserviceMetaData;
+import io.silverware.microservices.providers.MicroserviceProvider;
+import io.silverware.microservices.providers.rest.annotation.ServiceConfiguration;
+import io.silverware.microservices.silver.RestClientSilverService;
+import io.silverware.microservices.util.Utils;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
@@ -28,14 +35,6 @@ import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import io.silverware.microservices.Context;
-import io.silverware.microservices.MicroserviceMetaData;
-import io.silverware.microservices.SilverWareException;
-import io.silverware.microservices.providers.MicroserviceProvider;
-import io.silverware.microservices.providers.rest.annotation.ServiceConfiguration;
-import io.silverware.microservices.silver.RestClientSilverService;
-import io.silverware.microservices.util.Utils;
 
 /**
  * Provides a wrapper for calling arbitrary REST service that is deployed anywhere.
@@ -99,11 +98,9 @@ public class RestClientMicroserviceProvider implements MicroserviceProvider, Res
 
    private Object initRestService(final MicroserviceMetaData metaData, final ServiceConfiguration configuration) {
       if (configuration.endpoint().isEmpty()) {
-         new SilverWareException(
-               String.format(
-                     "The endpoint for the injected Rest service: %s is not provided. Specify the endpoint within the "
-                           + "%s annotation.",
-                     metaData.getType(), configuration.getClass()));
+         log.warn("The endpoint for the injected Rest service: {} is not provided. Specify the endpoint within the "
+                     + "%s annotation.",
+               metaData.getType(), configuration.getClass());
       }
 
       final Object restService = this.client.target(configuration.endpoint()).proxy(metaData.getType());
