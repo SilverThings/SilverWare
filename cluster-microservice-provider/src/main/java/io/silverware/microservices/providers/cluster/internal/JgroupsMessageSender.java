@@ -47,10 +47,8 @@ public class JgroupsMessageSender {
     */
    private static final Logger log = LogManager.getLogger(JgroupsMessageSender.class);
 
-
    private static final RequestOptions SYNC_OPTIONS = RequestOptions.SYNC();
    private static final RequestOptions ASYNC_OPTIONS = RequestOptions.ASYNC();
-
 
    private final MessageDispatcher dispatcher;
    private Set<Address> filteredAdresses;
@@ -67,8 +65,6 @@ public class JgroupsMessageSender {
          this.filteredAdresses = new HashSet<>();
          // add my address
          filteredAdresses.add(this.dispatcher.getChannel().getAddress());
-         // add cluster address
-         filteredAdresses.add(this.dispatcher.getChannel().getView().getCreator());
       }
       return this.filteredAdresses;
    }
@@ -76,7 +72,8 @@ public class JgroupsMessageSender {
    /**
     * Send multicast message to all nodes in cluster
     *
-    * @param content content of message
+    * @param content
+    *       content of message
     */
    public <T> RspList<T> sendToClusterSync(Serializable content) throws Exception {
       return this.dispatcher.castMessage(getMembersAdresses(), new Message(null, content), SYNC_OPTIONS);
@@ -85,8 +82,10 @@ public class JgroupsMessageSender {
    /**
     * Send async multicast message to all nodes in cluster
     *
-    * @param content  content of message
-    * @param listener listener which will be called when result will be available
+    * @param content
+    *       content of message
+    * @param listener
+    *       listener which will be called when result will be available
     */
    public <T> void sendToClusterAsync(Serializable content, Set<Address> addressesToSkip, FutureListener<RspList<T>> listener) throws Exception {
       List<Address> othertMembersAdresses = getOthertMembersAdresses().stream().filter(address -> !addressesToSkip.contains(address)).collect(Collectors.toList());
@@ -102,8 +101,10 @@ public class JgroupsMessageSender {
    /**
     * Send async multicast message to all nodes in cluster
     *
-    * @param content  content of message
-    * @param listener listener which will be called when result will be available
+    * @param content
+    *       content of message
+    * @param listener
+    *       listener which will be called when result will be available
     */
    public <T> void sendToClusterAsync(Serializable content, FutureListener<RspList<T>> listener) throws Exception {
       sendToClusterAsync(content, Collections.emptySet(), listener);
@@ -121,7 +122,8 @@ public class JgroupsMessageSender {
    /**
     * Send unicast message for specific address
     *
-    * @param content content of message
+    * @param content
+    *       content of message
     */
    public void sendToAddressAsync(Address address, Serializable content) throws Exception {
       this.dispatcher.sendMessage(new Message(address, Util.objectToByteBuffer(content)), ASYNC_OPTIONS);
@@ -130,11 +132,11 @@ public class JgroupsMessageSender {
    /**
     * Send unicast message for specific address
     *
-    * @param content content of message
+    * @param content
+    *       content of message
     */
    public <T> T sendToAddressSync(Address address, Serializable content) throws Exception {
       return this.dispatcher.sendMessage(new Message(address, Util.objectToByteBuffer(content)), SYNC_OPTIONS);
    }
-
 
 }

@@ -23,6 +23,7 @@ import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
+import io.silverware.microservices.annotations.MicroserviceVersion;
 import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.providers.cdi.builtin.Configuration;
 import io.silverware.microservices.providers.cdi.builtin.CurrentContext;
@@ -32,6 +33,7 @@ import io.silverware.microservices.providers.cdi.internal.MicroservicesCDIExtens
 import io.silverware.microservices.providers.cdi.internal.MicroservicesInitEvent;
 import io.silverware.microservices.silver.CdiSilverService;
 import io.silverware.microservices.util.Utils;
+import io.silverware.microservices.util.VersionComparator;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,7 +46,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Priority;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
@@ -58,6 +59,8 @@ import javax.interceptor.InvocationContext;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ *         Changes in version resolution in lookupMicroservice
+ * @author Slavomir Krupa (slavomir.krupa@gmail.com)
  */
 public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverService {
 
@@ -134,15 +137,18 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
    @Override
    @SuppressWarnings("checkstyle:JavadocMethod")
    public Set<Object> lookupMicroservice(final MicroserviceMetaData microserviceMetaData) {
+      // name can not be null - contract of MicroserviceMetaData
       final String name = microserviceMetaData.getName();
       final Class<?> type = microserviceMetaData.getType();
       final Set<Annotation> qualifiers = microserviceMetaData.getQualifiers();
+      final String apiVersion = microserviceMetaData.getApiVersion();
       final Set<Object> matchingBeansByName = new HashSet<>();
       final Set<Object> matchingBeansByType = new HashSet<>();
       boolean wasAlternative = false;
 
       /*
          We are in search for a CDI bean that meets the provided meta-data.
+         If there is a MicroserviceVersion annotation and it is not matching the version in metadata we skip that bean automatically.
          Input and corresponding output is as follows:
            * name specified in MicroserviceReference or derived from data type (both class or interface)
                  * beans having the same name in Microservice annotation
@@ -157,33 +163,39 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       for (final Bean<?> bean : beans) {
          if (bean.getBeanClass().isAnnotationPresent(Microservice.class) && !(bean instanceof MicroserviceProxyBean)) {
             final Bean<?> theBean = beanManager.resolve(Collections.singleton(bean));
+
+            if (theBean.getBeanClass().isAnnotationPresent(MicroserviceVersion.class)) {
+               final MicroserviceVersion versionAnnotation = theBean.getBeanClass().getAnnotation(MicroserviceVersion.class);
+               String implementationVersion = versionAnnotation.implementation();
+               if (!VersionComparator.forVersion(implementationVersion).satisfies(apiVersion)) {
+                  continue;
+               }
+            }
             final Microservice microserviceAnnotation = theBean.getBeanClass().getAnnotation(Microservice.class);
 
-            if (name != null) {
-               if ((!microserviceAnnotation.value().isEmpty() && name.equals(microserviceAnnotation.value())) ||
-                     (microserviceAnnotation.value().isEmpty() && name.equals(theBean.getName()))) {
-                  matchingBeansByName.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
-               } else if (type.isAssignableFrom(theBean.getBeanClass())) {
-                  final Set<Annotation> qualifiersToCompare = new HashSet<>(theBean.getQualifiers());
-                  qualifiers.stream().forEach(qualifiersToCompare::remove);
+            if ((!microserviceAnnotation.value().isEmpty() && name.equals(microserviceAnnotation.value())) ||
+                  (microserviceAnnotation.value().isEmpty() && name.equals(theBean.getName()))) {
+               matchingBeansByName.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
+            } else if (type.isAssignableFrom(theBean.getBeanClass())) {
+               final Set<Annotation> qualifiersToCompare = new HashSet<>(theBean.getQualifiers());
+               qualifiers.stream().forEach(qualifiersToCompare::remove);
 
-                  if (qualifiersToCompare.size() == 0) {
+               if (qualifiersToCompare.size() == 0) {
 
-                     if (bean.isAlternative()) {
-                        if (!wasAlternative) {
-                           matchingBeansByType.clear();
-                           matchingBeansByType.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
-                           wasAlternative = true;
-                        } else {
-                           matchingBeansByType.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
-                           throw new IllegalStateException(String.format("There are more than alternate beans matching the query: %s. The beans are: %s.", microserviceMetaData.toString(), matchingBeansByType.toString()));
-                        }
+                  if (bean.isAlternative()) {
+                     if (!wasAlternative) {
+                        matchingBeansByType.clear();
+                        matchingBeansByType.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
+                        wasAlternative = true;
                      } else {
-                        if (!wasAlternative) {
-                           matchingBeansByType.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
-                        } else {
-                           // ignore this bean
-                        }
+                        matchingBeansByType.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
+                        throw new IllegalStateException(String.format("There are more than alternate beans matching the query: %s. The beans are: %s.", microserviceMetaData.toString(), matchingBeansByType.toString()));
+                     }
+                  } else {
+                     if (!wasAlternative) {
+                        matchingBeansByType.add(beanManager.getReference(theBean, type, beanManager.createCreationalContext(theBean)));
+                     } else {
+                        // ignore this bean
                      }
                   }
                }
@@ -223,7 +235,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
    @Override
    public <T> T findByType(final Class<T> type) {
       final BeanManager beanManager = (BeanManager) this.context.getProperties().get(BEAN_MANAGER);
-      final Set<T> beans = new HashSet<T>();
+      final Set<T> beans = new HashSet<>();
       final Set<Bean<?>> definitions = beanManager.getBeans(type);
       final Bean<?> bean = beanManager.resolve(definitions);
       final CreationalContext<?> creationalContext = beanManager.createCreationalContext(bean);
@@ -259,7 +271,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   @SuppressWarnings({"unused", "checkstyle:JavadocType"})
+   @SuppressWarnings({ "unused", "checkstyle:JavadocType" })
    @Microservice
    public static class SilverWareConfiguration implements Configuration {
 
@@ -275,7 +287,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   @SuppressWarnings({"unused", "unchecked", "checkstyle:JavadocType"})
+   @SuppressWarnings({ "unused", "unchecked", "checkstyle:JavadocType" })
    @Microservice
    public static class SilverWareStorage implements Storage {
 
@@ -305,7 +317,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       }
    }
 
-   @SuppressWarnings({"unused", "checkstyle:JavadocMethod"})
+   @SuppressWarnings({ "unused", "checkstyle:JavadocMethod" })
    @Microservice
    public static class SilverWareCurrentContext implements CurrentContext {
 

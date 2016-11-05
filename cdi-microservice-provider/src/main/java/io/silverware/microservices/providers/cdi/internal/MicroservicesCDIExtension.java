@@ -24,6 +24,7 @@ import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.providers.cdi.MicroserviceContext;
+import io.silverware.microservices.providers.cdi.util.VersionResolver;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -86,10 +87,8 @@ public class MicroservicesCDIExtension implements Extension {
    /**
     * {@link javax.enterprise.inject.spi.BeforeBeanDiscovery} CDI event observer.
     *
-    * @param beforeEvent
-    *       CDI Event instance.
-    * @param beanManager
-    *       CDI Bean Manager instance.
+    * @param beforeEvent CDI Event instance.
+    * @param beanManager CDI Bean Manager instance.
     */
    public void beforeBeanDiscovery(@Observes final BeforeBeanDiscovery beforeEvent, final BeanManager beanManager) {
       if (log.isDebugEnabled()) {
@@ -100,10 +99,8 @@ public class MicroservicesCDIExtension implements Extension {
    /**
     * {@link javax.enterprise.inject.spi.ProcessBean} CDI event observer.
     *
-    * @param processBean
-    *       CDI Event instance.
-    * @param beanManager
-    *       CDI Bean Manager instance.
+    * @param processBean CDI Event instance.
+    * @param beanManager CDI Bean Manager instance.
     */
    public void processBean(@Observes final ProcessBean processBean, final BeanManager beanManager) {
       final Bean<?> bean = processBean.getBean();
@@ -156,8 +153,7 @@ public class MicroservicesCDIExtension implements Extension {
    /**
     * {@link javax.enterprise.inject.spi.ProcessBean} CDI event observer.
     *
-    * @param afterEvent
-    *       CDI Event instance.
+    * @param afterEvent CDI Event instance.
     */
    public void afterBeanDiscovery(@Observes final AfterBeanDiscovery afterEvent) {
       afterEvent.addContext(new MicroserviceContext());
@@ -216,6 +212,7 @@ public class MicroservicesCDIExtension implements Extension {
 
    /**
     * Gets the number of discovered injection points.
+    *
     * @return The number of discovered injection points.
     */
    public long getInjectionPointsCount() {
@@ -224,13 +221,14 @@ public class MicroservicesCDIExtension implements Extension {
 
    /**
     * Gets a new {@link MicroserviceMetaData} descriptor based on the provided CDI bean.
+    *
     * @param microserviceName The Microservice name.
-    * @param bean The CDI Bean.
+    * @param bean             The CDI Bean.
     * @return Microservice meta-data.
     */
    private MicroserviceMetaData getMicroserviceMetaData(final String microserviceName, final Bean<?> bean) {
-      return new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers(), new HashSet<>(
-            Arrays.asList(bean.getBeanClass().getAnnotations())));
+      return VersionResolver.createMicroserviceMetadata(microserviceName, bean.getBeanClass(), bean.getQualifiers(), new HashSet<>(
+              Arrays.asList(bean.getBeanClass().getAnnotations())));
    }
 
    /**
