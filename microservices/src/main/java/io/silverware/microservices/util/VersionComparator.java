@@ -30,7 +30,9 @@ import com.vdurmont.semver4j.SemverException;
  * This implementation is using <a href="https://github.com/npm/node-semver">NPM versioning rules.</a>
  * implemented in library <a href="https://github.com/vdurmont/semver4j">Semantic Versioning home page.</a>
  *
- * Be aware of issues with current versioning -
+ * Be aware:
+ * If a version has a prerelease tag (for example, 1.2.3-alpha.3) then it will only be allowed
+ * to satisfy comparator sets if at least one comparator with the same [major, minor, patch] tuple also has a prerelease tag.
  *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */

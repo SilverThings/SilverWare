@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -41,10 +40,15 @@ import java.util.stream.Stream;
  * This class is used for resolving of api and implementation versions.
  * The resolution process takes the first version which is provided for the microservice from following list
  * <ol>
- * <li>MicroserviceVersion annotation</li>
+ * <li>MicroserviceVersion annotation on bean</li>
+ * <li>MicroserviceVersion annotation on class</li>
+ * <li>MicroserviceVersion annotation on interfaces</li>
+ * <li>MicroserviceVersion annotation on parent classes</li>
  * <li>Manifest version</li>
  * </ol>
  * If no version was obtained using this process null will be returned.
+ * See @{@link MicroserviceVersion}
+ * See @{@link io.silverware.microservices.util.VersionComparator}
  *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
@@ -59,20 +63,6 @@ public final class VersionResolver {
    public static final String IMPLEMENTATION_VERSION = "Implementation-Version";
 
    private VersionResolver() {
-   }
-
-   /**
-    * Create a instance of a Microservice meta data which represents discovered Microservice.
-    *
-    * @param name
-    *       The name of the discovered Microservice.
-    * @param type
-    *       The type of the discovered Microservice.
-    * @param qualifiers
-    *       The qualifiers of the discovered Microservice.
-    */
-   public static MicroserviceMetaData createMicroserviceMetadata(final String name, final Class type, final Set<Annotation> qualifiers) {
-      return createMicroserviceMetadata(name, type, qualifiers, new HashSet<>(Arrays.asList(type.getAnnotations())));
    }
 
    /**
@@ -105,6 +95,19 @@ public final class VersionResolver {
     */
    public static String resolveApiVersion(final Class clazz, final Set<Annotation> annotations) {
       return resolveVersion(clazz, annotations, MicroserviceVersion::api, SPECIFICATION_VERSION);
+   }
+
+   /**
+    * Use the process mentioned in @{@link VersionResolver} to obtain implementation version.
+    *
+    * @param clazz
+    *       The class I want to obtain version of.
+    * @param annotations
+    *       list of a annotations from service
+    * @return The class specification version from manifest, null if there is no version information present or the manifest file does not exists.
+    */
+   public static String resolveImplementationVersion(final Class clazz, final Set<Annotation> annotations) {
+      return resolveVersion(clazz, annotations, MicroserviceVersion::implementation, IMPLEMENTATION_VERSION);
    }
 
    private static String resolveVersion(final Class clazz, final Set<Annotation> annotations, Function<MicroserviceVersion, String> lambda, final String versionType) {
@@ -147,19 +150,6 @@ public final class VersionResolver {
       }
       return versions.isEmpty() ? null : versions.get(0);
 
-   }
-
-   /**
-    * Use the process mentioned in @{@link VersionResolver} to obtain implementation version.
-    *
-    * @param clazz
-    *       The class I want to obtain version of.
-    * @param annotations
-    *       list of a annotations from service
-    * @return The class specification version from manifest, null if there is no version information present or the manifest file does not exists.
-    */
-   public static String resolveImplementationVersion(final Class clazz, final Set<Annotation> annotations) {
-      return resolveVersion(clazz, annotations, MicroserviceVersion::implementation, IMPLEMENTATION_VERSION);
    }
 
    private static String resolveVersionFromAnnotations(Stream<Annotation> annotations, Function<MicroserviceVersion, String> lambda) {

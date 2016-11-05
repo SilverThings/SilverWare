@@ -33,7 +33,9 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 /**
- * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ * Basic test for versioning.
+ *
+ * @author Slavomir Krupa (slavomir.krupa@gmail.com)
  */
 public class CdiMicroserviceProviderVersionsTest {
 

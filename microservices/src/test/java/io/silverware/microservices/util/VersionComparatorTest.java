@@ -13,8 +13,8 @@ import org.testng.annotations.Test;
 public class VersionComparatorTest {
    private static final String VERSION = "1.2.3";
 
-   private static final String MINOR_VERSION_SNAPSHOT = "1.2";
-   private static final String MAJOR_VERSION_SNAPSHOT = "1";
+   private static final String MINOR_VERSION_SNAPSHOT = "1.2-SNAPSHOT";
+   private static final String MAJOR_VERSION_SNAPSHOT = "1-SNAPSHOT";
 
    public static final String DESCRIPTION = "Version %s should%sbe satisfied by a condition %s.";
    public static final String SUCCESS_MAJOR_SNAPSHOT = "successMajorSnapshot";
@@ -44,7 +44,7 @@ public class VersionComparatorTest {
 
    @DataProvider(name = SUCCESS_LESS_DIGITS)
    public static Object[][] successVersionsLessDigits() {
-      return new Object[][] { { MINOR_VERSION_SNAPSHOT }, { "~1.2" }, { "1.2.x" }, { "" } };
+      return new Object[][] { { MINOR_VERSION_SNAPSHOT }, { "~1.2-SNAPSHOT" }, { "1.2.x-SNAPSHOT" }, { "" } };
    }
 
    @Test(dataProvider = SUCCESS_LESS_DIGITS)
@@ -54,7 +54,7 @@ public class VersionComparatorTest {
 
    @DataProvider(name = SUCCESS_MAJOR_SNAPSHOT)
    public static Object[][] successVersionsMajorSnapshot() {
-      return new Object[][] { { MAJOR_VERSION_SNAPSHOT }, { "~1" }, { "1.x" }, { "" }, { "^1" }, { "1" } };
+      return new Object[][] { { MAJOR_VERSION_SNAPSHOT }, { "~1-SNAPSHOT" }, { "1.x-SNAPSHOT" }, { "" }, { "^1-SNAPSHOT" }, { "1-SNAPSHOT" } };
    }
 
    @Test(dataProvider = SUCCESS_MAJOR_SNAPSHOT)

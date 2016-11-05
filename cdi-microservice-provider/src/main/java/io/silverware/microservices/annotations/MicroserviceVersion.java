@@ -34,6 +34,7 @@ import java.lang.annotation.Target;
  * </ul>
  * These versions are used in the lookup of the Microservices in the cluster.
  * See @{@link io.silverware.microservices.providers.cdi.util.VersionResolver}
+ * See @{@link io.silverware.microservices.util.VersionComparator}
  *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
@@ -50,6 +51,7 @@ public @interface MicroserviceVersion {
 
    /**
     * Gets the implementation version of the Microservice.
+    * If not defined then {@link io.silverware.microservices.providers.cdi.util.VersionResolver} continues in search for microservice version.
     */
    String implementation() default "";
 }
