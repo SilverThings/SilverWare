@@ -19,9 +19,24 @@
  */
 package io.silverware.microservices.providers.cdi.internal;
 
+import io.silverware.microservices.Context;
+import io.silverware.microservices.annotations.ParamName;
+import io.silverware.microservices.providers.cdi.util.VersionResolver;
+import io.silverware.microservices.silver.CdiSilverService;
+
 import com.cedarsoftware.util.io.JsonWriter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,27 +52,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
 
 import javax.enterprise.inject.spi.Bean;
-
-import io.silverware.microservices.Context;
-import io.silverware.microservices.MicroserviceMetaData;
-import io.silverware.microservices.annotations.ParamName;
-import io.silverware.microservices.silver.CdiSilverService;
-
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -200,7 +197,7 @@ public class RestInterface extends AbstractVerticle {
             }
 
             @SuppressWarnings("unchecked")
-            Set<Object> services = context.lookupLocalMicroservice(new MicroserviceMetaData(microserviceName, beanClass, bean.getQualifiers()));
+            Set<Object> services = context.lookupLocalMicroservice(VersionResolver.createMicroserviceMetadata(microserviceName, beanClass, bean.getQualifiers()));
             JsonObject response = new JsonObject();
             try {
                Object result = m.invoke(services.iterator().next(), paramValues);
@@ -232,7 +229,7 @@ public class RestInterface extends AbstractVerticle {
 
       if (!methodParameter.isNamePresent()) {
          log.warn(String.format("Method parameter name is not present for method %s in class %s. Please use compilation argument (or test compilation argument) \"-parameters\""
-               + " or use annotation @%s or @%s for parameters of this method.", method.getName(), clazz.getCanonicalName(), ParamName.class.getCanonicalName(), JsonProperty.class.getCanonicalName()));
+                 + " or use annotation @%s or @%s for parameters of this method.", method.getName(), clazz.getCanonicalName(), ParamName.class.getCanonicalName(), JsonProperty.class.getCanonicalName()));
       }
       return methodParameter.getName();
    }
@@ -245,7 +242,7 @@ public class RestInterface extends AbstractVerticle {
 
       try {
          Method m = bean.getBeanClass().getDeclaredMethod(methodName);
-         Set<Object> services = context.lookupLocalMicroservice(new MicroserviceMetaData(microserviceName, bean.getBeanClass(), bean.getQualifiers()));
+         Set<Object> services = context.lookupLocalMicroservice(VersionResolver.createMicroserviceMetadata(microserviceName, bean.getBeanClass(), bean.getQualifiers()));
          JsonObject response = new JsonObject();
          try {
             Object result = m.invoke(services.iterator().next());

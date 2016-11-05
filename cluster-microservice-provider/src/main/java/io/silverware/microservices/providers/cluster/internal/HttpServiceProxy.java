@@ -22,6 +22,7 @@ package io.silverware.microservices.providers.cluster.internal;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.silver.cluster.LocalServiceHandle;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
+
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 
@@ -51,19 +52,19 @@ public class HttpServiceProxy implements MethodHandler {
    public static <T> T getProxy(final Context context, final LocalServiceHandle serviceHandle) {
       try {
          ProxyFactory factory = new ProxyFactory();
-         if (serviceHandle.getQuery().getType().isInterface()) {
-            factory.setInterfaces(new Class[] { serviceHandle.getQuery().getType() });
+         if (serviceHandle.getMetaData().getType().isInterface()) {
+            factory.setInterfaces(new Class[]{serviceHandle.getMetaData().getType()});
          } else {
-            factory.setSuperclass(serviceHandle.getQuery().getType());
+            factory.setSuperclass(serviceHandle.getMetaData().getType());
          }
          return (T) factory.create(new Class[0], new Object[0], new HttpServiceProxy(context, serviceHandle));
       } catch (Exception e) {
-         throw new IllegalStateException("Cannot create Http proxy for class " + serviceHandle.getQuery().getType().getName() + ": ", e);
+         throw new IllegalStateException("Cannot create Http proxy for class " + serviceHandle.getMetaData().getType().getName() + ": ", e);
       }
    }
 
    @Override
    public Object invoke(final Object o, final Method method, final Method method1, final Object[] objects) throws Throwable {
-      return serviceHandle.invoke(context, method.getName(),method.getParameterTypes(), objects);
+      return serviceHandle.invoke(context, method.getName(), method.getParameterTypes(), objects);
    }
 }

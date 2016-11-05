@@ -1,7 +1,5 @@
 package io.silverware.microservices.providers.http.invoker;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
@@ -13,6 +11,9 @@ import io.silverware.microservices.silver.cluster.Invocation;
 import io.silverware.microservices.silver.cluster.LocalServiceHandle;
 import io.silverware.microservices.util.BootUtil;
 import io.silverware.microservices.util.Utils;
+
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -31,6 +32,7 @@ import java.util.Map;
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class HttpInvokerMicroserviceProviderTest {
+   private static final String VERSION = "1.0.0";
 
    private HttpInvokerSilverService httpInvokerSilverService = null;
 
@@ -60,7 +62,7 @@ public class HttpInvokerMicroserviceProviderTest {
       con.setDoOutput(true);
       con.connect();
 
-      final MicroserviceMetaData metaData = new MicroserviceMetaData("sumService", SumService.class, Collections.emptySet());
+      final MicroserviceMetaData metaData = new MicroserviceMetaData("sumService", SumService.class, Collections.emptySet(), Collections.emptySet(), VERSION, VERSION);
       JsonWriter jsonWriter = new JsonWriter(con.getOutputStream());
       jsonWriter.write(metaData);
 
@@ -72,7 +74,7 @@ public class HttpInvokerMicroserviceProviderTest {
       con.disconnect();
 
       final LocalServiceHandle handle = handles.get(0);
-      long l = (Long) handle.invoke(bootUtil.getContext(), "sum", new Class[] {short.class, int.class}, new Object[] {(short) 3, 4});
+      long l = (Long) handle.invoke(bootUtil.getContext(), "sum", new Class[] { short.class, int.class }, new Object[] { (short) 3, 4 });
       Assert.assertEquals(l, 7L);
 
       con = (HttpURLConnection) new URL(urlBase + "invoke").openConnection();
@@ -81,7 +83,7 @@ public class HttpInvokerMicroserviceProviderTest {
       con.setDoOutput(true);
       con.connect();
 
-      Invocation invocation = new Invocation(handles.get(0).getHandle(), "sum", new Class[] {short.class, int.class}, new Object[] {(short) 3, 4});
+      Invocation invocation = new Invocation(handles.get(0).getHandle(), "sum", new Class[] { short.class, int.class }, new Object[] { (short) 3, 4 });
       jsonWriter = new JsonWriter(con.getOutputStream());
       jsonWriter.write(invocation);
       jsonReader = new JsonReader(con.getInputStream());
@@ -97,7 +99,7 @@ public class HttpInvokerMicroserviceProviderTest {
       con.setDoOutput(true);
       con.connect();
 
-      invocation = new Invocation(handles.get(0).getHandle(), "allTypes", new Class[] {byte.class, short.class, int.class, long.class, float.class, double.class, boolean.class, char.class}, new Object[] {Byte.MAX_VALUE, Short.MAX_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE, Float.MIN_VALUE, Double.MIN_VALUE, true, 'c'});
+      invocation = new Invocation(handles.get(0).getHandle(), "allTypes", new Class[] { byte.class, short.class, int.class, long.class, float.class, double.class, boolean.class, char.class }, new Object[] { Byte.MAX_VALUE, Short.MAX_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE, Float.MIN_VALUE, Double.MIN_VALUE, true, 'c' });
 
       jsonWriter = new JsonWriter(con.getOutputStream());
       jsonWriter.write(invocation);
@@ -114,7 +116,7 @@ public class HttpInvokerMicroserviceProviderTest {
       con.setDoOutput(true);
       con.connect();
 
-      invocation = new Invocation(handles.get(0).getHandle(), "allTypes2", new Class[] {Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, Boolean.class, Character.class}, new Object[] {Byte.MAX_VALUE, Short.MAX_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE, Float.MIN_VALUE, Double.MIN_VALUE, true, 'c'});
+      invocation = new Invocation(handles.get(0).getHandle(), "allTypes2", new Class[] { Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, Boolean.class, Character.class }, new Object[] { Byte.MAX_VALUE, Short.MAX_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE, Float.MIN_VALUE, Double.MIN_VALUE, true, 'c' });
 
       jsonWriter = new JsonWriter(con.getOutputStream());
       jsonWriter.write(invocation);
@@ -133,7 +135,7 @@ public class HttpInvokerMicroserviceProviderTest {
 
       MagicBox box = new MagicBox();
 
-      invocation = new Invocation(handles.get(0).getHandle(), "doMagic", new Class[] {MagicBox.class}, new Object[] {box});
+      invocation = new Invocation(handles.get(0).getHandle(), "doMagic", new Class[] { MagicBox.class }, new Object[] { box });
 
       jsonWriter = new JsonWriter(con.getOutputStream());
       jsonWriter.write(invocation);

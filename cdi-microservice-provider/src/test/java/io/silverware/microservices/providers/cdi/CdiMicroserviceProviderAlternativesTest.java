@@ -22,17 +22,17 @@ package io.silverware.microservices.providers.cdi;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.util.BootUtil;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Alternative;
+import javax.inject.Inject;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -52,7 +52,7 @@ public class CdiMicroserviceProviderAlternativesTest {
 
       CdiMicroserviceProviderTestUtil.waitForBeanManager(bootUtil);
 
-      Assert.assertTrue(semaphore.tryAcquire(100, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
+      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
       Assert.assertEquals(result, "alternatealternate");
 
       platform.interrupt();

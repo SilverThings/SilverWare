@@ -19,11 +19,12 @@
  */
 package io.silverware.microservices.silver.cluster;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.silver.HttpInvokerSilverService;
+
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -37,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-// TODO: 9/8/16 Remove remote proxy and htpp invoker - it should be in separated object
+// TODO: 9/8/16 Remove htpp invoker - it should be in separated object
 public class LocalServiceHandle implements ServiceHandle {
 
    private static final transient AtomicInteger handleSource = new AtomicInteger(0);
@@ -75,7 +76,7 @@ public class LocalServiceHandle implements ServiceHandle {
       return host;
    }
 
-   public MicroserviceMetaData getQuery() {
+   public MicroserviceMetaData getMetaData() {
       return query;
    }
 

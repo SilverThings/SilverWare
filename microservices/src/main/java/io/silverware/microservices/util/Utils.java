@@ -52,7 +52,7 @@ public class Utils {
     * Logs a shutdown message with the given exception.
     *
     * @param log A logger where to log the message to.
-    * @param ie An exception causing the shutdown.
+    * @param ie  An exception causing the shutdown.
     */
    public static void shutdownLog(final Logger log, final InterruptedException ie) {
       log.info("Execution interrupted, exiting.");
@@ -65,7 +65,7 @@ public class Utils {
     * Waits for the URL to become available.
     *
     * @param urlString The URL to check for.
-    * @param code The expected HTTP response code.
+    * @param code      The expected HTTP response code.
     * @return Returns true if the URL was available, false otherwise.
     * @throws Exception When it was not possible to check the URL.
     */
@@ -109,7 +109,7 @@ public class Utils {
    /**
     * Gets the manifest entry for the given class.
     *
-    * @param clazz The class I want to obtain entry for.
+    * @param clazz     The class I want to obtain entry for.
     * @param entryName The name of the entry to obtain.
     * @return The entry from manifest, null if there is no such entry or the manifest file does not exists.
     * @throws IOException When it was not possible to get the manifest file.
@@ -130,41 +130,6 @@ public class Utils {
       return null;
    }
 
-   /**
-    * Gets the class implementation version from manifest.
-    *
-    * @param clazz The class I want to obtain version of.
-    * @return The class specification version from manifest, null if there is no version information present or the manifest file does not exists.
-    */
-   public static String getClassImplVersion(final Class clazz) {
-      try {
-         return getManifestEntry(clazz, "Implementation-Version");
-      } catch (IOException ioe) {
-         if (log.isDebugEnabled()) {
-            log.debug("Cannot obtain version for class {}.", clazz.getName());
-         }
-      }
-
-      return null;
-   }
-
-   /**
-    * Gets the class specification version from manifest.
-    *
-    * @param clazz The class I want to obtain version of.
-    * @return The class specification version from manifest, null if there is no version information present or the manifest file does not exists.
-    */
-   public static String getClassSpecVersion(final Class clazz) {
-      try {
-         return getManifestEntry(clazz, "Specification-Version");
-      } catch (IOException ioe) {
-         if (log.isDebugEnabled()) {
-            log.debug("Cannot obtain version for class {}.", clazz.getName());
-         }
-      }
-
-      return null;
-   }
 
    /**
     * Do the best to sleep for the given time. Ignores {@link InterruptedException}.

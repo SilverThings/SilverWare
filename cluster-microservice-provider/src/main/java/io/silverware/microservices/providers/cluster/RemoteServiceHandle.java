@@ -29,11 +29,14 @@ import io.silverware.microservices.silver.cluster.Invocation;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jgroups.Address;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.INVOCATION_EXCEPTION;
 import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.PROCESSING_ERROR;
 
 /**
@@ -42,6 +45,8 @@ import static io.silverware.microservices.providers.cluster.internal.exception.S
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
 public class RemoteServiceHandle implements ServiceHandle, MethodHandler {
+
+   private static final Logger log = LogManager.getLogger(ClusterMicroserviceProvider.class);
 
    private final Address address;
    private final int handle;
@@ -91,9 +96,16 @@ public class RemoteServiceHandle implements ServiceHandle, MethodHandler {
          return type;
       }
       Invocation invocation = new Invocation(handle, method, paramTypes, params);
-      MicroserviceRemoteCallResponse response = sender.sendToAddressSync(address, new MicroserviceRemoteCallRequest(invocation));
-      return response.getMessageCallResult();
-
+      try {
+         MicroserviceRemoteCallResponse response = sender.sendToAddressSync(address, new MicroserviceRemoteCallRequest(invocation));
+         return response.getMessageCallResult();
+      } catch (SilverWareClusteringException e) {
+         log.error(e);
+         if (e.getReason() == INVOCATION_EXCEPTION) {
+            throw (Exception) e.getCause();
+         }
+         throw e;
+      }
    }
 
 
