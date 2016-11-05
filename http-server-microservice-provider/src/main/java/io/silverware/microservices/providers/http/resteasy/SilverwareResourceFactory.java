@@ -19,19 +19,19 @@
  */
 package io.silverware.microservices.providers.http.resteasy;
 
-import io.silverware.microservices.Context;
-import io.silverware.microservices.MicroserviceMetaData;
-
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResourceFactory;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
+import io.silverware.microservices.Context;
+import io.silverware.microservices.MicroserviceMetaData;
+
 /**
  * Silverware resource factory producing a Microservice from a context
  * and Microservice metadata.
  *
- * @author Radek Koubsky (radek.koubsky@gmail.com)
+ * @author Radek Koubsky (radekkoubsky@gmail.com)
  */
 public class SilverwareResourceFactory implements ResourceFactory {
    private final Context context;
@@ -40,8 +40,10 @@ public class SilverwareResourceFactory implements ResourceFactory {
    /**
     * Ctor.
     *
-    * @param context Microservices context
-    * @param microserviceMetadata Microservice metadata
+    * @param context
+    *       Microservices context
+    * @param microserviceMetadata
+    *       Microservice metadata
     */
    public SilverwareResourceFactory(final Context context, final MicroserviceMetaData microserviceMetadata) {
       super();

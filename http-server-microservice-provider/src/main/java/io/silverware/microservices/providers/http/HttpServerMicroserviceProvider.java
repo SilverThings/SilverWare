@@ -19,6 +19,20 @@
  */
 package io.silverware.microservices.providers.http;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jboss.resteasy.plugins.server.undertow.UndertowJaxrsServer;
+import org.jboss.resteasy.spi.ResourceFactory;
+import org.jboss.resteasy.spi.ResteasyDeployment;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.net.ssl.SSLContext;
+import javax.servlet.Servlet;
+import javax.ws.rs.Path;
+
 import io.silverware.microservices.Context;
 import io.silverware.microservices.SilverWareException;
 import io.silverware.microservices.providers.MicroserviceProvider;
@@ -27,27 +41,11 @@ import io.silverware.microservices.silver.CdiSilverService;
 import io.silverware.microservices.silver.HttpServerSilverService;
 import io.silverware.microservices.silver.http.ServletDescriptor;
 import io.silverware.microservices.util.Utils;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.plugins.server.undertow.UndertowJaxrsServer;
-import org.jboss.resteasy.spi.ResourceFactory;
-import org.jboss.resteasy.spi.ResteasyDeployment;
-
 import io.undertow.Undertow;
 import io.undertow.Undertow.Builder;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.ServletInfo;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.net.ssl.SSLContext;
-import javax.servlet.Servlet;
-import javax.ws.rs.Path;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -159,7 +157,7 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
    private void waitForCDIProvider() throws InterruptedException {
       while (this.context.getProvider(
             CdiSilverService.class) == null || !((CdiSilverService) this.context.getProvider(CdiSilverService.class))
-                  .isDeployed()) {
+            .isDeployed()) {
          Thread.sleep(200);
       }
    }
@@ -211,34 +209,26 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
    }
 
    private String keystore() {
-      if (this.context.getProperties().get(HTTP_SERVER_KEY_STORE) == null) {
-         return null;
-      } else {
-         return String.valueOf(this.context.getProperties().get(HTTP_SERVER_KEY_STORE));
-      }
+      return readProperty(HTTP_SERVER_KEY_STORE);
    }
 
    private String keystorePwd() {
-      if (this.context.getProperties().get(HTTP_SERVER_KEY_STORE_PASSWORD) == null) {
-         return null;
-      } else {
-         return String.valueOf(this.context.getProperties().get(HTTP_SERVER_KEY_STORE_PASSWORD));
-      }
+      return readProperty(HTTP_SERVER_KEY_STORE_PASSWORD);
    }
 
    private String truststore() {
-      if (this.context.getProperties().get(HTTP_SERVER_TRUST_STORE) == null) {
-         return null;
-      } else {
-         return String.valueOf(this.context.getProperties().get(HTTP_SERVER_TRUST_STORE));
-      }
+      return readProperty(HTTP_SERVER_TRUST_STORE);
    }
 
    private String truststorePwd() {
-      if (this.context.getProperties().get(HTTP_SERVER_TRUST_STORE_PASSWORD) == null) {
+      return readProperty(HTTP_SERVER_TRUST_STORE_PASSWORD);
+   }
+
+   private String readProperty(final String key) {
+      if (this.context.getProperties().get(key) == null) {
          return null;
       } else {
-         return String.valueOf(this.context.getProperties().get(HTTP_SERVER_TRUST_STORE_PASSWORD));
+         return String.valueOf(this.context.getProperties().get(key));
       }
    }
 }

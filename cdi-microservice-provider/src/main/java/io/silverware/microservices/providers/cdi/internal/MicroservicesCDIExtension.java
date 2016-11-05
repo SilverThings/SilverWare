@@ -21,7 +21,6 @@ package io.silverware.microservices.providers.cdi.internal;
 
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
-import io.silverware.microservices.annotations.Gateway;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.providers.cdi.MicroserviceContext;
@@ -72,11 +71,6 @@ public class MicroservicesCDIExtension implements Extension {
    private long injectionPointsCount = 0;
 
    /**
-    * Rest interface to register gateway annotated beans.
-    */
-   private RestInterface restInterface;
-
-   /**
     * Microservices context.
     */
    private final Context context;
@@ -84,11 +78,10 @@ public class MicroservicesCDIExtension implements Extension {
    /**
     * List of created {@link MicroserviceProxyBean} instances.
     */
-   private List<MicroserviceProxyBean> microserviceProxyBeans = new ArrayList<>();
+   private final List<MicroserviceProxyBean> microserviceProxyBeans = new ArrayList<>();
 
-   public MicroservicesCDIExtension(final Context context, final RestInterface restInterface) {
+   public MicroservicesCDIExtension(final Context context) {
       this.context = context;
-      this.restInterface = restInterface;
    }
 
    /**
@@ -97,7 +90,7 @@ public class MicroservicesCDIExtension implements Extension {
     * @param beforeEvent CDI Event instance.
     * @param beanManager CDI Bean Manager instance.
     */
-   public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeEvent, BeanManager beanManager) {
+   public void beforeBeanDiscovery(@Observes final BeforeBeanDiscovery beforeEvent, final BeanManager beanManager) {
       if (log.isDebugEnabled()) {
          log.debug("CDI Bean discovery process started.");
       }
@@ -116,20 +109,16 @@ public class MicroservicesCDIExtension implements Extension {
       if (bean.getBeanClass().isAnnotationPresent(Microservice.class)) {
          // we do not want to register the injection points
          if (bean.getQualifiers().stream().filter(qualifier -> qualifier.annotationType().isAssignableFrom(MicroserviceReference.class)).count() == 0) {
-            Microservice annotation = bean.getBeanClass().getAnnotation(Microservice.class);
+            final Microservice annotation = bean.getBeanClass().getAnnotation(Microservice.class);
             final String microserviceName = annotation.value().length() > 0 ? annotation.value() : bean.getBeanClass().getSimpleName();
 
-            context.registerMicroservice(getMicroserviceMetaData(microserviceName, bean));
-
-            if (bean.getBeanClass().isAnnotationPresent(Gateway.class)) {
-               restInterface.registerGateway(microserviceName, bean);
-            }
+            this.context.registerMicroservice(getMicroserviceMetaData(microserviceName, bean));
          }
       }
 
       // Create proxies for the corresponding injection points
       final Set<InjectionPoint> injectionPoints = bean.getInjectionPoints();
-      for (InjectionPoint injectionPoint : injectionPoints) {
+      for (final InjectionPoint injectionPoint : injectionPoints) {
          final Set<Annotation> annotations = injectionPoint.getAnnotated().getAnnotations();
          injectionPoint.getQualifiers().stream().filter(qualifier -> MicroserviceReference.class.isAssignableFrom(qualifier.annotationType())).forEach(qualifier -> {
             final Member member = injectionPoint.getMember();
@@ -138,15 +127,15 @@ public class MicroservicesCDIExtension implements Extension {
                   log.trace("Creating proxy bean for injection point: " + injectionPoint.toString());
                }
                addInjectableClientProxyBean((Field) member, (MicroserviceReference) qualifier, preProcessQualifiers(injectionPoint.getQualifiers()), annotations, beanManager);
-               injectionPointsCount = injectionPointsCount + 1;
+               this.injectionPointsCount = this.injectionPointsCount + 1;
             }
          });
       }
    }
 
    private Set<Annotation> preProcessQualifiers(final Set<Annotation> qualifiers) {
-      Set<Annotation> processed = new HashSet<>(qualifiers);
-      List<String> current = qualifiers.stream().map(q -> q.annotationType().getName()).collect(Collectors.toList());
+      final Set<Annotation> processed = new HashSet<>(qualifiers);
+      final List<String> current = qualifiers.stream().map(q -> q.annotationType().getName()).collect(Collectors.toList());
 
 
       if (!current.contains(Any.class.getName())) {
@@ -169,7 +158,7 @@ public class MicroservicesCDIExtension implements Extension {
    public void afterBeanDiscovery(@Observes final AfterBeanDiscovery afterEvent) {
       afterEvent.addContext(new MicroserviceContext());
 
-      microserviceProxyBeans.forEach(proxyBean -> {
+      this.microserviceProxyBeans.forEach(proxyBean -> {
          if (log.isTraceEnabled()) {
             log.trace(String.format("Registering client proxy bean for bean service %s. Microservice type is %s.", proxyBean.getMicroserviceName(), proxyBean.getServiceInterface().getName()));
          }
@@ -202,10 +191,10 @@ public class MicroservicesCDIExtension implements Extension {
 
    private void addClientProxyBean(final String microserviceName, final Class<?> beanClass, final Set<Annotation> qualifiers, final Set<Annotation> annotations) {
       // Do we already have a proxy with this service name and type?
-      for (MicroserviceProxyBean microserviceProxyBean : microserviceProxyBeans) {
+      for (final MicroserviceProxyBean microserviceProxyBean : this.microserviceProxyBeans) {
          if (microserviceName.equals(microserviceProxyBean.getMicroserviceName()) && beanClass == microserviceProxyBean.getBeanClass()) {
-            List<String> required = qualifiers.stream().map(q -> q.annotationType().getCanonicalName()).collect(Collectors.toList());
-            List<String> available = microserviceProxyBean.getQualifiers().stream().map(q -> q.annotationType().getCanonicalName()).collect(Collectors.toList());
+            final List<String> required = qualifiers.stream().map(q -> q.annotationType().getCanonicalName()).collect(Collectors.toList());
+            final List<String> available = microserviceProxyBean.getQualifiers().stream().map(q -> q.annotationType().getCanonicalName()).collect(Collectors.toList());
 
             required.forEach(available::remove);
 
@@ -217,8 +206,8 @@ public class MicroservicesCDIExtension implements Extension {
       }
 
       // No, we don't. Give us one please!
-      final MicroserviceProxyBean microserviceProxyBean = new MicroserviceProxyBean(microserviceName, beanClass, qualifiers, annotations, context);
-      microserviceProxyBeans.add(microserviceProxyBean);
+      final MicroserviceProxyBean microserviceProxyBean = new MicroserviceProxyBean(microserviceName, beanClass, qualifiers, annotations, this.context);
+      this.microserviceProxyBeans.add(microserviceProxyBean);
    }
 
    /**
@@ -227,7 +216,7 @@ public class MicroservicesCDIExtension implements Extension {
     * @return The number of discovered injection points.
     */
    public long getInjectionPointsCount() {
-      return injectionPointsCount;
+      return this.injectionPointsCount;
    }
 
    /**

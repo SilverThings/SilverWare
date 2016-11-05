@@ -31,7 +31,6 @@ import io.silverware.microservices.providers.cdi.builtin.Storage;
 import io.silverware.microservices.providers.cdi.internal.MicroserviceProxyBean;
 import io.silverware.microservices.providers.cdi.internal.MicroservicesCDIExtension;
 import io.silverware.microservices.providers.cdi.internal.MicroservicesInitEvent;
-import io.silverware.microservices.providers.cdi.internal.RestInterface;
 import io.silverware.microservices.silver.CdiSilverService;
 import io.silverware.microservices.util.Utils;
 import io.silverware.microservices.util.VersionComparator;
@@ -60,6 +59,8 @@ import javax.interceptor.InvocationContext;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ *         Changes in version resolution in lookupMicroservice
+ * @author Slavomir Krupa (slavomir.krupa@gmail.com)
  */
 public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverService {
 
@@ -82,12 +83,12 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
    @Override
    public Context getContext() {
-      return context;
+      return this.context;
    }
 
    @Override
    public boolean isDeployed() {
-      return deployed;
+      return this.deployed;
    }
 
    @Override
@@ -96,49 +97,44 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
          log.info("Hello from CDI microservice provider!");
 
          final Weld weld = new Weld();
-         final RestInterface rest = new RestInterface(context);
-         final MicroservicesCDIExtension microservicesCDIExtension = new MicroservicesCDIExtension(context, rest);
+         final MicroservicesCDIExtension microservicesCDIExtension = new MicroservicesCDIExtension(this.context);
          System.setProperty("org.jboss.weld.se.archive.isolation", "false");
          weld.addExtension(microservicesCDIExtension);
 
          final WeldContainer container = weld.initialize();
-         context.getProperties().put(BEAN_MANAGER, container.getBeanManager());
-         context.getProperties().put(CDI_CONTAINER, container);
-         context.getProperties().put(Storage.STORAGE, new HashMap<String, Object>());
+         this.context.getProperties().put(BEAN_MANAGER, container.getBeanManager());
+         this.context.getProperties().put(CDI_CONTAINER, container);
+         this.context.getProperties().put(Storage.STORAGE, new HashMap<String, Object>());
 
          log.info("Discovered the following microservice implementations:");
-         context.getMicroservices().forEach(metaData -> log.info((" - " + metaData.toString())));
+         this.context.getMicroservices().forEach(metaData -> log.info((" - " + metaData.toString())));
 
          log.info("Total count of discovered microservice injection points: " + microservicesCDIExtension.getInjectionPointsCount());
+         this.deployed = true;
 
-         log.info("Deploying REST gateway services.");
-         rest.deploy();
-
-         deployed = true;
-
-         container.event().select(MicroservicesInitEvent.class).fire(new MicroservicesInitEvent(context, container.getBeanManager(), container));
-         container.event().select(MicroservicesStartedEvent.class).fire(new MicroservicesStartedEvent(context, container.getBeanManager(), container));
+         container.event().select(MicroservicesInitEvent.class).fire(new MicroservicesInitEvent(this.context, container.getBeanManager(), container));
+         container.event().select(MicroservicesStartedEvent.class).fire(new MicroservicesStartedEvent(this.context, container.getBeanManager(), container));
 
          try {
             while (!Thread.currentThread().isInterrupted()) {
                Thread.sleep(1000);
             }
-         } catch (InterruptedException ie) {
+         } catch (final InterruptedException ie) {
             Utils.shutdownLog(log, ie);
          } finally {
-            deployed = false;
-            rest.undeploy();
+            this.deployed = false;
             try {
                weld.shutdown();
-            } catch (IllegalStateException e) {
+            } catch (final IllegalStateException e) {
                // nothing, this is just fine, weld was already terminated
             }
          }
-      } catch (Exception e) {
+      } catch (final Exception e) {
          log.error("CDI microservice provider failed: ", e);
       }
    }
 
+   @Override
    @SuppressWarnings("checkstyle:JavadocMethod")
    public Set<Object> lookupMicroservice(final MicroserviceMetaData microserviceMetaData) {
       // name can not be null - contract of MicroserviceMetaData
@@ -162,9 +158,9 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
          In all cases, there must be precisely one result or an error is thrown.
        */
 
-      final BeanManager beanManager = ((BeanManager) context.getProperties().get(BEAN_MANAGER));
-      Set<Bean<?>> beans = beanManager.getBeans(type, qualifiers.toArray(new Annotation[qualifiers.size()]));
-      for (Bean<?> bean : beans) {
+      final BeanManager beanManager = ((BeanManager) this.context.getProperties().get(BEAN_MANAGER));
+      final Set<Bean<?>> beans = beanManager.getBeans(type, qualifiers.toArray(new Annotation[qualifiers.size()]));
+      for (final Bean<?> bean : beans) {
          if (bean.getBeanClass().isAnnotationPresent(Microservice.class) && !(bean instanceof MicroserviceProxyBean)) {
             final Bean<?> theBean = beanManager.resolve(Collections.singleton(bean));
 
@@ -233,17 +229,17 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
    }
 
    public <T> T lookupBean(final Class<T> type) {
-      return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(type).get();
+      return ((WeldContainer) this.context.getProperties().get(CDI_CONTAINER)).instance().select(type).get();
    }
 
    @Override
-   public <T> T findByType(Class<T> type) {
-      BeanManager beanManager = (BeanManager) context.getProperties().get(BEAN_MANAGER);
-      Set<T> beans = new HashSet<>();
-      Set<Bean<?>> definitions = beanManager.getBeans(type);
-      Bean<?> bean = beanManager.resolve(definitions);
-      CreationalContext<?> creationalContext = beanManager.createCreationalContext(bean);
-      Object result = beanManager.getReference(bean, type, creationalContext);
+   public <T> T findByType(final Class<T> type) {
+      final BeanManager beanManager = (BeanManager) this.context.getProperties().get(BEAN_MANAGER);
+      final Set<T> beans = new HashSet<>();
+      final Set<Bean<?>> definitions = beanManager.getBeans(type);
+      final Bean<?> bean = beanManager.resolve(definitions);
+      final CreationalContext<?> creationalContext = beanManager.createCreationalContext(bean);
+      final Object result = beanManager.getReference(bean, type, creationalContext);
 
       return result == null ? null : type.cast(result);
    }
@@ -258,7 +254,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
       @Override
       public String value() {
-         return name;
+         return this.name;
       }
    }
 
@@ -283,10 +279,10 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
       @Override
       public Object getProperty(final String propertyName) {
-         return context.getProperties().get(propertyName);
+         return this.context.getProperties().get(propertyName);
       }
 
-      public void eventObserver(@Observes MicroservicesInitEvent event) {
+      public void eventObserver(@Observes final MicroservicesInitEvent event) {
          this.context = event.getContext();
       }
    }
@@ -298,7 +294,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       private Context context;
 
       private Map<String, Object> getStorage() {
-         return (Map<String, Object>) context.getProperties().get(STORAGE);
+         return (Map<String, Object>) this.context.getProperties().get(STORAGE);
       }
 
       @Override
@@ -316,7 +312,7 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
          return getStorage().remove(key) != null;
       }
 
-      public void eventObserver(@Observes MicroservicesInitEvent event) {
+      public void eventObserver(@Observes final MicroservicesInitEvent event) {
          this.context = event.getContext();
       }
    }
@@ -329,10 +325,10 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
 
       @Override
       public Context getContext() {
-         return context;
+         return this.context;
       }
 
-      public void eventObserver(@Observes MicroservicesInitEvent event) {
+      public void eventObserver(@Observes final MicroservicesInitEvent event) {
          this.context = event.getContext();
       }
    }

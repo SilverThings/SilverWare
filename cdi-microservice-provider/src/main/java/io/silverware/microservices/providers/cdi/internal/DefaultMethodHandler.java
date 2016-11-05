@@ -48,6 +48,7 @@ public class DefaultMethodHandler extends MicroserviceMethodHandler {
 
    protected DefaultMethodHandler(final MicroserviceProxyBean proxyBean) throws Exception {
       this.proxyBean = proxyBean;
+
       final Set<Annotation> qualifiers = proxyBean.getQualifiers().stream().filter(qualifier -> !qualifier.annotationType().getName().equals(MicroserviceReference.class.getName())).collect(Collectors.toSet());
       final MicroserviceMetaData metaData = VersionResolver.createMicroserviceMetadata(proxyBean.getMicroserviceName(), proxyBean.getServiceInterface(), qualifiers, proxyBean.getAnnotations());
 

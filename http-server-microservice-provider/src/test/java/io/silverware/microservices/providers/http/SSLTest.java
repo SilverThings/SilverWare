@@ -1,11 +1,32 @@
+/*
+ * -----------------------------------------------------------------------\
+ * SilverWare
+ *  
+ * Copyright (C) 2014 - 2016 the original author or authors.
+ *  
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * -----------------------------------------------------------------------/
+ */
 package io.silverware.microservices.providers.http;
 
-import io.silverware.microservices.annotations.Microservice;
-import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
-import io.silverware.microservices.silver.HttpServerSilverService;
-import io.silverware.microservices.util.BootUtil;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -13,12 +34,11 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import io.silverware.microservices.annotations.Microservice;
+import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
+import io.silverware.microservices.silver.HttpServerSilverService;
+import io.silverware.microservices.util.BootUtil;
 
 public class SSLTest {
    private static final String CLIENT_KEY_STORE = "silverware-client.keystore";
@@ -33,8 +53,8 @@ public class SSLTest {
       platformProperties.put(HttpServerSilverService.HTTP_SERVER_SSL_ENABLED, "true");
 
       final Thread platform = bootUtil.getMicroservicePlatform(
-              this.getClass().getPackage().getName(),
-              CdiMicroserviceProvider.class.getPackage().getName());
+            this.getClass().getPackage().getName(),
+            CdiMicroserviceProvider.class.getPackage().getName());
       platform.start();
 
       while (bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.BEAN_MANAGER) == null) {
@@ -42,11 +62,11 @@ public class SSLTest {
       }
 
       final Client client = ClientBuilder
-              .newBuilder()
-              .sslContext(
-                      new SSLContextFactory(CLIENT_KEY_STORE, STORE_PASSWORD, CLIENT_TRUST_STORE, STORE_PASSWORD)
-                              .createSSLContext())
-              .build();
+            .newBuilder()
+            .sslContext(
+                  new SSLContextFactory(CLIENT_KEY_STORE, STORE_PASSWORD, CLIENT_TRUST_STORE, STORE_PASSWORD)
+                        .createSSLContext())
+            .build();
       verifyResult(platformProperties, platform, client);
    }
 
@@ -58,21 +78,21 @@ public class SSLTest {
       platformProperties.put(HttpServerSilverService.HTTP_SERVER_PORT, 8282);
       platformProperties.put(HttpServerSilverService.HTTP_SERVER_SSL_ENABLED, "true");
       platformProperties.put(
-              HttpServerSilverService.HTTP_SERVER_KEY_STORE,
-              getCorrectPaht("/" + HttpServerSilverService.DEFAULT_SSL_KEYSTORE));
+            HttpServerSilverService.HTTP_SERVER_KEY_STORE,
+            getCorrectPaht("/" + HttpServerSilverService.DEFAULT_SSL_KEYSTORE));
       platformProperties.put(
-              HttpServerSilverService.HTTP_SERVER_KEY_STORE_PASSWORD,
-              HttpServerSilverService.DEFAULT_SSL_STORE_PASSWORD);
+            HttpServerSilverService.HTTP_SERVER_KEY_STORE_PASSWORD,
+            HttpServerSilverService.DEFAULT_SSL_STORE_PASSWORD);
       platformProperties.put(
-              HttpServerSilverService.HTTP_SERVER_TRUST_STORE,
-              getCorrectPaht("/" + HttpServerSilverService.DEFAULT_SSL_TRUSTSTORE));
+            HttpServerSilverService.HTTP_SERVER_TRUST_STORE,
+            getCorrectPaht("/" + HttpServerSilverService.DEFAULT_SSL_TRUSTSTORE));
       platformProperties.put(
-              HttpServerSilverService.HTTP_SERVER_TRUST_STORE_PASSWORD,
-              HttpServerSilverService.DEFAULT_SSL_STORE_PASSWORD);
+            HttpServerSilverService.HTTP_SERVER_TRUST_STORE_PASSWORD,
+            HttpServerSilverService.DEFAULT_SSL_STORE_PASSWORD);
 
       final Thread platform = bootUtil.getMicroservicePlatform(
-              this.getClass().getPackage().getName(),
-              CdiMicroserviceProvider.class.getPackage().getName());
+            this.getClass().getPackage().getName(),
+            CdiMicroserviceProvider.class.getPackage().getName());
       platform.start();
 
       while (bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.BEAN_MANAGER) == null) {
@@ -80,17 +100,16 @@ public class SSLTest {
       }
 
       final Client client = ClientBuilder
-              .newBuilder()
-              .sslContext(
-                      new SSLContextFactory(CLIENT_KEY_STORE, STORE_PASSWORD, CLIENT_TRUST_STORE, STORE_PASSWORD)
-                              .createSSLContext())
-              .build();
+            .newBuilder()
+            .sslContext(
+                  new SSLContextFactory(CLIENT_KEY_STORE, STORE_PASSWORD, CLIENT_TRUST_STORE, STORE_PASSWORD)
+                        .createSSLContext())
+            .build();
       verifyResult(platformProperties, platform, client);
    }
 
-
-   String getCorrectPaht(String path) throws URISyntaxException {
-      URI uri = getClass().getResource(path).toURI();
+   String getCorrectPaht(final String path) throws URISyntaxException {
+      final URI uri = getClass().getResource(path).toURI();
       return new File(uri).getAbsolutePath();
    }
 
@@ -101,19 +120,19 @@ public class SSLTest {
       platformProperties.put(HttpServerSilverService.HTTP_SERVER_PORT, 8282);
       platformProperties.put(HttpServerSilverService.HTTP_SERVER_SSL_ENABLED, "true");
       platformProperties
-              .put(HttpServerSilverService.HTTP_SERVER_KEY_STORE, HttpServerSilverService.DEFAULT_SSL_KEYSTORE);
+            .put(HttpServerSilverService.HTTP_SERVER_KEY_STORE, HttpServerSilverService.DEFAULT_SSL_KEYSTORE);
       platformProperties.put(
-              HttpServerSilverService.HTTP_SERVER_KEY_STORE_PASSWORD,
-              HttpServerSilverService.DEFAULT_SSL_STORE_PASSWORD);
+            HttpServerSilverService.HTTP_SERVER_KEY_STORE_PASSWORD,
+            HttpServerSilverService.DEFAULT_SSL_STORE_PASSWORD);
       platformProperties
-              .put(HttpServerSilverService.HTTP_SERVER_TRUST_STORE, HttpServerSilverService.DEFAULT_SSL_TRUSTSTORE);
+            .put(HttpServerSilverService.HTTP_SERVER_TRUST_STORE, HttpServerSilverService.DEFAULT_SSL_TRUSTSTORE);
       platformProperties.put(
-              HttpServerSilverService.HTTP_SERVER_TRUST_STORE_PASSWORD,
-              HttpServerSilverService.DEFAULT_SSL_STORE_PASSWORD);
+            HttpServerSilverService.HTTP_SERVER_TRUST_STORE_PASSWORD,
+            HttpServerSilverService.DEFAULT_SSL_STORE_PASSWORD);
 
       final Thread platform = bootUtil.getMicroservicePlatform(
-              this.getClass().getPackage().getName(),
-              CdiMicroserviceProvider.class.getPackage().getName());
+            this.getClass().getPackage().getName(),
+            CdiMicroserviceProvider.class.getPackage().getName());
       platform.start();
 
       while (bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.BEAN_MANAGER) == null) {
@@ -121,25 +140,25 @@ public class SSLTest {
       }
 
       final Client client = ClientBuilder
-              .newBuilder()
-              .sslContext(
-                      new SSLContextFactory(CLIENT_KEY_STORE, STORE_PASSWORD, CLIENT_TRUST_STORE, STORE_PASSWORD)
-                              .createSSLContext())
-              .build();
+            .newBuilder()
+            .sslContext(
+                  new SSLContextFactory(CLIENT_KEY_STORE, STORE_PASSWORD, CLIENT_TRUST_STORE, STORE_PASSWORD)
+                        .createSSLContext())
+            .build();
       verifyResult(platformProperties, platform, client);
    }
 
-
-   private void verifyResult(Map<String, Object> platformProperties, Thread platform, Client client) throws InterruptedException {
+   private void verifyResult(final Map<String, Object> platformProperties, final Thread platform, final Client client)
+         throws InterruptedException {
       try {
          Thread.sleep(100);
          assertThat(client
-                 .target(new SilverWareURI(platformProperties).httpsREST() + "/sslservice/hello")
-                 .request(MediaType.TEXT_PLAIN)
-                 .get()
-                 .readEntity(String.class))
-                 .as("Rest microservice should return 'Hello from SSL.")
-                 .isEqualTo("Hello from SSL.");
+               .target(new SilverWareURI(platformProperties).httpsREST() + "/sslservice/hello")
+               .request(MediaType.TEXT_PLAIN)
+               .get()
+               .readEntity(String.class))
+               .as("Rest microservice should return 'Hello from SSL.")
+               .isEqualTo("Hello from SSL.");
       } finally {
          client.close();
          platform.interrupt();

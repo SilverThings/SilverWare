@@ -19,14 +19,14 @@
  */
 package io.silverware.microservices.providers.http;
 
-import io.silverware.microservices.silver.HttpServerSilverService;
-
 import java.util.Map;
+
+import io.silverware.microservices.silver.HttpServerSilverService;
 
 /**
  * SilverWare URI class to obtain SilverWare URI's built from global properties.
  *
- * @author Radek Koubsky (radek.koubsky@gmail.com)
+ * @author Radek Koubsky (radekkoubsky@gmail.com)
  */
 public class SilverWareURI {
    static final String HTTP = "http://";
@@ -36,7 +36,8 @@ public class SilverWareURI {
    /**
     * Ctor.
     *
-    * @param properties global properties
+    * @param properties
+    *       global properties
     */
    public SilverWareURI(final Map<String, Object> properties) {
       this.properties = properties;
@@ -50,9 +51,9 @@ public class SilverWareURI {
    private String rest() {
       return new StringBuilder(
             String.valueOf(this.properties.get(HttpServerSilverService.HTTP_SERVER_REST_CONTEXT_PATH)))
-                  .append("/")
-                  .append(this.properties.get(HttpServerSilverService.HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX))
-                  .toString();
+            .append("/")
+            .append(this.properties.get(HttpServerSilverService.HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX))
+            .toString();
    }
 
    /**
