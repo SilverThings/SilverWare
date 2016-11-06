@@ -76,6 +76,7 @@
       <version.jmockit>1.8</version.jmockit>
       <version.assertj>3.5.2</version.assertj>
       <version.org.jboss.resteasy>3.0.17.Final</version.org.jboss.resteasy>
+      <version.sem.ver>2.0.1</version.sem.ver>
       <java.level>1.8</java.level>
    </properties>
    <dependencyManagement>
@@ -349,6 +350,11 @@
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
             <version>${version.org.jboss.resteasy}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.vdurmont</groupId>
+            <artifactId>semver4j</artifactId>
+            <version>${version.sem.ver}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

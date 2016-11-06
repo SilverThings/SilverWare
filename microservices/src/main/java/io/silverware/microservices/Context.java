@@ -25,6 +25,7 @@ import io.silverware.microservices.silver.ProvidingSilverService;
 import io.silverware.microservices.silver.SilverService;
 import io.silverware.microservices.silver.cluster.LocalServiceHandle;
 import io.silverware.microservices.silver.cluster.RemoteServiceHandlesStore;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -204,7 +205,7 @@ public class Context {
     * @return A list of {@link LocalServiceHandle Service Handles} that meet the specified query.
     */
    public List<LocalServiceHandle> assureHandles(final MicroserviceMetaData metaData) {
-      List<LocalServiceHandle> result = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getQuery().equals(metaData)).collect(Collectors.toList());
+      List<LocalServiceHandle> result = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getMetaData().equals(metaData)).collect(Collectors.toList());
       Set<Object> microservices = lookupLocalMicroservice(metaData);
       Set<Object> haveHandles = result.stream().map(LocalServiceHandle::getProxy).collect(Collectors.toSet());
       microservices.removeAll(haveHandles);

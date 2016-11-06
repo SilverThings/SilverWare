@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2010 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,9 @@
  */
 package io.silverware.microservices.providers.cluster.internal;
 
-import mockit.Capturing;
-import mockit.Deencapsulation;
-import mockit.Expectations;
-import mockit.Verifications;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.jgroups.Address;
 import org.jgroups.Message;
 import org.jgroups.blocks.MessageDispatcher;
@@ -37,13 +34,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import mockit.Capturing;
+import mockit.Deencapsulation;
+import mockit.Expectations;
+import mockit.Verifications;
+
 /**
  * Test for JgroupsMessageSender
  *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
 public class JgroupsMessageSenderTest {
-
 
    @Capturing
    private MessageDispatcher dispatcher;
@@ -64,7 +65,7 @@ public class JgroupsMessageSenderTest {
    @Test
    public void testSendToClusterSync() throws Exception {
       new Expectations(jgroupsMessageSender) {{
-         Deencapsulation.invoke(jgroupsMessageSender, "getMembersAdresses");
+         Deencapsulation.invoke(jgroupsMessageSender, "getMembersAddresses");
          result = Collections.emptyList();
       }};
       String id = UUID.randomUUID().toString();
@@ -111,6 +112,5 @@ public class JgroupsMessageSenderTest {
       }};
 
    }
-
 
 }

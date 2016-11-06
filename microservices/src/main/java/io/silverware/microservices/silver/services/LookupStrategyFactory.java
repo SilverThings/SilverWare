@@ -23,6 +23,7 @@ import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.InvocationPolicy;
 import io.silverware.microservices.silver.services.lookup.RandomRobinLookupStrategy;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,7 +39,7 @@ public class LookupStrategyFactory {
    /**
     * Logger.
     */
-   private static Logger log = LogManager.getLogger(LookupStrategyFactory.class);
+   private static final Logger log = LogManager.getLogger(LookupStrategyFactory.class);
 
    /**
     * Returns strategy based on given parameters
@@ -68,7 +69,6 @@ public class LookupStrategyFactory {
       }
 
       if (strategy == null) {
-         // TODO: 9/9/16 this should be discussed
          strategy = new RandomRobinLookupStrategy();
          strategy.initialize(context, metaData, options);
       }

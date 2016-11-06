@@ -70,7 +70,7 @@ public class RemoteServiceHandlesStore {
    /**
     * Removes all handles which are not mentioned in available nodes
     *
-    * @param availableNodes adresses of available nodes
+    * @param availableNodes addresses of available nodes
     */
    public void keepHandlesFor(Set<String> availableNodes) {
       outboundHandles.forEach((metaData, serviceHandles) -> {

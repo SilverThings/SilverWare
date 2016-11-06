@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2010 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ public enum KnownImplementation {
    MICROSERVICE_REMOTE_CALL(MicroserviceRemoteCallResponse.class, MicroserviceRemoteCallRequest.class, MicroServiceRemoteCallResponder.class, MicroServiceRemoteCallResponder::new),
    MICROSERVICE_REMOTE_SEARCH(MicroserviceSearchResponse.class, MicroserviceMetaData.class, MicroserviceSearchResponder.class, MicroserviceSearchResponder::new);
 
-
    private final Class responseClass;
    private final Class messageClass;
    private final Class responderClass;
@@ -68,7 +67,6 @@ public enum KnownImplementation {
    public Class getResponderClass() {
       return responderClass;
    }
-
 
    public static Map<Class, Responder> initializeReponders(Context context) {
       return KNOWN_IMPLEMENTATIONS.stream().collect(Collectors.toMap(KnownImplementation::getMessageClass, v -> v.responderFactory.apply(context)));

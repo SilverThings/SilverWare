@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2010 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,14 @@
  */
 package io.silverware.microservices.providers.cluster.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.providers.cluster.Util;
 import io.silverware.microservices.silver.cluster.LocalServiceHandle;
 import io.silverware.microservices.silver.cluster.RemoteServiceHandlesStore;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
+
 import org.testng.annotations.Test;
 
 import java.lang.annotation.Annotation;
@@ -31,20 +34,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Basic Unit tests for remote handles store
  *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
 public class RemoteServiceHandleStoreTest {
+   private static final String VERSION = "1.0.0";
 
    private static final Set<Annotation> ANNOTATIONS = new HashSet<>(Arrays.asList(RemoteServiceHandleStoreTest.class.getClass().getAnnotations()));
 
-   public static final MicroserviceMetaData META_DATA = new MicroserviceMetaData(RemoteServiceHandleStoreTest.class.getName(), RemoteServiceHandleStoreTest.class, ANNOTATIONS, ANNOTATIONS);
+   public static final MicroserviceMetaData META_DATA = new MicroserviceMetaData(RemoteServiceHandleStoreTest.class.getName(), RemoteServiceHandleStoreTest.class, ANNOTATIONS, ANNOTATIONS, VERSION, VERSION);
    public static final LocalServiceHandle SERVICE_HANDLE = Util.createHandle("host");
-
 
    @Test
    public void addSingleHandle() {

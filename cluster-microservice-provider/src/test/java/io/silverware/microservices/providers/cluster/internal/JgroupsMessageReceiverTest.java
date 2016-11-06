@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2010 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@
  */
 package io.silverware.microservices.providers.cluster.internal;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException;
 import io.silverware.microservices.providers.cluster.internal.message.responder.Responder;
 import io.silverware.microservices.silver.cluster.RemoteServiceHandlesStore;
-import mockit.Capturing;
-import mockit.Verifications;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.jgroups.Message;
 import org.jgroups.blocks.MessageDispatcher;
 import org.testng.annotations.BeforeMethod;
@@ -32,6 +32,9 @@ import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.UUID;
+
+import mockit.Capturing;
+import mockit.Verifications;
 
 /**
  * Test for a receiver
@@ -53,7 +56,6 @@ public class JgroupsMessageReceiverTest {
 
    @BeforeMethod
    public void setUp() throws Exception {
-
 
    }
 
@@ -77,7 +79,6 @@ public class JgroupsMessageReceiverTest {
          times = 0;
       }};
    }
-
 
    @Test
    public void testReceiveWithUnknownClassThrowsException() throws Exception {
