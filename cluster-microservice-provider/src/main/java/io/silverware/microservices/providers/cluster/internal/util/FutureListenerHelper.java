@@ -17,9 +17,10 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.providers.cluster.internal;
+package io.silverware.microservices.providers.cluster.internal.util;
 
 import io.silverware.microservices.providers.cluster.internal.message.response.MicroserviceSearchResponse;
+
 import org.jgroups.util.FutureListener;
 import org.jgroups.util.RspList;
 
@@ -33,7 +34,7 @@ import java.util.function.Consumer;
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
 public class FutureListenerHelper<T> implements FutureListener<RspList<MicroserviceSearchResponse>> {
-   private Consumer<Future<RspList<MicroserviceSearchResponse>>> consumer;
+   private final Consumer<Future<RspList<MicroserviceSearchResponse>>> consumer;
 
    public FutureListenerHelper(Consumer<Future<RspList<MicroserviceSearchResponse>>> consumer) {
       this.consumer = consumer;

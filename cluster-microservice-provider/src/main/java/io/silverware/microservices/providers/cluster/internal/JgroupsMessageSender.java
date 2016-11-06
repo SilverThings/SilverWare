@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2010 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,8 @@ public class JgroupsMessageSender {
     */
    private static final Logger log = LogManager.getLogger(JgroupsMessageSender.class);
 
-
    private static final RequestOptions SYNC_OPTIONS = RequestOptions.SYNC();
    private static final RequestOptions ASYNC_OPTIONS = RequestOptions.ASYNC();
-
 
    private final MessageDispatcher dispatcher;
    private Set<Address> filteredAdresses;
@@ -62,13 +60,11 @@ public class JgroupsMessageSender {
       this.dispatcher = dispatcher;
    }
 
-   private Set<Address> getFilteredAdresses() {
+   private Set<Address> getFilteredAddresses() {
       if (this.filteredAdresses == null) {
          this.filteredAdresses = new HashSet<>();
          // add my address
          filteredAdresses.add(this.dispatcher.getChannel().getAddress());
-         // add cluster address
-         filteredAdresses.add(this.dispatcher.getChannel().getView().getCreator());
       }
       return this.filteredAdresses;
    }
@@ -76,22 +72,25 @@ public class JgroupsMessageSender {
    /**
     * Send multicast message to all nodes in cluster
     *
-    * @param content content of message
+    * @param content
+    *       content of message
     */
    public <T> RspList<T> sendToClusterSync(Serializable content) throws Exception {
-      return this.dispatcher.castMessage(getMembersAdresses(), new Message(null, content), SYNC_OPTIONS);
+      return this.dispatcher.castMessage(getMembersAddresses(), new Message(null, content), SYNC_OPTIONS);
    }
 
    /**
     * Send async multicast message to all nodes in cluster
     *
-    * @param content  content of message
-    * @param listener listener which will be called when result will be available
+    * @param content
+    *       content of message
+    * @param listener
+    *       listener which will be called when result will be available
     */
    public <T> void sendToClusterAsync(Serializable content, Set<Address> addressesToSkip, FutureListener<RspList<T>> listener) throws Exception {
-      List<Address> othertMembersAdresses = getOthertMembersAdresses().stream().filter(address -> !addressesToSkip.contains(address)).collect(Collectors.toList());
-      if (!othertMembersAdresses.isEmpty()) {
-         this.dispatcher.castMessageWithFuture(othertMembersAdresses, new Message(null, content), SYNC_OPTIONS, listener);
+      List<Address> otherMembersAddresses = getOtherMembersAddresses().stream().filter(address -> !addressesToSkip.contains(address)).collect(Collectors.toList());
+      if (!otherMembersAddresses.isEmpty()) {
+         this.dispatcher.castMessageWithFuture(otherMembersAddresses, new Message(null, content), SYNC_OPTIONS, listener);
       } else {
          if (log.isDebugEnabled()) {
             log.debug("No message sent.");
@@ -102,26 +101,29 @@ public class JgroupsMessageSender {
    /**
     * Send async multicast message to all nodes in cluster
     *
-    * @param content  content of message
-    * @param listener listener which will be called when result will be available
+    * @param content
+    *       content of message
+    * @param listener
+    *       listener which will be called when result will be available
     */
    public <T> void sendToClusterAsync(Serializable content, FutureListener<RspList<T>> listener) throws Exception {
       sendToClusterAsync(content, Collections.emptySet(), listener);
    }
 
-   private List<Address> getMembersAdresses() {
+   private List<Address> getMembersAddresses() {
       return this.dispatcher.getChannel().getView().getMembers();
    }
 
-   private List<Address> getOthertMembersAdresses() {
-      Set<Address> filteredAdresses = getFilteredAdresses();
-      return this.getMembersAdresses().stream().filter(address -> !filteredAdresses.contains(address)).collect(Collectors.toList());
+   private List<Address> getOtherMembersAddresses() {
+      Set<Address> filteredAddresses = getFilteredAddresses();
+      return this.getMembersAddresses().stream().filter(address -> !filteredAddresses.contains(address)).collect(Collectors.toList());
    }
 
    /**
     * Send unicast message for specific address
     *
-    * @param content content of message
+    * @param content
+    *       content of message
     */
    public void sendToAddressAsync(Address address, Serializable content) throws Exception {
       this.dispatcher.sendMessage(new Message(address, Util.objectToByteBuffer(content)), ASYNC_OPTIONS);
@@ -130,11 +132,11 @@ public class JgroupsMessageSender {
    /**
     * Send unicast message for specific address
     *
-    * @param content content of message
+    * @param content
+    *       content of message
     */
    public <T> T sendToAddressSync(Address address, Serializable content) throws Exception {
       return this.dispatcher.sendMessage(new Message(address, Util.objectToByteBuffer(content)), SYNC_OPTIONS);
    }
-
 
 }

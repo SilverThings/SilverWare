@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2010 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@ import org.jgroups.Message;
 /**
  * Interface specifying processor class for responses
  *
- * @param <R> response class
+ * @param <R>
+ *       response class
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
 public interface Responder<R> {

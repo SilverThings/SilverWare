@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2010 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,11 @@ public class MicroserviceSearchResponse implements Serializable {
     * This enum represents result of a search on a cluster
     */
    public enum Result {
-      FOUND(true), NOT_FOUND(false), WRONG_VESION(false);
+      FOUND(true),
+      NOT_FOUND(false),
+      WRONG_VERSION(false),
+      EXCEPTION_THROWN_DURING_LOOKUP(false),
+      MULTIPLE_IMPLEMENTATIONS_FOUND(false);
       private boolean usable;
 
       Result(boolean canBeUsed) {
@@ -45,6 +49,11 @@ public class MicroserviceSearchResponse implements Serializable {
 
    private final Integer handle;
    private final Result result;
+
+   public MicroserviceSearchResponse(final Result result) {
+      handle = null;
+      this.result = result;
+   }
 
    public MicroserviceSearchResponse(Integer handle, Result result) {
       this.handle = handle;

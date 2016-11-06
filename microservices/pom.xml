@@ -21,6 +21,15 @@
          <groupId>com.cedarsoftware</groupId>
          <artifactId>json-io</artifactId>
       </dependency>
+      <dependency>
+         <groupId>com.vdurmont</groupId>
+         <artifactId>semver4j</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.assertj</groupId>
+         <artifactId>assertj-core</artifactId>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
    <build>
       <plugins>

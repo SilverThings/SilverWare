@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2010 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,9 +74,9 @@ public class SilverWareClusteringException extends RuntimeException {
    @Override
    public String toString() {
       return "SilverWareClusteringException{" +
-              "reason=" + reason +
-              ", id=" + id +
-              ", super=" + super.toString() +
-              '}';
+            "reason=" + reason +
+            ", id=" + id +
+            ", super=" + super.toString() +
+            '}';
    }
 }

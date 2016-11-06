@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2010 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,36 +21,29 @@ package io.silverware.microservices.providers.cdi;
 
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
+import io.silverware.microservices.annotations.MicroserviceVersion;
 import io.silverware.microservices.util.BootUtil;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Specializes;
 import javax.inject.Inject;
-import javax.inject.Qualifier;
 
 /**
- * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ * Basic test for versioning.
+ *
+ * @author Slavomir Krupa (slavomir.krupa@gmail.com)
  */
-public class CdiMicroserviceProviderSpecializationTest {
-
-   private static final Logger log = LogManager.getLogger(CdiMicroserviceProviderSpecializationTest.class);
+public class CdiMicroserviceProviderVersionsTest {
 
    private static final Semaphore semaphore = new Semaphore(0);
    private static String result = "";
 
    @Test
-   public void testQualifiers() throws Exception {
+   public void testBasicVersionResolution() throws Exception {
       final BootUtil bootUtil = new BootUtil();
       final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName());
       platform.start();
@@ -58,60 +51,67 @@ public class CdiMicroserviceProviderSpecializationTest {
       CdiMicroserviceProviderTestUtil.waitForBeanManager(bootUtil);
 
       Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
-      Assert.assertEquals(result, "specialspecial");
+      Assert.assertEquals(result, "hello2bye1");
 
       platform.interrupt();
       platform.join();
    }
 
-   @Microservice
-   public static class TestSpecializationMicroservice {
+   @Microservice("basic")
+   public static class TestVersionMicroservice {
 
       @Inject
-      @Sharp
       @MicroserviceReference
-      private SpecializationMicro micro1;
+      private HelloVersion2 micro1;
 
       @Inject
-      @Sharp
       @MicroserviceReference
-      private SpecializationMicro micro2;
+      private ByeVersion1 micro2;
 
       public void eventObserver(@Observes MicroservicesStartedEvent event) {
          result += micro1.hello();
-         result += micro2.hello();
-
+         result += micro2.bye();
          semaphore.release();
       }
    }
 
-   public interface SpecializationMicro {
+   @MicroserviceVersion(api = "2.2.2")
+   public interface HelloVersion2 {
       String hello();
    }
 
-   @Sharp
+   @MicroserviceVersion(api = "1.1.1")
+   public interface ByeVersion1 {
+      String bye();
+   }
+
    @Microservice
-   public static class SpecializationMicroBean implements SpecializationMicro {
+   @MicroserviceVersion(implementation = "1.1.1")
+   public static class Version1MicroBean implements HelloVersion2, ByeVersion1 {
 
       @Override
       public String hello() {
-         return "normal";
+         return "hello1";
+      }
+
+      @Override
+      public String bye() {
+         return "bye1";
       }
    }
 
-   @Specializes
-   public static class MockSpecializationMicroBean extends SpecializationMicroBean {
+   @Microservice
+   @MicroserviceVersion(implementation = "2.2.2")
+   public static class Version2MicroBean implements HelloVersion2, ByeVersion1 {
 
       @Override
       public String hello() {
-         return "special";
+         return "hello2";
+      }
+
+      @Override
+      public String bye() {
+         return "bye2";
       }
    }
-
-   @Qualifier
-   @Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER })
-   @Retention(RetentionPolicy.RUNTIME)
-   public @interface Sharp {
-   }
-
 }

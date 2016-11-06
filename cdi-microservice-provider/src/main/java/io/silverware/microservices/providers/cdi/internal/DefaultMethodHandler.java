@@ -19,6 +19,12 @@
  */
 package io.silverware.microservices.providers.cdi.internal;
 
+import io.silverware.microservices.MicroserviceMetaData;
+import io.silverware.microservices.annotations.MicroserviceReference;
+import io.silverware.microservices.providers.cdi.util.VersionResolver;
+import io.silverware.microservices.silver.services.LookupStrategy;
+import io.silverware.microservices.silver.services.LookupStrategyFactory;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,11 +33,6 @@ import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Priority;
-
-import io.silverware.microservices.MicroserviceMetaData;
-import io.silverware.microservices.annotations.MicroserviceReference;
-import io.silverware.microservices.silver.services.LookupStrategy;
-import io.silverware.microservices.silver.services.LookupStrategyFactory;
 
 /**
  * Default microservice method handler which is invoked as the last one and makes an actual call on the service instance.
@@ -49,7 +50,7 @@ public class DefaultMethodHandler extends MicroserviceMethodHandler {
       this.proxyBean = proxyBean;
 
       final Set<Annotation> qualifiers = proxyBean.getQualifiers().stream().filter(qualifier -> !qualifier.annotationType().getName().equals(MicroserviceReference.class.getName())).collect(Collectors.toSet());
-      final MicroserviceMetaData metaData = new MicroserviceMetaData(proxyBean.getMicroserviceName(), proxyBean.getServiceInterface(), qualifiers, proxyBean.getAnnotations());
+      final MicroserviceMetaData metaData = VersionResolver.createMicroserviceMetadata(proxyBean.getMicroserviceName(), proxyBean.getServiceInterface(), qualifiers, proxyBean.getAnnotations());
 
       this.lookupStrategy = LookupStrategyFactory.getStrategy(proxyBean.getContext(), metaData, proxyBean.getAnnotations());
    }
