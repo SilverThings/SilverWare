@@ -19,6 +19,15 @@
  */
 package io.silverware.microservices.providers.http;
 
+import io.silverware.microservices.Context;
+import io.silverware.microservices.SilverWareException;
+import io.silverware.microservices.providers.MicroserviceProvider;
+import io.silverware.microservices.providers.http.resteasy.SilverwareResourceFactory;
+import io.silverware.microservices.silver.CdiSilverService;
+import io.silverware.microservices.silver.HttpServerSilverService;
+import io.silverware.microservices.silver.http.ServletDescriptor;
+import io.silverware.microservices.util.Utils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,19 +42,15 @@ import javax.net.ssl.SSLContext;
 import javax.servlet.Servlet;
 import javax.ws.rs.Path;
 
-import io.silverware.microservices.Context;
-import io.silverware.microservices.SilverWareException;
-import io.silverware.microservices.providers.MicroserviceProvider;
-import io.silverware.microservices.providers.http.resteasy.SilverwareResourceFactory;
-import io.silverware.microservices.silver.CdiSilverService;
-import io.silverware.microservices.silver.HttpServerSilverService;
-import io.silverware.microservices.silver.http.ServletDescriptor;
-import io.silverware.microservices.util.Utils;
 import io.undertow.Undertow;
 import io.undertow.Undertow.Builder;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.SecurityConstraint;
+import io.undertow.servlet.api.SecurityInfo;
 import io.undertow.servlet.api.ServletInfo;
+import io.undertow.servlet.api.TransportGuaranteeType;
+import io.undertow.servlet.api.WebResourceCollection;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -66,7 +71,7 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
       context.getProperties().putIfAbsent(HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX, "rest");
 
       if (Boolean.valueOf(String.valueOf(context.getProperties().get(HTTP_SERVER_SSL_ENABLED)))) {
-         log.info("Property 'silverware.http.server.ssl.enable' set to 'true', enabling SSL.");
+         log.info("Property 'silverware.http.server.ssl.enabled' set to 'true', enabling SSL.");
          this.sslEnabled = true;
          configureSSL();
       }
@@ -114,7 +119,7 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
                   String.valueOf(this.context.getProperties().get(HTTP_SERVER_ADDRESS)));
             if (this.sslEnabled) {
                builder.addHttpsListener(
-                     (int) this.context.getProperties().get(HTTPS_SERVER_PORT),
+                     sslPort(),
                      String.valueOf(this.context.getProperties().get(HTTP_SERVER_ADDRESS)),
                      sslContext());
             }
@@ -142,13 +147,20 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
       final ResteasyDeployment resteasyDeployment = new ResteasyDeployment();
       waitForCDIProvider();
       resteasyDeployment.setResourceFactories(resourceFactories());
-      return this.server
-            .undertowDeployment(
-                  resteasyDeployment,
-                  String.valueOf(this.context.getProperties().get(HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX)))
+      final DeploymentInfo deploymentInfo = this.server.undertowDeployment(resteasyDeployment,
+            String.valueOf(this.context.getProperties().get(HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX)))
             .setContextPath(String.valueOf(this.context.getProperties().get(HTTP_SERVER_REST_CONTEXT_PATH)))
             .setClassLoader(this.getClass().getClassLoader())
             .setDeploymentName("Silverware rest deployment");
+      if (this.sslEnabled) {
+         deploymentInfo
+               .addSecurityConstraint(new SecurityConstraint().addWebResourceCollection(new WebResourceCollection()
+                     .addUrlPattern("/*"))
+                     .setTransportGuaranteeType(TransportGuaranteeType.CONFIDENTIAL)
+                     .setEmptyRoleSemantic(SecurityInfo.EmptyRoleSemantic.PERMIT))
+               .setConfidentialPortManager(exchange -> sslPort());
+      }
+      return deploymentInfo;
    }
 
    /**
@@ -222,6 +234,10 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
 
    private String truststorePwd() {
       return readProperty(HTTP_SERVER_TRUST_STORE_PASSWORD);
+   }
+
+   private Integer sslPort() {
+      return Integer.parseInt(readProperty(HTTPS_SERVER_PORT));
    }
 
    private String readProperty(final String key) {
