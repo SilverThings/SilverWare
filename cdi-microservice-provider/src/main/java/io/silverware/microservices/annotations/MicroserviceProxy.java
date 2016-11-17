@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2016 the original author or authors.
+ * Copyright (C) 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@
 package io.silverware.microservices.annotations;
 
 import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Documented;
@@ -28,23 +31,26 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 /**
- * Microservice reference.
- *
- * Use this annotation, in conjunction with the {@link javax.inject.Inject}
- * annotation, to inject a reference to a Microservice.
- *
- * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ * Specifies which {@link io.silverware.microservices.providers.cdi.internal.MicroserviceProxyBean} is used for the given injection point.
  */
 @Qualifier
-@Target({ FIELD })
+@Target({ TYPE, FIELD, PARAMETER, METHOD })
 @Retention(RUNTIME)
 @Documented
-public @interface MicroserviceReference {
+public @interface MicroserviceProxy {
 
    /**
-    * Get the name of the Microservice that should be injected.
+    * The name of the microservice bean which is the proxy being injected into.
     *
-    * @return The name of the Microservice to be injected.
+    * @return microservice bean name
     */
-   String value() default "";
+   String beanName();
+
+   /**
+    * The field of the microservice bean which is the proxy being injected into.
+    *
+    * @return injected field name
+    */
+   String fieldName();
+
 }
