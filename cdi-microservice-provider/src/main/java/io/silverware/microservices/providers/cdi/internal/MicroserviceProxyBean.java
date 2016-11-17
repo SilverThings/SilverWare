@@ -20,16 +20,22 @@
 package io.silverware.microservices.providers.cdi.internal;
 
 import io.silverware.microservices.Context;
+import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.annotations.MicroserviceScoped;
+import io.silverware.microservices.providers.cdi.util.AnnotationUtil;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.enterprise.util.AnnotationLiteral;
 
 /**
  * Client Proxy CDI Bean.
@@ -63,38 +69,61 @@ public class MicroserviceProxyBean implements Bean {
    private final Set<Annotation> qualifiers;
 
    /**
-    * CDI bean annotations. Can specify invocation strategy, results caching etc.
+    * The dynamic proxy instance created from the supplied {@link #serviceInterface}.
     */
-   private final Set<Annotation> annotations;
+   private final Object proxy;
 
    /**
-    * The dynamic proxy bean instance created from the supplied {@link #serviceInterface}.
+    * The injection point for which this bean has been created.
     */
-   private final Object proxyBean;
+   private final InjectionPoint injectionPoint;
 
    /**
     * Public constructor.
     *
-    * @param microserviceName
-    *       The name of the ESB Service being proxied to.
-    * @param proxyInterface
-    *       The proxy Interface.
-    * @param qualifiers
-    *       The CDI bean qualifiers. Copied from the injection point.
-    * @param annotations
-    *       Annotations from the source code at tha injection point.
+    * @param injectionPoint
+    *       The injection point for which this bean has been created.
     * @param context
     *       SilverWare context in which we run.
     */
-   public MicroserviceProxyBean(final String microserviceName, final Class<?> proxyInterface, final Set<Annotation> qualifiers, final Set<Annotation> annotations, final Context context) {
-      this.microserviceName = microserviceName;
-      this.serviceInterface = proxyInterface;
+   public MicroserviceProxyBean(final InjectionPoint injectionPoint, final Context context) {
+      this.injectionPoint = injectionPoint;
       this.context = context;
 
-      this.qualifiers = new HashSet<>(qualifiers);
-      this.annotations = annotations;
+      this.serviceInterface = ((Field) injectionPoint.getMember()).getType();
+      this.microserviceName = createMicroserviceName();
 
-      proxyBean = MicroserviceProxyFactory.createProxy(this);
+      this.qualifiers = prepareQualifiers(injectionPoint);
+
+      proxy = MicroserviceProxyFactory.createProxy(this);
+   }
+
+   private String createMicroserviceName() {
+      final MicroserviceReference microserviceReference = AnnotationUtil.findAnnotation(injectionPoint.getQualifiers(), MicroserviceReference.class).get();
+
+      // try to use a user defined service name
+      return microserviceReference.value().isEmpty() ? toLowerCamelCase(serviceInterface.getSimpleName()) : microserviceReference.value();
+   }
+
+   private static String toLowerCamelCase(String upperCamelCase) {
+      return upperCamelCase.substring(0, 1).toLowerCase() + upperCamelCase.substring(1);
+   }
+
+   private static Set<Annotation> prepareQualifiers(final InjectionPoint injectionPoint) {
+      Set<Annotation> qualifiers = new HashSet<>(injectionPoint.getQualifiers());
+
+      if (!AnnotationUtil.containsAnnotation(qualifiers, Any.class)) {
+         qualifiers.add(new AnyAnnotationLiteral());
+      }
+
+      // add @Default if contains only @Any, @MicroserviceReference, and @MicroserviceProxy
+      if (qualifiers.size() < 4) {
+         qualifiers.add(new DefaultAnnotationLiteral());
+      }
+
+      qualifiers.add(new MicroserviceProxyAnnotationLiteral(injectionPoint));
+
+      return Collections.unmodifiableSet(qualifiers);
    }
 
    /**
@@ -135,7 +164,7 @@ public class MicroserviceProxyBean implements Bean {
    }
 
    public Set<Annotation> getAnnotations() {
-      return annotations;
+      return injectionPoint.getAnnotated().getAnnotations();
    }
 
    @Override
@@ -168,6 +197,10 @@ public class MicroserviceProxyBean implements Bean {
       return Collections.emptySet();
    }
 
+   public InjectionPoint getInjectionPoint() {
+      return injectionPoint;
+   }
+
    @Override
    public Class<? extends Annotation> getScope() {
       return MicroserviceScoped.class;
@@ -175,7 +208,7 @@ public class MicroserviceProxyBean implements Bean {
 
    @Override
    public Object create(final CreationalContext creationalContext) {
-      return proxyBean;
+      return proxy;
    }
 
    @Override
@@ -199,7 +232,22 @@ public class MicroserviceProxyBean implements Bean {
             ", context=" + context +
             ", serviceInterface=" + serviceInterface +
             ", qualifiers=" + qualifiers +
-            ", proxyBean=" + proxyBean +
+            ", proxy=" + proxy +
             '}';
    }
+
+   /**
+    * Annotation literal for type Any.
+    */
+   public static class AnyAnnotationLiteral extends AnnotationLiteral<Any> {
+
+   }
+
+   /**
+    * Annotation literal for type Default that can be serialized.
+    */
+   public static class DefaultAnnotationLiteral extends AnnotationLiteral<Default> {
+
+   }
+
 }

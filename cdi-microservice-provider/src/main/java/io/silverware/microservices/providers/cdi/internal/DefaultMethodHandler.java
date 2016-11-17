@@ -19,7 +19,10 @@
  */
 package io.silverware.microservices.providers.cdi.internal;
 
+import static io.silverware.microservices.providers.cdi.util.AnnotationUtil.matches;
+
 import io.silverware.microservices.MicroserviceMetaData;
+import io.silverware.microservices.annotations.MicroserviceProxy;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.providers.cdi.util.VersionResolver;
 import io.silverware.microservices.silver.services.LookupStrategy;
@@ -49,7 +52,10 @@ public class DefaultMethodHandler extends MicroserviceMethodHandler {
    protected DefaultMethodHandler(final MicroserviceProxyBean proxyBean) throws Exception {
       this.proxyBean = proxyBean;
 
-      final Set<Annotation> qualifiers = proxyBean.getQualifiers().stream().filter(qualifier -> !qualifier.annotationType().getName().equals(MicroserviceReference.class.getName())).collect(Collectors.toSet());
+      final Set<Annotation> qualifiers = proxyBean.getQualifiers().stream()
+                                                  .filter(qualifier -> !matches(qualifier, MicroserviceReference.class))
+                                                  .filter(qualifier -> !matches(qualifier, MicroserviceProxy.class))
+                                                  .collect(Collectors.toSet());
       final MicroserviceMetaData metaData = VersionResolver.createMicroserviceMetadata(proxyBean.getMicroserviceName(), proxyBean.getServiceInterface(), qualifiers, proxyBean.getAnnotations());
 
       this.lookupStrategy = LookupStrategyFactory.getStrategy(proxyBean.getContext(), metaData, proxyBean.getAnnotations());
