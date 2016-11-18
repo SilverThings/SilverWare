@@ -1,9 +1,9 @@
 /*
  * -----------------------------------------------------------------------\
  * SilverWare
- *  
+ *  
  * Copyright (C) 2010 - 2016 the original author or authors.
- *  
+ *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,20 +17,28 @@
  * limitations under the License.
  * -----------------------------------------------------------------------/
  */
-package io.silverware.microservices.silver.services;
+package io.silverware.microservices.silver.services.lookup;
 
-import io.silverware.microservices.Context;
-import io.silverware.microservices.MicroserviceMetaData;
-
-import java.lang.annotation.Annotation;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ * Round robin choose which implementation is used in circular order.
+ *
+ * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
-public interface LookupStrategy {
+public class RoundRobinLookupStrategy extends AbstractLookupStrategy {
 
-   void initialize(final Context context, final MicroserviceMetaData metaData, final Set<Annotation> options);
+   private AtomicInteger index = new AtomicInteger();
 
-   Object getService();
+   @Override
+   public Object getService() {
+      Set<Object> microservices = context.lookupMicroservice(metaData);
+      if (microservices.isEmpty()) {
+         throw new RuntimeException("No service found for: " + metaData);
+      }
+      Object[] servicesArray = microservices.toArray();
+      index.compareAndSet(Integer.MAX_VALUE, 0);
+      return servicesArray[index.getAndIncrement() % servicesArray.length];
+   }
 }

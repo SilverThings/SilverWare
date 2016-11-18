@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2010 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,20 @@
  */
 package io.silverware.microservices.silver.services.lookup;
 
-import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class RandomRobinLookupStrategy extends AbstractLookupStrategy {
 
-   private Random rnd = new Random();
-
    @Override
    public Object getService() {
-      final Object[] services = context.lookupMicroservice(metaData).toArray();
-      return services[rnd.nextInt(services.length)];
+      Set<Object> services = context.lookupMicroservice(metaData);
+      if (services.isEmpty()) {
+         throw new RuntimeException("No service found for: " + metaData);
+      }
+      return services.toArray()[ThreadLocalRandom.current().nextInt(services.size())];
    }
 }

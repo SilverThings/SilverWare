@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.UUID;
 
 import mockit.Capturing;
-import mockit.Deencapsulation;
 import mockit.Expectations;
+import mockit.Tested;
 import mockit.Verifications;
 
 /**
@@ -48,6 +48,7 @@ public class JgroupsMessageSenderTest {
 
    @Capturing
    private MessageDispatcher dispatcher;
+   @Tested
    private JgroupsMessageSender jgroupsMessageSender;
 
    private Address address = new org.jgroups.util.UUID();
@@ -65,7 +66,7 @@ public class JgroupsMessageSenderTest {
    @Test
    public void testSendToClusterSync() throws Exception {
       new Expectations(jgroupsMessageSender) {{
-         Deencapsulation.invoke(jgroupsMessageSender, "getMembersAddresses");
+         jgroupsMessageSender.getMembersAddresses();
          result = Collections.emptyList();
       }};
       String id = UUID.randomUUID().toString();
