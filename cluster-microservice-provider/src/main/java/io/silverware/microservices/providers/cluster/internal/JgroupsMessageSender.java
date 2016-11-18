@@ -110,7 +110,7 @@ public class JgroupsMessageSender {
       sendToClusterAsync(content, Collections.emptySet(), listener);
    }
 
-   private List<Address> getMembersAddresses() {
+   List<Address> getMembersAddresses() {
       return this.dispatcher.getChannel().getView().getMembers();
    }
 

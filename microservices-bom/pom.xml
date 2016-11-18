@@ -73,7 +73,7 @@
       <version.jsonio>4.3.0</version.jsonio>
       <version.beanutils>1.9.2</version.beanutils>
       <version.drools>6.3.0.Final</version.drools>
-      <version.jmockit>1.8</version.jmockit>
+      <version.jmockit>1.29</version.jmockit>
       <version.assertj>3.5.2</version.assertj>
       <version.org.jboss.resteasy>3.0.17.Final</version.org.jboss.resteasy>
       <version.sem.ver>2.0.1</version.sem.ver>
