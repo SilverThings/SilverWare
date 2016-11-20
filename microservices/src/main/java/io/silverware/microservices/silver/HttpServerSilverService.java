@@ -105,11 +105,22 @@ public interface HttpServerSilverService extends SilverService {
    /**
     * Deploys a servlet on the HTTP server.
     *
-    * @param contextPath Context path where the servlet should be bound.
-    * @param deploymentName Name of the deployment.
-    * @param servletDescriptors A list of descriptions of the servlet(s).
-    * @throws SilverWareException When it was not possible to deploy the servlet(s).
+    * @param contextPath
+    *       Context path where the servlet should be bound.
+    * @param deploymentName
+    *       Name of the deployment.
+    * @param servletDescriptors
+    *       A list of descriptions of the servlet(s).
+    * @throws SilverWareException
+    *       When it was not possible to deploy the servlet(s).
     */
    void deployServlet(final String contextPath, final String deploymentName,
          final List<ServletDescriptor> servletDescriptors) throws SilverWareException;
+
+   /**
+    * Tests if this service is deployed. Service is deployed if its underlying HTTP server has started.
+    *
+    * @return <b>true</b> if this service is deployed; <b>false</b> otherwise
+    */
+   boolean isDeployed();
 }
