@@ -61,6 +61,7 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
    private Context context;
    private UndertowJaxrsServer server;
    private Boolean sslEnabled = false;
+   private boolean deployed = false;
 
    @Override
    public void initialize(final Context context) {
@@ -110,6 +111,11 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
    }
 
    @Override
+   public boolean isDeployed() {
+      return this.deployed;
+   }
+
+   @Override
    public void run() {
       try {
          log.info("Hello from Http Server microservice provider!");
@@ -126,6 +132,7 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
             this.server.start(builder);
             this.server.deploy(deploymentInfo());
             log.info("Started Http Server.");
+            this.deployed = true;
 
             while (!Thread.currentThread().isInterrupted()) {
                Thread.sleep(1000);
@@ -137,6 +144,7 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
             ;
          } finally {
             this.server.stop();
+            this.deployed = false;
          }
       } catch (final Exception e) {
          log.error("Http Server microservice provider failed: ", e);
