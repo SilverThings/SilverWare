@@ -2,4 +2,7 @@
    <alternatives>
       <class>io.silverware.microservices.providers.cdi.CdiMicroserviceProviderAlternativesTest$AlternateAlternativesMicroBean</class>
    </alternatives>
+   <interceptors>
+      <class>io.silverware.microservices.providers.cdi.CdiMicroserviceProviderBasicTest$Guard</class>
+   </interceptors>
 </beans>
