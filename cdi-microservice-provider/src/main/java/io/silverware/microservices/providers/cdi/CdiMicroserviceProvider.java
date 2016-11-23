@@ -228,8 +228,8 @@ public class CdiMicroserviceProvider implements MicroserviceProvider, CdiSilverS
       return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(clazz).select(new MicroserviceReferenceLiteral(beanName)).get();
    }
 
-   public <T> T lookupBean(final Class<T> type) {
-      return ((WeldContainer) this.context.getProperties().get(CDI_CONTAINER)).instance().select(type).get();
+   public <T> T lookupBean(final Class<T> type, final Annotation... qualifiers) {
+      return ((WeldContainer) context.getProperties().get(CDI_CONTAINER)).instance().select(type, qualifiers).get();
    }
 
    @Override

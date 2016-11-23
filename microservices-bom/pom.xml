@@ -77,6 +77,8 @@
       <version.assertj>3.5.2</version.assertj>
       <version.org.jboss.resteasy>3.0.17.Final</version.org.jboss.resteasy>
       <version.sem.ver>2.0.1</version.sem.ver>
+      <version.hystrix>1.5.8</version.hystrix>
+      <version.mockito>2.2.22</version.mockito>
       <java.level>1.8</java.level>
    </properties>
    <dependencyManagement>
@@ -109,6 +111,11 @@
          <dependency>
             <groupId>io.silverware</groupId>
             <artifactId>http-server-microservice-provider</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>io.silverware</groupId>
+            <artifactId>hystrix-microservice-provider</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
@@ -206,6 +213,12 @@
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
             <version>${version.jmockit}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${version.mockito}</version>
             <scope>test</scope>
          </dependency>
          <dependency>
@@ -355,6 +368,22 @@
             <groupId>com.vdurmont</groupId>
             <artifactId>semver4j</artifactId>
             <version>${version.sem.ver}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.netflix.hystrix</groupId>
+            <artifactId>hystrix-core</artifactId>
+            <version>${version.hystrix}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.netflix.hystrix</groupId>
+            <artifactId>hystrix-dashboard</artifactId>
+            <version>${version.hystrix}</version>
+            <type>war</type>
+         </dependency>
+         <dependency>
+            <groupId>com.netflix.hystrix</groupId>
+            <artifactId>hystrix-metrics-event-stream</artifactId>
+            <version>${version.hystrix}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Priority;
+import javax.enterprise.inject.Vetoed;
 
 import io.silverware.microservices.util.DeploymentScanner;
 import javassist.util.proxy.MethodHandler;
@@ -87,6 +88,7 @@ public class MicroserviceProxyFactory {
       return methodHandler;
    }
 
+   @Vetoed
    private static class MethodHandlerPrioritizer implements Comparator<Class<? extends MicroserviceMethodHandler>> {
 
       @Override
