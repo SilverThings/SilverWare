@@ -81,6 +81,7 @@
       <module>rest-client-microservice-provider</module>
       <module>activemq-microservice-provider</module>
       <module>vertx-microservice-provider</module>
+      <module>hystrix-microservice-provider</module>
    </modules>
    <dependencyManagement>
       <dependencies>

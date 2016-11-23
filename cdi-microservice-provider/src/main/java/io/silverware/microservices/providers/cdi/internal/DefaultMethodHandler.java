@@ -72,7 +72,7 @@ public class DefaultMethodHandler extends MicroserviceMethodHandler {
    }
 
    @Override
-   public Object invoke(final Method method, final Object[] args) throws Exception {
+   public Object invoke(final Method method, final Object... args) throws Exception {
       if (method.getDeclaringClass() == Object.class) {
          final String methodName = method.getName();
          final int paramCount = method.getParameterTypes().length;

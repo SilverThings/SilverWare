@@ -41,7 +41,7 @@ public abstract class MicroserviceMethodHandler implements MethodHandler {
       return invoke(thisMethod, args);
    }
 
-   public abstract Object invoke(Method method, Object[] args) throws Exception;
+   public abstract Object invoke(Method method, Object... args) throws Exception;
 
    public abstract MicroserviceProxyBean getProxyBean();
 
