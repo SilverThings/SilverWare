@@ -20,6 +20,7 @@
 package io.silverware.microservices.providers.cdi.internal;
 
 import java.lang.reflect.Method;
+import javax.enterprise.inject.spi.InjectionPoint;
 
 import javassist.util.proxy.MethodHandler;
 
@@ -44,5 +45,7 @@ public abstract class MicroserviceMethodHandler implements MethodHandler {
    public abstract Object invoke(Method method, Object... args) throws Exception;
 
    public abstract MicroserviceProxyBean getProxyBean();
+
+   public abstract InjectionPoint getInjectionPoint();
 
 }

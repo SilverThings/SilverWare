@@ -19,6 +19,8 @@
  */
 package io.silverware.microservices.providers.cdi.internal;
 
+import io.silverware.microservices.util.DeploymentScanner;
+
 import java.lang.reflect.Constructor;
 import java.util.Comparator;
 import java.util.List;
@@ -26,8 +28,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Priority;
 import javax.enterprise.inject.Vetoed;
+import javax.enterprise.inject.spi.InjectionPoint;
 
-import io.silverware.microservices.util.DeploymentScanner;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 
@@ -64,26 +66,27 @@ public class MicroserviceProxyFactory {
     *       provided service type
     * @return proxy
     */
-   public static <T> T createProxy(final MicroserviceProxyBean proxyBean) {
+   public static <T> T createProxy(final MicroserviceProxyBean proxyBean, final InjectionPoint injectionPoint) {
+      Class<?> serviceInterface = proxyBean.getServiceInterface();
       try {
          ProxyFactory factory = new ProxyFactory();
-         if (proxyBean.getServiceInterface().isInterface()) {
-            factory.setInterfaces(new Class[] { proxyBean.getServiceInterface() });
+         if (serviceInterface.isInterface()) {
+            factory.setInterfaces(new Class[] { serviceInterface });
          } else {
-            factory.setSuperclass(proxyBean.getServiceInterface());
+            factory.setSuperclass(serviceInterface);
          }
-         MethodHandler methodHandler = createMethodHandler(proxyBean);
+         MethodHandler methodHandler = createMethodHandler(proxyBean, injectionPoint);
          return (T) factory.create(new Class[0], new Object[0], methodHandler);
       } catch (Exception e) {
-         throw new IllegalStateException("Cannot create proxy for class " + proxyBean.getServiceInterface().getName() + ": ", e);
+         throw new IllegalStateException("Cannot create proxy for class " + serviceInterface.getName() + ": ", e);
       }
    }
 
-   private static MethodHandler createMethodHandler(MicroserviceProxyBean parentBean) throws Exception {
-      MicroserviceMethodHandler methodHandler = new DefaultMethodHandler(parentBean);
+   private static MethodHandler createMethodHandler(MicroserviceProxyBean parentBean, InjectionPoint injectionPoint) throws Exception {
+      MicroserviceMethodHandler methodHandler = new DefaultMethodHandler(parentBean, injectionPoint);
       for (Class<? extends MicroserviceMethodHandler> handlerClass : HANDLER_CLASSES) {
-         final Constructor c = handlerClass.getConstructor(MicroserviceMethodHandler.class);
-         methodHandler = (MicroserviceMethodHandler) c.newInstance(methodHandler);
+         final Constructor constructor = handlerClass.getConstructor(MicroserviceMethodHandler.class);
+         methodHandler = (MicroserviceMethodHandler) constructor.newInstance(methodHandler);
       }
       return methodHandler;
    }

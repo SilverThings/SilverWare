@@ -22,7 +22,6 @@ package io.silverware.microservices.providers.cdi.internal;
 import static io.silverware.microservices.providers.cdi.util.AnnotationUtil.matches;
 
 import io.silverware.microservices.MicroserviceMetaData;
-import io.silverware.microservices.annotations.MicroserviceProxy;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.providers.cdi.util.VersionResolver;
 import io.silverware.microservices.silver.services.LookupStrategy;
@@ -36,6 +35,7 @@ import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Priority;
+import javax.enterprise.inject.spi.InjectionPoint;
 
 /**
  * Default microservice method handler which is invoked as the last one and makes an actual call on the service instance.
@@ -46,27 +46,26 @@ public class DefaultMethodHandler extends MicroserviceMethodHandler {
    private static final Logger log = LogManager.getLogger(DefaultMethodHandler.class);
 
    private final MicroserviceProxyBean proxyBean;
+   private final InjectionPoint injectionPoint;
 
    private final LookupStrategy lookupStrategy;
 
-   protected DefaultMethodHandler(final MicroserviceProxyBean proxyBean) throws Exception {
+   protected DefaultMethodHandler(final MicroserviceProxyBean proxyBean, final InjectionPoint injectionPoint) throws Exception {
       this.proxyBean = proxyBean;
+      this.injectionPoint = injectionPoint;
 
       final Set<Annotation> qualifiers = proxyBean.getQualifiers().stream()
                                                   .filter(qualifier -> !matches(qualifier, MicroserviceReference.class))
-                                                  .filter(qualifier -> !matches(qualifier, MicroserviceProxy.class))
                                                   .collect(Collectors.toSet());
-      final MicroserviceMetaData metaData = VersionResolver.createMicroserviceMetadata(proxyBean.getMicroserviceName(), proxyBean.getServiceInterface(), qualifiers, proxyBean.getAnnotations());
+      final MicroserviceMetaData metaData = VersionResolver.createMicroserviceMetadata(proxyBean.getMicroserviceName(), proxyBean.getServiceInterface(), qualifiers, injectionPoint.getAnnotated().getAnnotations());
 
-      this.lookupStrategy = LookupStrategyFactory.getStrategy(proxyBean.getContext(), metaData, proxyBean.getAnnotations());
+      this.lookupStrategy = LookupStrategyFactory.getStrategy(proxyBean.getContext(), metaData, injectionPoint.getAnnotated().getAnnotations());
    }
 
    private synchronized Object getService() {
       final Object service = lookupStrategy.getService();
 
-      if (log.isDebugEnabled()) {
-         log.debug(String.format("Proxy %s matched with service implementation %s.", this.toString(), service));
-      }
+      log.debug("Proxy {} matched with service implementation {}.", this, service);
 
       return service;
    }
@@ -88,9 +87,7 @@ public class DefaultMethodHandler extends MicroserviceMethodHandler {
          }
       }
 
-      if (log.isDebugEnabled()) {
-         log.debug("Invocation of " + method);
-      }
+      log.debug("Invocation of {}", method);
 
       Object service = getService();
       return method.invoke(service, args);
@@ -99,5 +96,10 @@ public class DefaultMethodHandler extends MicroserviceMethodHandler {
    @Override
    public MicroserviceProxyBean getProxyBean() {
       return proxyBean;
+   }
+
+   @Override
+   public InjectionPoint getInjectionPoint() {
+      return injectionPoint;
    }
 }
