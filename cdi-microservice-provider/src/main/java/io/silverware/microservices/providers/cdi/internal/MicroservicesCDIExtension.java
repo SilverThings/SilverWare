@@ -22,7 +22,6 @@ package io.silverware.microservices.providers.cdi.internal;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.Microservice;
-import io.silverware.microservices.annotations.MicroserviceProxy;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.providers.cdi.MicroserviceContext;
 import io.silverware.microservices.providers.cdi.util.AnnotationUtil;
@@ -31,12 +30,18 @@ import io.silverware.microservices.providers.cdi.util.VersionResolver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -44,7 +49,7 @@ import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessBean;
-import javax.enterprise.inject.spi.ProcessInjectionPoint;
+import javax.enterprise.util.AnnotationLiteral;
 
 /**
  * CDI Extension for Microservices.
@@ -58,6 +63,11 @@ public class MicroservicesCDIExtension implements Extension {
     * Logger.
     */
    private static Logger log = LogManager.getLogger(MicroservicesCDIExtension.class);
+
+   /**
+    * Number of discovered injection points.
+    */
+   private long injectionPointsCount = 0;
 
    /**
     * Microservices context.
@@ -82,9 +92,7 @@ public class MicroservicesCDIExtension implements Extension {
     *       CDI Bean Manager instance.
     */
    public void beforeBeanDiscovery(@Observes final BeforeBeanDiscovery beforeEvent, final BeanManager beanManager) {
-      if (log.isDebugEnabled()) {
-         log.debug("CDI Bean discovery process started.");
-      }
+      log.debug("CDI Bean discovery process started.");
    }
 
    /**
@@ -98,7 +106,7 @@ public class MicroservicesCDIExtension implements Extension {
    public void processBean(@Observes final ProcessBean processBean, final BeanManager beanManager) {
       final Bean<?> bean = processBean.getBean();
 
-      // Create a registry of Microservices
+      // Create a registry of microservices
       if (isMicroserviceBean(bean)) {
          final Microservice annotation = bean.getBeanClass().getAnnotation(Microservice.class);
          final String microserviceName = !annotation.value().isEmpty() ? annotation.value() : bean.getBeanClass().getSimpleName();
@@ -108,15 +116,9 @@ public class MicroservicesCDIExtension implements Extension {
 
       // Create proxies for the corresponding injection points
       bean.getInjectionPoints().stream().filter(MicroservicesCDIExtension::hasMicroserviceReference).forEach(injectionPoint -> {
-         if (log.isTraceEnabled()) {
-            log.trace("Creating proxy bean for injection point: " + injectionPoint.toString());
-         }
-
-         MicroserviceProxy microserviceProxy = new MicroserviceProxyAnnotationLiteral(injectionPoint);
-         injectionPoint.getQualifiers().add(microserviceProxy);
-
-         MicroserviceProxyBean proxyBean = new MicroserviceProxyBean(injectionPoint, context);
-         microserviceProxyBeans.add(proxyBean);
+         log.trace("Creating proxy bean for injection point: {}", injectionPoint);
+         addMicroserviceProxyBean(injectionPoint, beanManager);
+         injectionPointsCount++;
       });
    }
 
@@ -129,6 +131,53 @@ public class MicroservicesCDIExtension implements Extension {
       return AnnotationUtil.containsAnnotation(injectionPoint.getQualifiers(), MicroserviceReference.class);
    }
 
+   private void addMicroserviceProxyBean(final InjectionPoint injectionPoint, final BeanManager beanManager) {
+      final String serviceName = createMicroserviceName(injectionPoint);
+      final Class<?> serviceInterface = ((Field) injectionPoint.getMember()).getType();
+      final Set<Annotation> qualifiers = prepareQualifiers(injectionPoint.getQualifiers());
+
+      boolean beanExists = microserviceProxyBeans.stream()
+                                                 .filter(bean -> bean.getMicroserviceName().equals(serviceName))
+                                                 .filter(bean -> bean.getServiceInterface().equals(serviceInterface))
+                                                 .anyMatch(bean -> bean.getQualifiers().equals(qualifiers));
+
+      if (!beanExists) {
+         MicroserviceProxyBean proxyBean = new MicroserviceProxyBean(serviceName, serviceInterface, qualifiers, beanManager, context);
+         microserviceProxyBeans.add(proxyBean);
+      }
+   }
+
+   private static String createMicroserviceName(final InjectionPoint injectionPoint) {
+      final MicroserviceReference microserviceReference = AnnotationUtil.findAnnotation(injectionPoint.getQualifiers(), MicroserviceReference.class).get();
+
+      // first try to use a user defined service name
+      if (microserviceReference.value().length() > 0) {
+         return microserviceReference.value();
+      } else {
+         Class<?> serviceInterface = ((Field) injectionPoint.getMember()).getType();
+         return toLowerCamelCase(serviceInterface.getSimpleName());
+      }
+   }
+
+   private static String toLowerCamelCase(String upperCamelCase) {
+      return upperCamelCase.substring(0, 1).toLowerCase() + upperCamelCase.substring(1);
+   }
+
+   private static Set<Annotation> prepareQualifiers(final Set<Annotation> beanQualifiers) {
+      Set<Annotation> qualifiers = new HashSet<>(beanQualifiers);
+
+      if (!AnnotationUtil.containsAnnotation(qualifiers, Any.class)) {
+         qualifiers.add(new AnyAnnotationLiteral());
+      }
+
+      // add @Default if contains only @Any and @MicroserviceReference
+      if (qualifiers.size() < 3) {
+         qualifiers.add(new DefaultAnnotationLiteral());
+      }
+
+      return Collections.unmodifiableSet(qualifiers);
+   }
+
    /**
     * {@link javax.enterprise.inject.spi.ProcessBean} CDI event observer.
     *
@@ -139,30 +188,12 @@ public class MicroservicesCDIExtension implements Extension {
       afterEvent.addContext(new MicroserviceContext());
 
       this.microserviceProxyBeans.forEach(proxyBean -> {
-         if (log.isTraceEnabled()) {
-            log.trace(String.format("Registering client proxy bean for bean service %s. Microservice type is %s.", proxyBean.getMicroserviceName(), proxyBean.getServiceInterface().getName()));
-         }
+         log.trace("Registering client proxy bean for bean service {}. Microservice type is {}.", proxyBean.getMicroserviceName(), proxyBean.getServiceInterface().getName());
 
          afterEvent.addBean(proxyBean);
       });
 
-      if (log.isDebugEnabled()) {
-         log.debug("CDI Bean discovery process completed.");
-      }
-   }
-
-   /**
-    * Observes injection points and wrap those with {@link io.silverware.microservices.annotations.MicroserviceReference} annotations
-    * in {@link io.silverware.microservices.providers.cdi.internal.MicroserviceInjectionPoint}.
-    *
-    * @param processInjectionPoint
-    *       CDI event after injection point discovery
-    */
-   public void processInjectionPoint(@Observes final ProcessInjectionPoint processInjectionPoint) {
-      InjectionPoint injectionPoint = processInjectionPoint.getInjectionPoint();
-      if (AnnotationUtil.containsAnnotation(injectionPoint.getQualifiers(), MicroserviceReference.class)) {
-         processInjectionPoint.setInjectionPoint(new MicroserviceInjectionPoint(injectionPoint));
-      }
+      log.debug("CDI Bean discovery process completed.");
    }
 
    /**
@@ -171,7 +202,7 @@ public class MicroservicesCDIExtension implements Extension {
     * @return The number of discovered injection points.
     */
    public long getInjectionPointsCount() {
-      return microserviceProxyBeans.size();
+      return injectionPointsCount;
    }
 
    /**
@@ -186,6 +217,20 @@ public class MicroservicesCDIExtension implements Extension {
    private MicroserviceMetaData getMicroserviceMetaData(final String microserviceName, final Bean<?> bean) {
       return VersionResolver.createMicroserviceMetadata(microserviceName, bean.getBeanClass(), bean.getQualifiers(), new HashSet<>(
             Arrays.asList(bean.getBeanClass().getAnnotations())));
+   }
+
+   /**
+    * Annotation literal for type Any.
+    */
+   private static class AnyAnnotationLiteral extends AnnotationLiteral<Any> {
+
+   }
+
+   /**
+    * Annotation literal for type Default that can be serialized.
+    */
+   private static class DefaultAnnotationLiteral extends AnnotationLiteral<Default> {
+
    }
 
 }

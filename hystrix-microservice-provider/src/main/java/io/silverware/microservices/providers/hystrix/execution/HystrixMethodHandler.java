@@ -60,7 +60,7 @@ public class HystrixMethodHandler extends MicroserviceMethodHandler {
    private final ServiceConfig serviceConfig;
 
    public HystrixMethodHandler(final MicroserviceMethodHandler methodHandler) throws Exception {
-      this(methodHandler, AnnotationScanner.scan(methodHandler.getProxyBean().getAnnotations()));
+      this(methodHandler, AnnotationScanner.scan(methodHandler.getInjectionPoint().getAnnotated().getAnnotations()));
    }
 
    HystrixMethodHandler(final MicroserviceMethodHandler methodHandler, final ServiceConfig serviceConfig) {
@@ -83,7 +83,7 @@ public class HystrixMethodHandler extends MicroserviceMethodHandler {
          return methodHandler.invoke(method, args);
       }
 
-      String commandKey = createCommandKey(getProxyBean().getInjectionPoint(), methodName);
+      String commandKey = createCommandKey(getInjectionPoint(), methodName);
       Setter setter = SetterFactory.createHystrixCommandSetter(serviceName, commandKey, methodConfig);
 
       String cacheKey = createCacheKey(serviceName, methodName, methodConfig.getCacheKeyParameterIndexes(), args);
@@ -106,6 +106,11 @@ public class HystrixMethodHandler extends MicroserviceMethodHandler {
    @Override
    public MicroserviceProxyBean getProxyBean() {
       return methodHandler.getProxyBean();
+   }
+
+   @Override
+   public InjectionPoint getInjectionPoint() {
+      return methodHandler.getInjectionPoint();
    }
 
    private static String createCommandKey(final InjectionPoint injectionPoint, final String methodName) {

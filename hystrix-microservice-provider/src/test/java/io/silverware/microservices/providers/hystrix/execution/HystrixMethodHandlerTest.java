@@ -52,8 +52,11 @@ public class HystrixMethodHandlerTest extends HystrixTestBase {
       microserviceProxyBean = Mockito.mock(MicroserviceProxyBean.class);
       Mockito.when(microserviceProxyBean.getMicroserviceName()).thenReturn(SERVICE_NAME);
 
+      parentMethodHandler = Mockito.mock(MicroserviceMethodHandler.class);
+      Mockito.when(parentMethodHandler.getProxyBean()).thenReturn(microserviceProxyBean);
+
       InjectionPoint injectionPoint = Mockito.mock(InjectionPoint.class);
-      Mockito.when(microserviceProxyBean.getInjectionPoint()).thenReturn(injectionPoint);
+      Mockito.when(parentMethodHandler.getInjectionPoint()).thenReturn(injectionPoint);
 
       Bean bean = Mockito.mock(Bean.class);
       Mockito.when(injectionPoint.getBean()).thenReturn(bean);
@@ -62,9 +65,6 @@ public class HystrixMethodHandlerTest extends HystrixTestBase {
       Member member = Mockito.mock(Member.class);
       Mockito.when(injectionPoint.getMember()).thenReturn(member);
       Mockito.when(member.getName()).thenReturn(FIELD_NAME);
-
-      parentMethodHandler = Mockito.mock(MicroserviceMethodHandler.class);
-      Mockito.when(parentMethodHandler.getProxyBean()).thenReturn(microserviceProxyBean);
    }
 
    @Test
