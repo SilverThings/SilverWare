@@ -75,7 +75,7 @@
       <version.drools>6.3.0.Final</version.drools>
       <version.jmockit>1.29</version.jmockit>
       <version.assertj>3.5.2</version.assertj>
-      <version.org.jboss.resteasy>3.0.17.Final</version.org.jboss.resteasy>
+      <version.resteasy>3.0.19.Final</version.resteasy>
       <version.sem.ver>2.0.1</version.sem.ver>
       <version.hystrix>1.5.8</version.hystrix>
       <version.mockito>2.2.22</version.mockito>
@@ -347,22 +347,22 @@
          <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-undertow</artifactId>
-            <version>${version.org.jboss.resteasy}</version>
+            <version>${version.resteasy}</version>
          </dependency>
          <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jackson2-provider</artifactId>
-            <version>${version.org.jboss.resteasy}</version>
+            <version>${version.resteasy}</version>
          </dependency>
          <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jaxb-provider</artifactId>
-            <version>${version.org.jboss.resteasy}</version>
+            <version>${version.resteasy}</version>
          </dependency>
          <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
-            <version>${version.org.jboss.resteasy}</version>
+            <version>${version.resteasy}</version>
          </dependency>
          <dependency>
             <groupId>com.vdurmont</groupId>
