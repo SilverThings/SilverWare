@@ -35,11 +35,20 @@ import java.lang.annotation.Target;
 @Target({ ElementType.FIELD, ElementType.METHOD, ElementType.TYPE })
 public @interface ThreadPool {
 
+   int DEFAULT_SIZE = 10;
+
    /**
     * Defines the name of the thread pool used to execute Hystrix commands.
     *
     * @return the name of the thread pool
     */
-   String value();
+   String name() default "";
+
+   /**
+    * Defines the size of the thread pool used to execute Hystrix commands.
+    *
+    * @return number of threads in the thread pool
+    */
+   int size() default DEFAULT_SIZE;
 
 }

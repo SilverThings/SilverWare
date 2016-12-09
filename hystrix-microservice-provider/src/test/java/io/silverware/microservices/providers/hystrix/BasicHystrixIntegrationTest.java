@@ -35,18 +35,26 @@ import com.netflix.hystrix.exception.HystrixRuntimeException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 
 public class BasicHystrixIntegrationTest extends SilverWareHystrixTestBase {
 
    private static final int TIMEOUT = 200;
-   private static final String THREAD_POOL = "basicTestingThreadPool";
+   private static final String THREAD_POOL_NAME = "basicTestingThreadPool";
+   private static final int THREAD_POOL_SIZE = 20;
 
    private static AtomicBoolean cached = new AtomicBoolean(true);
    private static AtomicReference<String> threadName = new AtomicReference<>();
+   private static AtomicInteger maxThreadNumber = new AtomicInteger(0);
+
+   private static CountDownLatch countDownLatch;
 
    private ResilientMicroservice resilientMicroservice;
 
@@ -103,16 +111,34 @@ public class BasicHystrixIntegrationTest extends SilverWareHystrixTestBase {
 
       threadName.set("");
       threadPoolMicroservice.call();
-      assertThat(threadName.get()).containsIgnoringCase(THREAD_POOL);
+      assertThat(threadName.get()).containsIgnoringCase(ThreadPoolMicroservice.class.getSimpleName());
    }
 
    @Test
-   public void testThreadPoolDefault() throws Exception {
-      ThreadPoolDefaultMicroservice threadPoolMicroservice = resilientMicroservice.threadPoolDefaultMicroservice;
+   public void testThreadPoolName() throws Exception {
+      ThreadPoolNameMicroservice threadPoolMicroservice = resilientMicroservice.threadPoolNameMicroservice;
 
       threadName.set("");
       threadPoolMicroservice.call();
-      assertThat(threadName.get()).containsIgnoringCase(ThreadPoolDefaultMicroservice.class.getSimpleName());
+      assertThat(threadName.get()).containsIgnoringCase(THREAD_POOL_NAME);
+   }
+
+   @Test
+   public void testThreadPoolSize() throws InterruptedException {
+      ThreadPoolSizeMicroservice threadPoolMicroservice = resilientMicroservice.threadPoolSizeMicroservice;
+
+      countDownLatch = new CountDownLatch(THREAD_POOL_SIZE);
+
+      ExecutorService executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+      for (int i = 0; i < THREAD_POOL_SIZE; i++) {
+         executorService.execute(threadPoolMicroservice::call);
+      }
+      executorService.shutdown();
+
+      countDownLatch.await();
+
+      System.out.println(maxThreadNumber.get());
+      assertThat(maxThreadNumber.get()).isBetween(ThreadPool.DEFAULT_SIZE + 1, THREAD_POOL_SIZE);
    }
 
    @Test
@@ -170,14 +196,19 @@ public class BasicHystrixIntegrationTest extends SilverWareHystrixTestBase {
       private CachedMicroservice cachedMicroservice;
 
       @Inject
-      @ThreadPool(THREAD_POOL)
+      @CircuitBreaker
       @MicroserviceReference
       private ThreadPoolMicroservice threadPoolMicroservice;
 
       @Inject
-      @CircuitBreaker
+      @ThreadPool(name = THREAD_POOL_NAME)
       @MicroserviceReference
-      private ThreadPoolDefaultMicroservice threadPoolDefaultMicroservice;
+      private ThreadPoolNameMicroservice threadPoolNameMicroservice;
+
+      @Inject
+      @ThreadPool(size = THREAD_POOL_SIZE)
+      @MicroserviceReference
+      private ThreadPoolSizeMicroservice threadPoolSizeMicroservice;
 
    }
 
@@ -275,10 +306,27 @@ public class BasicHystrixIntegrationTest extends SilverWareHystrixTestBase {
    }
 
    @Microservice
-   public static class ThreadPoolDefaultMicroservice {
+   public static class ThreadPoolNameMicroservice {
 
       public void call() {
          threadName.set(Thread.currentThread().getName());
+      }
+
+   }
+
+   @Microservice
+   public static class ThreadPoolSizeMicroservice {
+
+      public void call() {
+         String threadName = Thread.currentThread().getName();
+         int threadNumber = Integer.parseInt(threadName.split("-")[2]);
+         int maxNumber = maxThreadNumber.get();
+
+         if (threadNumber > maxNumber) {
+            maxThreadNumber.compareAndSet(maxNumber, threadNumber);
+         }
+
+         countDownLatch.countDown();
       }
 
    }

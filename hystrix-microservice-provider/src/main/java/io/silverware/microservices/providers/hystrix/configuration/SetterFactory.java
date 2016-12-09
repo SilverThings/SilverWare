@@ -206,6 +206,11 @@ public class SetterFactory {
          setter.withCoreSize(Integer.parseInt(coreSize));
       }
 
+      String maximumSize = threadPoolProperties.get(ThreadPoolProperties.MAXIMUM_SIZE);
+      if (maximumSize != null) {
+         setter.withMaximumSize(Integer.parseInt(maximumSize));
+      }
+
       String keepAliveTimeMinutes = threadPoolProperties.get(ThreadPoolProperties.KEEP_ALIVE_TIME_MINUTES);
       if (keepAliveTimeMinutes != null) {
          setter.withKeepAliveTimeMinutes(Integer.parseInt(keepAliveTimeMinutes));

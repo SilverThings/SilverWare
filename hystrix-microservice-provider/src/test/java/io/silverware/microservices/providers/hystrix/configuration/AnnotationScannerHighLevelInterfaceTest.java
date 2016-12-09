@@ -147,7 +147,7 @@ public class AnnotationScannerHighLevelInterfaceTest extends AnnotationScannerTe
       @Fail(NullPointerException.class)
       String method2();
 
-      @ThreadPool(THREAD_POOL_NAME)
+      @ThreadPool(name = THREAD_POOL_NAME)
       @Timeout
       int method3(long param);
 
@@ -163,7 +163,7 @@ public class AnnotationScannerHighLevelInterfaceTest extends AnnotationScannerTe
       @Fail(NullPointerException.class)
       String method2();
 
-      @ThreadPool(THREAD_POOL_NAME)
+      @ThreadPool(name = THREAD_POOL_NAME)
       @Timeout(TIMEOUT_VALUE)
       int method3(long param);
 
