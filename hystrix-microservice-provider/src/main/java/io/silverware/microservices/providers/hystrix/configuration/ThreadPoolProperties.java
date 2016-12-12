@@ -27,6 +27,7 @@ package io.silverware.microservices.providers.hystrix.configuration;
 public interface ThreadPoolProperties {
 
    String CORE_SIZE = "coreSize";
+   String MAXIMUM_SIZE = "maximumSize";
    String KEEP_ALIVE_TIME_MINUTES = "keepAliveTimeMinutes";
    String MAX_QUEUE_SIZE = "maxQueueSize";
    String METRICS_ROLLING_STATS_NUM_BUCKETS = "metrics.rollingStats.numBuckets";

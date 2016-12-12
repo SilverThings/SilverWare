@@ -132,7 +132,9 @@ public class AnnotationScanner {
          if (annotation.annotationType() == ThreadPool.class) {
             ThreadPool threadPool = (ThreadPool) annotation;
             builder.hystrixActive(true)
-                   .threadPoolKey(threadPool.value());
+                   .threadPoolKey(threadPool.name())
+                   .threadPoolProperty(ThreadPoolProperties.CORE_SIZE, String.valueOf(threadPool.size()))
+                   .threadPoolProperty(ThreadPoolProperties.MAXIMUM_SIZE, String.valueOf(threadPool.size()));
          }
 
          if (annotation.annotationType() == Timeout.class) {

@@ -19,13 +19,14 @@
  */
 package io.silverware.microservices.providers.hystrix.configuration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.silverware.microservices.annotations.hystrix.basic.Cached;
 import io.silverware.microservices.annotations.hystrix.basic.CircuitBreaker;
 import io.silverware.microservices.annotations.hystrix.basic.Fail;
 import io.silverware.microservices.annotations.hystrix.basic.ThreadPool;
 import io.silverware.microservices.annotations.hystrix.basic.Timeout;
 
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.testng.annotations.Test;
 
@@ -37,6 +38,7 @@ public class AnnotationScannerHighLevelFieldTest extends AnnotationScannerTestBa
    private static final int CIRCUIT_BREAKER_REQUEST_VOLUME = 100;
    private static final int CIRCUIT_BREAKER_SLEEP_WINDOW = 1000;
    private static final String THREAD_POOL_NAME = "TestingThreadPool";
+   private static final int THREAD_POOL_SIZE = 100;
    private static final int TIMEOUT_VALUE = 2000;
 
    private Object noAnnotations;
@@ -133,7 +135,7 @@ public class AnnotationScannerHighLevelFieldTest extends AnnotationScannerTestBa
    public void testIgnoredException() {
       MethodConfig methodConfig = scanToMethodConfig("ignoredException");
 
-      Assertions.assertThat(methodConfig.getIgnoredExceptions()).containsOnly(IllegalArgumentException.class);
+      assertThat(methodConfig.getIgnoredExceptions()).containsOnly(IllegalArgumentException.class);
    }
 
    @Fail({ NullPointerException.class, IllegalArgumentException.class, IllegalStateException.class })
@@ -143,17 +145,31 @@ public class AnnotationScannerHighLevelFieldTest extends AnnotationScannerTestBa
    public void testIgnoredExceptions() {
       MethodConfig methodConfig = scanToMethodConfig("ignoredExceptions");
 
-      Assertions.assertThat(methodConfig.getIgnoredExceptions()).containsOnly(NullPointerException.class, IllegalArgumentException.class, IllegalStateException.class);
+      assertThat(methodConfig.getIgnoredExceptions()).containsOnly(NullPointerException.class, IllegalArgumentException.class, IllegalStateException.class);
    }
 
-   @ThreadPool(THREAD_POOL_NAME)
-   private Object threadPool;
+   @ThreadPool(name = THREAD_POOL_NAME)
+   private Object threadPoolName;
 
    @Test
-   public void testThreadPool() {
-      MethodConfig methodConfig = scanToMethodConfig("threadPool");
+   public void testThreadPoolName() {
+      MethodConfig methodConfig = scanToMethodConfig("threadPoolName");
 
-      Assertions.assertThat(methodConfig.getThreadPoolKey()).isEqualTo(THREAD_POOL_NAME);
+      assertThat(methodConfig.getThreadPoolKey()).isEqualTo(THREAD_POOL_NAME);
+      assertThat(methodConfig.getThreadPoolProperties()).containsEntry(ThreadPoolProperties.CORE_SIZE, String.valueOf(ThreadPool.DEFAULT_SIZE));
+      assertThat(methodConfig.getThreadPoolProperties()).containsEntry(ThreadPoolProperties.MAXIMUM_SIZE, String.valueOf(ThreadPool.DEFAULT_SIZE));
+   }
+
+   @ThreadPool(size = THREAD_POOL_SIZE)
+   private Object threadPoolSize;
+
+   @Test
+   public void testThreadPoolSize() {
+      MethodConfig methodConfig = scanToMethodConfig("threadPoolSize");
+
+      assertThat(methodConfig.getThreadPoolKey()).isEmpty();
+      assertThat(methodConfig.getThreadPoolProperties()).containsEntry(ThreadPoolProperties.CORE_SIZE, String.valueOf(THREAD_POOL_SIZE));
+      assertThat(methodConfig.getThreadPoolProperties()).containsEntry(ThreadPoolProperties.MAXIMUM_SIZE, String.valueOf(THREAD_POOL_SIZE));
    }
 
    @Timeout
