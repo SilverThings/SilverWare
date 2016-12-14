@@ -19,17 +19,22 @@
  */
 package io.silverware.microservices.providers.hystrix.configuration;
 
+import com.netflix.hystrix.HystrixCommand.Setter;
+import com.netflix.hystrix.HystrixCommandGroupKey;
+import com.netflix.hystrix.HystrixCommandKey;
+import com.netflix.hystrix.HystrixCommandProperties;
+import com.netflix.hystrix.HystrixThreadPoolKey;
+import com.netflix.hystrix.HystrixThreadPoolProperties;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * Configuration of Hystrix commands for a given method.
  */
-@Immutable
 public class MethodConfig {
 
    private final boolean hystrixActive;
@@ -44,15 +49,38 @@ public class MethodConfig {
    private final Map<String, String> threadPoolProperties;
    private final Set<Class<? extends Throwable>> ignoredExceptions;
 
+   private final Setter hystrixCommandSetter;
+
    public MethodConfig(Builder builder) {
       hystrixActive = builder.hystrixActive;
       groupKey = builder.groupKey;
       commandKey = builder.commandKey;
-      cacheKeyParameterIndexes = builder.cacheKeyParameterIndexes;
       threadPoolKey = builder.threadPoolKey;
+      cacheKeyParameterIndexes = builder.cacheKeyParameterIndexes;
       commandProperties = builder.commandProperties;
       threadPoolProperties = builder.threadPoolProperties;
       ignoredExceptions = builder.ignoredExceptions;
+
+      hystrixCommandSetter = createHystrixCommandSetter(builder);
+   }
+
+   private static Setter createHystrixCommandSetter(Builder builder) {
+      HystrixCommandGroupKey groupKey = HystrixCommandGroupKey.Factory.asKey(builder.groupKey);
+      HystrixCommandKey commandKey = HystrixCommandKey.Factory.asKey(builder.commandKey);
+
+      HystrixThreadPoolKey threadPoolKey = null;
+      if (builder.threadPoolKey != null && !builder.threadPoolKey.isEmpty()) {
+         threadPoolKey = HystrixThreadPoolKey.Factory.asKey(builder.threadPoolKey);
+      }
+
+      HystrixCommandProperties.Setter commandPropertiesSetter = SetterFactory.createHystrixCommandPropertiesSetter(builder.commandProperties);
+      HystrixThreadPoolProperties.Setter threadPoolPropertiesSetter = SetterFactory.createHystrixThreadPoolProperties(builder.threadPoolProperties);
+
+      return Setter.withGroupKey(groupKey)
+                   .andCommandKey(commandKey)
+                   .andThreadPoolKey(threadPoolKey)
+                   .andCommandPropertiesDefaults(commandPropertiesSetter)
+                   .andThreadPoolPropertiesDefaults(threadPoolPropertiesSetter);
    }
 
    public boolean isHystrixActive() {
@@ -87,31 +115,28 @@ public class MethodConfig {
       return Collections.unmodifiableSet(ignoredExceptions);
    }
 
-   public static Builder createBuilder() {
-      return new Builder();
+   public Setter getHystrixCommandSetter() {
+      return hystrixCommandSetter;
+   }
+
+   public static Builder createBuilder(String groupKey, String commandKey) {
+      return new Builder(groupKey, commandKey);
    }
 
    /**
     * Creates method configuration builder pre-configured with values from given default configuration.
     *
     * @param defaultConfig
-    *       default configuration
+    *       default method configuration
     * @return method configuration builder
     */
    public static Builder createBuilder(MethodConfig defaultConfig) {
-      Builder builder = createBuilder();
-
-      if (defaultConfig != null) {
-         builder.hystrixActive(defaultConfig.hystrixActive)
-                .groupKey(defaultConfig.groupKey)
-                .commandKey(defaultConfig.commandKey)
-                .threadPoolKey(defaultConfig.threadPoolKey)
-                .commandProperties(defaultConfig.commandProperties)
-                .threadPoolProperties(defaultConfig.threadPoolProperties)
-                .ignoredExceptions(defaultConfig.ignoredExceptions);
-      }
-
-      return builder;
+      return new Builder(defaultConfig.groupKey, defaultConfig.commandKey)
+            .hystrixActive(defaultConfig.hystrixActive)
+            .threadPoolKey(defaultConfig.threadPoolKey)
+            .commandProperties(defaultConfig.commandProperties)
+            .threadPoolProperties(defaultConfig.threadPoolProperties)
+            .ignoredExceptions(defaultConfig.ignoredExceptions);
    }
 
    /**
@@ -131,7 +156,9 @@ public class MethodConfig {
       private Map<String, String> threadPoolProperties = new HashMap<>();
       private Set<Class<? extends Throwable>> ignoredExceptions = new HashSet<>();
 
-      private Builder() {
+      private Builder(final String groupKey, final String commandKey) {
+         this.groupKey = groupKey;
+         this.commandKey = commandKey;
       }
 
       public Builder hystrixActive(boolean hystrixActive) {

@@ -77,7 +77,7 @@ public class SetterFactory {
       return value != null && !value.isEmpty() ? value : defaultValue;
    }
 
-   private static HystrixCommandProperties.Setter createHystrixCommandPropertiesSetter(Map<String, String> commandProperties) {
+   static HystrixCommandProperties.Setter createHystrixCommandPropertiesSetter(Map<String, String> commandProperties) {
       HystrixCommandProperties.Setter setter = HystrixCommandProperties.Setter();
 
       String circuitBreakerEnabled = commandProperties.get(CommandProperties.CIRCUIT_BREAKER_ENABLED);
@@ -198,7 +198,7 @@ public class SetterFactory {
       return setter;
    }
 
-   private static HystrixThreadPoolProperties.Setter createHystrixThreadPoolProperties(Map<String, String> threadPoolProperties) {
+   static HystrixThreadPoolProperties.Setter createHystrixThreadPoolProperties(Map<String, String> threadPoolProperties) {
       HystrixThreadPoolProperties.Setter setter = HystrixThreadPoolProperties.Setter();
 
       String coreSize = threadPoolProperties.get(ThreadPoolProperties.CORE_SIZE);
