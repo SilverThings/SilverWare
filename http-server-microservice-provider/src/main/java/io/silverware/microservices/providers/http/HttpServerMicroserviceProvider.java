@@ -67,7 +67,7 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
    public void initialize(final Context context) {
       this.context = context;
       context.getProperties().putIfAbsent(HTTP_SERVER_PORT, 8080);
-      context.getProperties().putIfAbsent(HTTP_SERVER_ADDRESS, "localhost");
+      context.getProperties().putIfAbsent(HTTP_SERVER_ADDRESS, "0.0.0.0");
       context.getProperties().putIfAbsent(HTTP_SERVER_REST_CONTEXT_PATH, "/silverware");
       context.getProperties().putIfAbsent(HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX, "rest");
 
@@ -131,7 +131,11 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
             }
             this.server.start(builder);
             this.server.deploy(deploymentInfo());
-            log.info("Started Http Server.");
+            log.info("Started http server at {}:{}/{}{} ",
+                  readProperty(HTTP_SERVER_ADDRESS),
+                  readProperty(HTTP_SERVER_PORT),
+                  readProperty(HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX),
+                  readProperty(HTTP_SERVER_REST_CONTEXT_PATH));
             this.deployed = true;
 
             while (!Thread.currentThread().isInterrupted()) {
@@ -141,7 +145,6 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
             Utils.shutdownLog(log, ie);
          } catch (final Exception ie) {
             log.error("Error while initializing.", ie);
-            ;
          } finally {
             this.server.stop();
             this.deployed = false;
@@ -157,15 +160,15 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
       resteasyDeployment.setResourceFactories(resourceFactories());
       final DeploymentInfo deploymentInfo = this.server.undertowDeployment(resteasyDeployment,
             String.valueOf(this.context.getProperties().get(HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX)))
-            .setContextPath(String.valueOf(this.context.getProperties().get(HTTP_SERVER_REST_CONTEXT_PATH)))
-            .setClassLoader(this.getClass().getClassLoader())
-            .setDeploymentName("Silverware rest deployment");
+                                                       .setContextPath(String.valueOf(this.context.getProperties().get(HTTP_SERVER_REST_CONTEXT_PATH)))
+                                                       .setClassLoader(this.getClass().getClassLoader())
+                                                       .setDeploymentName("Silverware rest deployment");
       if (this.sslEnabled) {
          deploymentInfo
                .addSecurityConstraint(new SecurityConstraint().addWebResourceCollection(new WebResourceCollection()
                      .addUrlPattern("/*"))
-                     .setTransportGuaranteeType(TransportGuaranteeType.CONFIDENTIAL)
-                     .setEmptyRoleSemantic(SecurityInfo.EmptyRoleSemantic.PERMIT))
+                                                              .setTransportGuaranteeType(TransportGuaranteeType.CONFIDENTIAL)
+                                                              .setEmptyRoleSemantic(SecurityInfo.EmptyRoleSemantic.PERMIT))
                .setConfidentialPortManager(exchange -> sslPort());
       }
       return deploymentInfo;
