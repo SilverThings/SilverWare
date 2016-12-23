@@ -72,6 +72,7 @@ public class SSLTest {
    public void defaultSslConfigurationTest() throws Exception {
       final BootUtil bootUtil = new BootUtil();
       final Map<String, Object> platformProperties = bootUtil.getContext().getProperties();
+      platformProperties.put(HttpServerSilverService.HTTP_SERVER_ADDRESS, "localhost");
       platformProperties.put(HttpServerSilverService.HTTP_SERVER_PORT, 8282);
       platformProperties.put(HttpServerSilverService.HTTP_SERVER_SSL_ENABLED, "true");
 
@@ -90,7 +91,7 @@ public class SSLTest {
    public void sslConfigurationAbsolutePathTest() throws Exception {
       final BootUtil bootUtil = new BootUtil();
       final Map<String, Object> platformProperties = bootUtil.getContext().getProperties();
-
+      platformProperties.put(HttpServerSilverService.HTTP_SERVER_ADDRESS, "localhost");
       platformProperties.put(HttpServerSilverService.HTTP_SERVER_PORT, 8282);
       platformProperties.put(HttpServerSilverService.HTTP_SERVER_SSL_ENABLED, "true");
       platformProperties.put(
@@ -121,6 +122,7 @@ public class SSLTest {
    public void sslConfigurationResourcePathTest() throws Exception {
       final BootUtil bootUtil = new BootUtil();
       final Map<String, Object> platformProperties = bootUtil.getContext().getProperties();
+      platformProperties.put(HttpServerSilverService.HTTP_SERVER_ADDRESS, "localhost");
       platformProperties.put(HttpServerSilverService.HTTP_SERVER_PORT, 8282);
       platformProperties.put(HttpServerSilverService.HTTP_SERVER_SSL_ENABLED, "true");
       platformProperties
