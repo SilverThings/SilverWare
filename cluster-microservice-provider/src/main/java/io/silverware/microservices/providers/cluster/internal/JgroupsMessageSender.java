@@ -25,6 +25,7 @@ import org.jgroups.Address;
 import org.jgroups.Message;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestOptions;
+import org.jgroups.blocks.ResponseMode;
 import org.jgroups.util.FutureListener;
 import org.jgroups.util.RspList;
 import org.jgroups.util.Util;
@@ -34,6 +35,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -47,8 +49,11 @@ public class JgroupsMessageSender {
     */
    private static final Logger log = LogManager.getLogger(JgroupsMessageSender.class);
 
-   private static final RequestOptions SYNC_OPTIONS = RequestOptions.SYNC();
-   private static final RequestOptions ASYNC_OPTIONS = RequestOptions.ASYNC();
+   private static final long MESSAGE_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
+   private static final Message.Flag[] SYNC_MESSAGE_FLAGS = { Message.Flag.DONT_BUNDLE };
+
+   private static final RequestOptions SYNC_OPTIONS = new RequestOptions(ResponseMode.GET_ALL, MESSAGE_TIMEOUT, true, null, SYNC_MESSAGE_FLAGS);
+   private static final RequestOptions ASYNC_OPTIONS = new RequestOptions(ResponseMode.GET_NONE, MESSAGE_TIMEOUT, true);
 
    private final MessageDispatcher dispatcher;
    private Set<Address> filteredAdresses;

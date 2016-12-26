@@ -93,6 +93,7 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
          JgroupsMessageReceiver receiver = new JgroupsMessageReceiver(KnownImplementation.initializeReponders(context), remoteServiceHandlesStore);
          this.messageDispatcher = new MessageDispatcher(channel, receiver, receiver, receiver);
          this.sender = new JgroupsMessageSender(this.messageDispatcher);
+         channel.setDiscardOwnMessages(true);
          log.info("Setting cluster group: {} ", clusterGroup);
          channel.connect(clusterGroup);
          receiver.setMyAddress(channel.getAddress());
