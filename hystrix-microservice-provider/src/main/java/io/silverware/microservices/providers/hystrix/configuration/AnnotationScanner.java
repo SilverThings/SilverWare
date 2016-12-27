@@ -33,76 +33,99 @@ import io.silverware.microservices.providers.hystrix.configuration.MethodConfig.
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javax.enterprise.inject.spi.InjectionPoint;
 
 /**
  * Scans annotations and creates Hystrix service configuration.
  */
 public class AnnotationScanner {
 
+   private static final Set<Class<? extends Annotation>> HIGH_LEVEL_ANNOTATIONS = new HashSet<>();
+
+   static {
+      Collections.addAll(HIGH_LEVEL_ANNOTATIONS, Cached.class, CircuitBreaker.class, Fail.class, ThreadPool.class, Timeout.class);
+   }
+
    private AnnotationScanner() {
 
    }
 
    /**
-    * Scans given annotations and creates Hystrix service configuration.
+    * Scans given injection point for Hystrix annotations and creates Hystrix service configuration.
     *
-    * @param annotations
-    *       annotations on the injection point
+    * @param injectionPoint
+    *       injection point to be scanned
+    * @param microserviceName
+    *       the name of the microservice being injected
     * @return Hystrix service configuration
     */
-   public static ServiceConfig scan(Set<Annotation> annotations) {
+   public static ServiceConfig scan(InjectionPoint injectionPoint, String microserviceName) {
+      String commandKey = injectionPoint.getBean().getName() + ":" + injectionPoint.getMember().getName();
+      MethodConfig basicConfig = MethodConfig.createBuilder(microserviceName, commandKey).build();
+
+      Set<Annotation> annotations = injectionPoint.getAnnotated().getAnnotations();
       Optional<Annotation> hystrixAnnotation = annotations.stream().filter(annotation -> annotation.annotationType() == HystrixConfig.class).findAny();
+
       if (hystrixAnnotation.isPresent()) {
          HystrixConfig hystrixConfig = (HystrixConfig) hystrixAnnotation.get();
-         return scanInterfaceAnnotations(hystrixConfig.value());
+         return scanInterfaceAnnotations(hystrixConfig.value(), basicConfig);
       } else {
          Annotation[] annotationArray = new Annotation[annotations.size()];
-         return scanFieldAnnotations(annotations.toArray(annotationArray));
+         return scanFieldAnnotations(annotations.toArray(annotationArray), basicConfig);
       }
    }
 
-   private static ServiceConfig scanFieldAnnotations(Annotation[] annotations) {
-      final MethodConfig methodConfig = scanHighLevelAnnotations(annotations, null);
+   private static ServiceConfig scanFieldAnnotations(Annotation[] annotations, MethodConfig basicConfig) {
+      final MethodConfig methodConfig = scanHighLevelAnnotations(annotations, basicConfig);
       return new ServiceConfig(methodConfig);
    }
 
-   private static ServiceConfig scanInterfaceAnnotations(Class configClass) {
+   private static ServiceConfig scanInterfaceAnnotations(Class configClass, MethodConfig basicConfig) {
       final Map<String, MethodConfig> methods = new HashMap<>();
 
-      MethodConfig defaultConfig = scanClassAnnotations(configClass.getAnnotations());
+      MethodConfig defaultConfig = scanClassAnnotations(configClass.getAnnotations(), basicConfig);
 
       for (Method method : configClass.getDeclaredMethods()) {
-         MethodConfig methodConfig = scanMethodAnnotations(method, defaultConfig);
+         MethodConfig methodDefaultConfig = defaultConfig;
+         if (defaultConfig.getCommandKey().equals(basicConfig.getCommandKey())) {
+            String commandKey = basicConfig.getCommandKey() + ":" + method.getName();
+            methodDefaultConfig = MethodConfig.createBuilder(defaultConfig).commandKey(commandKey).build();
+         }
+         MethodConfig methodConfig = scanMethodAnnotations(method, methodDefaultConfig);
          methods.put(ServiceConfig.getMethodSignature(method), methodConfig);
       }
 
       return new ServiceConfig(methods);
    }
 
-   private static MethodConfig scanClassAnnotations(Annotation[] annotations) {
-      MethodConfig methodConfig = scanHighLevelAnnotations(annotations, null);
+   private static MethodConfig scanClassAnnotations(Annotation[] annotations, MethodConfig basicConfig) {
+      MethodConfig methodConfig = scanHighLevelAnnotations(annotations, basicConfig);
 
       if (!methodConfig.isHystrixActive()) {
-         methodConfig = scanClassLowLevelAnnotations(annotations);
+         methodConfig = scanClassLowLevelAnnotations(annotations, basicConfig);
       }
 
       return methodConfig;
    }
 
    private static MethodConfig scanMethodAnnotations(Method method, MethodConfig defaultConfig) {
-      MethodConfig testConfig = scanHighLevelAnnotations(method.getAnnotations(), null); // TODO find some other way
-      boolean highLevelUsed = testConfig.isHystrixActive();
-
-      if (highLevelUsed) {
+      if (isHighLevelAnnotationPresent(method.getAnnotations())) {
          return scanHighLevelAnnotations(method.getAnnotations(), defaultConfig);
       } else {
          return scanMethodLowLevelAnnotations(method, defaultConfig);
       }
+   }
+
+   private static boolean isHighLevelAnnotationPresent(Annotation[] annotations) {
+      return Arrays.stream(annotations)
+                   .map(Annotation::annotationType)
+                   .anyMatch(HIGH_LEVEL_ANNOTATIONS::contains);
    }
 
    private static MethodConfig scanHighLevelAnnotations(Annotation[] annotations, MethodConfig defaultConfig) {
@@ -148,8 +171,8 @@ public class AnnotationScanner {
       return builder.build();
    }
 
-   private static MethodConfig scanClassLowLevelAnnotations(Annotation[] annotations) {
-      Builder builder = MethodConfig.createBuilder();
+   private static MethodConfig scanClassLowLevelAnnotations(Annotation[] annotations, MethodConfig basicConfig) {
+      Builder builder = MethodConfig.createBuilder(basicConfig);
 
       for (Annotation annotation : annotations) {
          if (annotation.annotationType() == DefaultProperties.class) {

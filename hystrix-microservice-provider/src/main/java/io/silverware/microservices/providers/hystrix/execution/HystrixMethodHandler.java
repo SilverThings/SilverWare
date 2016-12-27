@@ -24,9 +24,9 @@ import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
 import io.silverware.microservices.providers.cdi.internal.MicroserviceMethodHandler;
 import io.silverware.microservices.providers.cdi.internal.MicroserviceProxyBean;
 import io.silverware.microservices.providers.hystrix.configuration.AnnotationScanner;
+import io.silverware.microservices.providers.hystrix.configuration.CommandProperties;
 import io.silverware.microservices.providers.hystrix.configuration.MethodConfig;
 import io.silverware.microservices.providers.hystrix.configuration.ServiceConfig;
-import io.silverware.microservices.providers.hystrix.configuration.SetterFactory;
 import io.silverware.microservices.providers.hystrix.execution.MicroserviceHystrixCommand.Builder;
 
 import com.netflix.hystrix.HystrixCommand;
@@ -38,7 +38,6 @@ import org.apache.log4j.Logger;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.InjectionPoint;
@@ -58,14 +57,16 @@ public class HystrixMethodHandler extends MicroserviceMethodHandler {
    private final MicroserviceMethodHandler methodHandler;
 
    private final ServiceConfig serviceConfig;
+   private final Object fallbackService;
 
    public HystrixMethodHandler(final MicroserviceMethodHandler methodHandler) throws Exception {
-      this(methodHandler, AnnotationScanner.scan(methodHandler.getInjectionPoint().getAnnotated().getAnnotations()));
+      this(methodHandler, AnnotationScanner.scan(methodHandler.getInjectionPoint(), methodHandler.getProxyBean().getMicroserviceName()));
    }
 
    HystrixMethodHandler(final MicroserviceMethodHandler methodHandler, final ServiceConfig serviceConfig) {
       this.methodHandler = methodHandler;
       this.serviceConfig = serviceConfig;
+      this.fallbackService = lookUpFallbackService();
    }
 
    @Override
@@ -83,12 +84,11 @@ public class HystrixMethodHandler extends MicroserviceMethodHandler {
          return methodHandler.invoke(method, args);
       }
 
-      String commandKey = createCommandKey(getInjectionPoint(), methodName);
-      Setter setter = SetterFactory.createHystrixCommandSetter(serviceName, commandKey, methodConfig);
+      Setter setter = methodConfig.getHystrixCommandSetter();
 
-      String cacheKey = createCacheKey(serviceName, methodName, methodConfig.getCacheKeyParameterIndexes(), args);
+      String cacheKey = createCacheKey(serviceName, methodName, methodConfig, args);
 
-      Callable<Object> fallback = lookUpFallback(method, args);
+      Callable<Object> fallback = fallbackService != null ? () -> method.invoke(fallbackService, args) : null;
 
       HystrixCommand<Object> hystrixCommand = new Builder<>(setter, () -> methodHandler.invoke(method, args))
             .cacheKey(cacheKey)
@@ -113,27 +113,24 @@ public class HystrixMethodHandler extends MicroserviceMethodHandler {
       return methodHandler.getInjectionPoint();
    }
 
-   private static String createCommandKey(final InjectionPoint injectionPoint, final String methodName) {
-      String beanName = injectionPoint.getBean().getName();
-      String fieldName = injectionPoint.getMember().getName();
-      return beanName + ":" + fieldName + ":" + methodName;
-   }
+   private static String createCacheKey(final String serviceName, final String methodName, final MethodConfig methodConfig, final Object... args) {
+      if (!Boolean.parseBoolean(methodConfig.getCommandProperties().getOrDefault(CommandProperties.REQUEST_CACHE_ENABLED, Boolean.FALSE.toString()))) {
+         return null;
+      }
 
-   private static String createCacheKey(final String serviceName, final String methodName, final Set<Integer> parameterIndexes, final Object... args) {
       Object[] cachingArguments = args;
-      if (!parameterIndexes.isEmpty()) {
-         cachingArguments = parameterIndexes.stream().sorted().map(index -> args[index]).toArray();
+      if (!methodConfig.getCacheKeyParameterIndexes().isEmpty()) {
+         cachingArguments = methodConfig.getCacheKeyParameterIndexes().stream().sorted().map(index -> args[index]).toArray();
       }
       return String.format("%s:%s:%s", serviceName, methodName, Arrays.toString(cachingArguments));
    }
 
-   private Callable<Object> lookUpFallback(final Method method, final Object[] args) {
+   private Object lookUpFallbackService() {
       try {
          Class<?> serviceInterface = getProxyBean().getServiceInterface();
          CdiMicroserviceProvider cdiProvider = (CdiMicroserviceProvider) getProxyBean().getContext().getProvider(CdiMicroserviceProvider.class);
-         Object fallbackService = cdiProvider.lookupBean(serviceInterface, new AnnotationLiteral<Fallback>() {
+         return cdiProvider.lookupBean(serviceInterface, new AnnotationLiteral<Fallback>() {
          });
-         return () -> method.invoke(fallbackService, args);
       } catch (Exception ex) {
          if (log.isTraceEnabled()) {
             log.trace("Fallback not found", ex);

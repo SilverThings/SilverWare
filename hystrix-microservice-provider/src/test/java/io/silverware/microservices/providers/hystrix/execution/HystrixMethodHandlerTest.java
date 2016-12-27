@@ -75,7 +75,7 @@ public class HystrixMethodHandlerTest extends HystrixTestBase {
 
    @Test
    public void testInvokeDefault() throws Exception {
-      MethodConfig methodConfig = MethodConfig.createBuilder().build();
+      MethodConfig methodConfig = MethodConfig.createBuilder(SERVICE_NAME, BEAN_NAME + ":" + FIELD_NAME).build();
       ServiceConfig serviceConfig = new ServiceConfig(methodConfig);
       HystrixMethodHandler hystrixMethodHandler = new HystrixMethodHandler(parentMethodHandler, serviceConfig);
 
@@ -88,7 +88,7 @@ public class HystrixMethodHandlerTest extends HystrixTestBase {
 
    @Test
    public void testInvokeObjectMethod() throws Exception {
-      MethodConfig methodConfig = MethodConfig.createBuilder()
+      MethodConfig methodConfig = MethodConfig.createBuilder(SERVICE_NAME, BEAN_NAME + ":" + FIELD_NAME)
                                               .hystrixActive(true)
                                               .build();
       ServiceConfig serviceConfig = new ServiceConfig(methodConfig);
@@ -103,7 +103,7 @@ public class HystrixMethodHandlerTest extends HystrixTestBase {
 
    @Test
    public void testInvokeCircuitBreaker() throws Exception {
-      MethodConfig methodConfig = MethodConfig.createBuilder()
+      MethodConfig methodConfig = MethodConfig.createBuilder(SERVICE_NAME, BEAN_NAME + ":" + FIELD_NAME)
                                               .hystrixActive(true)
                                               .commandProperty(CommandProperties.CIRCUIT_BREAKER_ENABLED, Boolean.TRUE.toString())
                                               .build();
@@ -120,7 +120,7 @@ public class HystrixMethodHandlerTest extends HystrixTestBase {
 
    @Test
    public void testInvokeTimeout() throws Exception {
-      MethodConfig methodConfig = MethodConfig.createBuilder()
+      MethodConfig methodConfig = MethodConfig.createBuilder(SERVICE_NAME, BEAN_NAME + ":" + FIELD_NAME)
                                               .hystrixActive(true)
                                               .commandProperty(CommandProperties.EXECUTION_TIMEOUT_ENABLED, Boolean.TRUE.toString())
                                               .build();
@@ -136,7 +136,7 @@ public class HystrixMethodHandlerTest extends HystrixTestBase {
    }
 
    private void testRequestCaching(boolean enabled) throws Exception {
-      MethodConfig methodConfig = MethodConfig.createBuilder()
+      MethodConfig methodConfig = MethodConfig.createBuilder(SERVICE_NAME, BEAN_NAME + ":" + FIELD_NAME)
                                               .hystrixActive(true)
                                               .commandProperty(CommandProperties.REQUEST_CACHE_ENABLED, String.valueOf(enabled))
                                               .build();
@@ -167,7 +167,7 @@ public class HystrixMethodHandlerTest extends HystrixTestBase {
 
    @Test
    public void testInvokeRequestCachingParameters() throws Exception {
-      MethodConfig methodConfig = MethodConfig.createBuilder()
+      MethodConfig methodConfig = MethodConfig.createBuilder(SERVICE_NAME, BEAN_NAME + ":" + FIELD_NAME)
                                               .hystrixActive(true)
                                               .cacheKeyParameterIndex(1)
                                               .commandProperty(CommandProperties.REQUEST_CACHE_ENABLED, Boolean.TRUE.toString())

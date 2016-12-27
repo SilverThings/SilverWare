@@ -193,7 +193,7 @@ public class AnnotationScannerLowLevelInterfaceTest extends AnnotationScannerTes
       assertThat(methodConfig.isHystrixActive()).isTrue();
 
       assertThat(methodConfig.getGroupKey()).isEqualTo(GROUP_KEY);
-      assertThat(methodConfig.getCommandKey()).isNullOrEmpty();
+      assertThat(methodConfig.getCommandKey()).isEqualTo(createCommandKey(METHOD_1));
       assertThat(methodConfig.getThreadPoolKey()).isNullOrEmpty();
 
       Map<String, String> commandProperties = methodConfig.getCommandProperties();
@@ -255,7 +255,7 @@ public class AnnotationScannerLowLevelInterfaceTest extends AnnotationScannerTes
       assertThat(methodConfig.isHystrixActive()).isTrue();
 
       assertThat(methodConfig.getGroupKey()).isEqualTo(OVERRIDDEN_GROUP_KEY);
-      assertThat(methodConfig.getCommandKey()).isNullOrEmpty();
+      assertThat(methodConfig.getCommandKey()).isEqualTo(createCommandKey(METHOD_3));
       assertThat(methodConfig.getThreadPoolKey()).isNullOrEmpty();
 
       Map<String, String> commandProperties = methodConfig.getCommandProperties();
