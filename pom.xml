@@ -82,6 +82,7 @@
       <module>activemq-microservice-provider</module>
       <module>vertx-microservice-provider</module>
       <module>hystrix-microservice-provider</module>
+      <module>health-check-provider</module>
    </modules>
    <dependencyManagement>
       <dependencies>
