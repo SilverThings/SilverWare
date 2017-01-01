@@ -63,6 +63,7 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
 
    /**
     * Property to omit a shutdown hook. Useful for tests mainly.
+    *  and especially BootTest#testFullBoot
     */
    public static final String SHUTDOWN_HOOK = "silverware.shutdown";
 
@@ -202,7 +203,7 @@ public class Executor implements MicroserviceProvider, ProvidingSilverService {
             shutdownThread.start();
 
             try {
-               shutdownThread.join();
+               shutdownThread.join(TimeUnit.SECONDS.toMillis(5));
             } catch (InterruptedException iee) {
                // we did our best
             }

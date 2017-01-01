@@ -19,6 +19,8 @@
  */
 package io.silverware.microservices;
 
+import static io.silverware.microservices.Executor.SHUTDOWN_HOOK;
+
 import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.util.BootUtil;
 
@@ -61,7 +63,8 @@ public class BootTest {
 
    @Test
    public void testFullBoot() throws InterruptedException {
-      Boot.main();
+
+      Boot.main("-D" + SHUTDOWN_HOOK + "=false");
 
       Assert.assertTrue(semaphore.tryAcquire(50, TimeUnit.SECONDS), "Timed-out while waiting for platform startup.");
 

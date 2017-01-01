@@ -19,13 +19,15 @@
  */
 package io.silverware.microservices.providers.http.resteasy;
 
+import io.silverware.microservices.Context;
+import io.silverware.microservices.MicroserviceMetaData;
+
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResourceFactory;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
-import io.silverware.microservices.Context;
-import io.silverware.microservices.MicroserviceMetaData;
+import java.util.Set;
 
 /**
  * Silverware resource factory producing a Microservice from a context
@@ -36,6 +38,7 @@ import io.silverware.microservices.MicroserviceMetaData;
 public class SilverwareResourceFactory implements ResourceFactory {
    private final Context context;
    private final MicroserviceMetaData microserviceMetadata;
+   private volatile Object reference;
 
    /**
     * Ctor.
@@ -58,29 +61,28 @@ public class SilverwareResourceFactory implements ResourceFactory {
 
    @Override
    public void registered(final ResteasyProviderFactory factory) {
-      // TODO Auto-generated method stub
-
    }
 
    @Override
    public Object createResource(final HttpRequest request, final HttpResponse response,
          final ResteasyProviderFactory factory) {
-      /*
-       * What should follow if an empty set of microservices is returned?
-       */
-      return this.context.lookupMicroservice(this.microserviceMetadata).iterator().next();
+      if (reference == null) {
+         final Set<Object> proxies = this.context.lookupLocalMicroservice(this.microserviceMetadata);
+         if (proxies.isEmpty()) {
+            throw new RuntimeException("No REST service found for " + request + " and metadata " + microserviceMetadata);
+         }
+         reference = proxies.iterator().next();
+      }
+
+      return reference;
    }
 
    @Override
    public void requestFinished(final HttpRequest request, final HttpResponse response, final Object resource) {
-      // TODO Auto-generated method stub
-
    }
 
    @Override
    public void unregistered() {
-      // TODO Auto-generated method stub
-
    }
 
 }

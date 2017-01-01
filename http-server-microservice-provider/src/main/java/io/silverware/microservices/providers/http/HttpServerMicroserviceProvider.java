@@ -121,7 +121,7 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
          log.info("Hello from Http Server microservice provider!");
          try {
             final Builder builder = Undertow.builder().addHttpListener(
-                  (int) this.context.getProperties().get(HTTP_SERVER_PORT),
+                  Integer.valueOf(this.context.getProperties().get(HTTP_SERVER_PORT).toString()),
                   String.valueOf(this.context.getProperties().get(HTTP_SERVER_ADDRESS)));
             if (this.sslEnabled) {
                builder.addHttpsListener(
