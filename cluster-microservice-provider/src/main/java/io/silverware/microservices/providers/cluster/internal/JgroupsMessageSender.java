@@ -144,4 +144,8 @@ public class JgroupsMessageSender {
       return this.dispatcher.sendMessage(new Message(address, Util.objectToByteBuffer(content)), SYNC_OPTIONS);
    }
 
+   public boolean isEmptyCluster() {
+      return this.getOtherMembersAddresses().isEmpty();
+   }
+
 }

@@ -19,6 +19,8 @@
  */
 package io.silverware.microservices.annotations;
 
+import io.silverware.microservices.providers.cdi.util.VersionResolver;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -33,7 +35,7 @@ import java.lang.annotation.Target;
  * <li><strong>Injection point:</strong> can specify supported version of a Microservice API. </li>
  * </ul>
  * These versions are used in the lookup of the Microservices in the cluster.
- * See @{@link io.silverware.microservices.providers.cdi.util.VersionResolver}
+ * See @{@link VersionResolver}
  * See @{@link io.silverware.microservices.util.VersionComparator}
  *
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
@@ -41,7 +43,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-@Target({ ElementType.TYPE })
+@Target({ ElementType.TYPE, ElementType.FIELD })
 public @interface MicroserviceVersion {
 
    /**
@@ -51,7 +53,7 @@ public @interface MicroserviceVersion {
 
    /**
     * Gets the implementation version of the Microservice.
-    * If not defined then {@link io.silverware.microservices.providers.cdi.util.VersionResolver} continues in search for microservice version.
+    * If not defined then {@link VersionResolver} continues in search for microservice version.
     */
    String implementation() default "";
 }

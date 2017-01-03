@@ -46,8 +46,6 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
    @Override
    public void initialize(final Context context) {
       this.context = context;
-      HttpInvokerServlet.setContext(context);
-
       context.getProperties().putIfAbsent(INVOKER_URL, "invoker");
    }
 
@@ -60,7 +58,8 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
    public void run() {
       try {
          log.info("Hello from Http Invoker microservice provider!");
-
+         Utils.waitForCDIProvider(context);
+         HttpInvokerServlet.setContext(context);
          try {
             if (log.isDebugEnabled()) {
                log.debug("Waiting for the Http Microservice provider.");

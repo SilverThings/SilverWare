@@ -58,7 +58,7 @@
       <version.testng>6.9.10</version.testng>
       <version.apache.camel>2.16.1</version.apache.camel>
       <version.slf4j>1.7.13</version.slf4j>
-      <version.weld>2.3.2.Final</version.weld>
+      <version.weld>2.4.1.Final</version.weld>
       <version.ejb.api>3.0</version.ejb.api>
       <version.jboss.logging>3.3.0.Final</version.jboss.logging>
       <version.jgroups>3.6.6.Final</version.jgroups>

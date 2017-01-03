@@ -35,6 +35,7 @@ import io.silverware.microservices.providers.cluster.internal.util.FutureListene
 import io.silverware.microservices.silver.ClusterSilverService;
 import io.silverware.microservices.silver.cluster.RemoteServiceHandlesStore;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
+import io.silverware.microservices.util.Utils;
 
 import com.google.common.base.Stopwatch;
 import org.apache.logging.log4j.LogManager;
@@ -47,10 +48,10 @@ import org.jgroups.util.RspList;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -66,43 +67,20 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
 
    private Context context;
    private RemoteServiceHandlesStore remoteServiceHandlesStore;
-   private Map<MicroserviceMetaData, Set<Address>> alreadyQueriedAddresses = new HashMap<>();
+   private Map<MicroserviceMetaData, Set<Address>> alreadyQueriedAddresses = new ConcurrentHashMap<>();
 
    private JgroupsMessageSender sender;
    private MessageDispatcher messageDispatcher;
    private Long timeout = 500L;
+   private JChannel channel;
 
    @Override
    public void initialize(final Context context) {
-      try {
-         final Stopwatch stopwatch = Stopwatch.createStarted();
-         // do some basic initialization
-         this.context = context;
-         this.remoteServiceHandlesStore = context.getRemoteServiceHandlesStore();
-         this.alreadyQueriedAddresses = new HashMap<>();
-         context.getProperties().putIfAbsent(CLUSTER_GROUP, "SilverWare");
-         context.getProperties().putIfAbsent(CLUSTER_CONFIGURATION, "udp.xml");
-         context.getProperties().putIfAbsent(CLUSTER_LOOKUP_TIMEOUT, timeout);
-         // get jgroups configuration
-         final String clusterGroup = (String) this.context.getProperties().get(CLUSTER_GROUP);
-         final String clusterConfiguration = (String) this.context.getProperties().get(CLUSTER_CONFIGURATION);
-         this.timeout = Long.valueOf(this.context.getProperties().get(CLUSTER_LOOKUP_TIMEOUT).toString());
-         log.info("Hello from Cluster microservice provider!");
-         log.info("Loading cluster configuration from: {} ", clusterConfiguration);
-         JChannel channel = new JChannel(clusterConfiguration);
-         JgroupsMessageReceiver receiver = new JgroupsMessageReceiver(KnownImplementation.initializeReponders(context), remoteServiceHandlesStore);
-         this.messageDispatcher = new MessageDispatcher(channel, receiver, receiver, receiver);
-         this.sender = new JgroupsMessageSender(this.messageDispatcher);
-         channel.setDiscardOwnMessages(true);
-         log.info("Setting cluster group: {} ", clusterGroup);
-         channel.connect(clusterGroup);
-         receiver.setMyAddress(channel.getAddress());
-         stopwatch.stop();
-         log.info("Initialization of ClusterMicroserviceProvider took {} ms. ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-      } catch (Exception e) {
-         log.error("Cluster microservice initialization failed.", e);
-         throw new SilverWareClusteringException(INITIALIZATION_ERROR, e);
-      }
+      this.context = context;
+      this.remoteServiceHandlesStore = context.getRemoteServiceHandlesStore();
+      context.getProperties().putIfAbsent(CLUSTER_GROUP, "SilverWare");
+      context.getProperties().putIfAbsent(CLUSTER_CONFIGURATION, "udp.xml");
+      context.getProperties().putIfAbsent(CLUSTER_LOOKUP_TIMEOUT, timeout);
    }
 
    @Override
@@ -113,15 +91,43 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
    @Override
    public void run() {
       try {
+         final Stopwatch stopwatch = Stopwatch.createStarted();
+
+         // get jgroups configuration
+         final String clusterGroup = (String) this.context.getProperties().get(CLUSTER_GROUP);
+         final String clusterConfiguration = (String) this.context.getProperties().get(CLUSTER_CONFIGURATION);
+         this.timeout = Long.valueOf(this.context.getProperties().get(CLUSTER_LOOKUP_TIMEOUT).toString());
+         log.info("Hello from Cluster microservice provider!");
+         log.info("Loading cluster configuration from: {} ", clusterConfiguration);
+         channel = new JChannel(clusterConfiguration);
+         JgroupsMessageReceiver receiver = new JgroupsMessageReceiver(KnownImplementation.initializeReponders(context), remoteServiceHandlesStore);
+         this.messageDispatcher = new MessageDispatcher(channel, receiver, receiver, receiver);
+         this.sender = new JgroupsMessageSender(this.messageDispatcher);
+         channel.setDiscardOwnMessages(true);
+         log.info("Setting cluster group: {} ", clusterGroup);
+         Utils.waitForCDIProvider(context);
+         channel.connect(clusterGroup);
+         receiver.setMyAddress(channel.getAddress());
+         stopwatch.stop();
+         log.info("Initialization of ClusterMicroserviceProvider took {} ms. ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      } catch (Exception e) {
+         log.error("Cluster microservice initialization failed.", e);
+         throw new SilverWareClusteringException(INITIALIZATION_ERROR, e);
+      }
+
+      try {
          while (!Thread.currentThread().isInterrupted()) {
+            Thread.sleep(2000);
 
          }
       } catch (final Exception e) {
-         log.error("Cluster microservice provider failed.", e);
+         // expected end of platform
       } finally {
          log.info("Bye from Cluster microservice provider!");
          try {
             this.messageDispatcher.close();
+            this.channel.close();
+
          } catch (IOException e) {
             throw new SilverWareClusteringException(JGROUPS_ERROR, "Unexpected error while closing MessageDispatcher", e);
          }
@@ -136,9 +142,7 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
                new FutureListenerHelper<MicroserviceSearchResponse>(rspList -> {
                   try {
                      RspList<MicroserviceSearchResponse> responseRspList = rspList.get(10, TimeUnit.SECONDS);
-                     if (log.isTraceEnabled()) {
-                        log.trace("Response retrieved!  {}", responseRspList);
-                     }
+                     log.info("Response retrieved!  {}", responseRspList);
                      Collection<Rsp<MicroserviceSearchResponse>> result = responseRspList.values();
                      if (log.isTraceEnabled()) {
                         log.trace("Size of a responses is : {} ", responseRspList.getResults().size());
@@ -159,7 +163,7 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
 
                }));
          // If this is first query for the metadata we should wait for a response
-         if (addressesForMetadata.isEmpty()) {
+         if (addressesForMetadata.isEmpty() && !sender.isEmptyCluster()) {
             Thread.sleep(timeout);
          }
 

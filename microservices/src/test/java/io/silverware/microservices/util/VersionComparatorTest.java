@@ -48,7 +48,7 @@ public class VersionComparatorTest {
 
    @Test(dataProvider = SUCCESS)
    public void testSatisfiesConditionSuccess(String condition) throws Exception {
-      assertThat(VersionComparator.forVersion(VERSION).satisfies(condition)).as(DESCRIPTION, VERSION, " ", condition).isTrue();
+      assertThat(VersionComparator.forVersion(null, VERSION).satisfies(condition)).as(DESCRIPTION, VERSION, " ", condition).isTrue();
    }
 
    @DataProvider(name = FAIL)
@@ -58,7 +58,7 @@ public class VersionComparatorTest {
 
    @Test(dataProvider = FAIL)
    public void testSatisfiesConditionFails(String condition) throws Exception {
-      assertThat(VersionComparator.forVersion(VERSION).satisfies(condition)).as(DESCRIPTION, VERSION, " not ", condition).isFalse();
+      assertThat(VersionComparator.forVersion(null, VERSION).satisfies(condition)).as(DESCRIPTION, VERSION, " not ", condition).isFalse();
    }
 
    @DataProvider(name = SUCCESS_LESS_DIGITS)
@@ -68,7 +68,7 @@ public class VersionComparatorTest {
 
    @Test(dataProvider = SUCCESS_LESS_DIGITS)
    public void testSatisfiesConditionWithLessDigitsSuccess(String condition) throws Exception {
-      assertThat(VersionComparator.forVersion(MINOR_VERSION_SNAPSHOT).satisfies(condition)).as(DESCRIPTION, MINOR_VERSION_SNAPSHOT, " ", condition).isTrue();
+      assertThat(VersionComparator.forVersion(null, MINOR_VERSION_SNAPSHOT).satisfies(condition)).as(DESCRIPTION, MINOR_VERSION_SNAPSHOT, " ", condition).isTrue();
    }
 
    @DataProvider(name = SUCCESS_MAJOR_SNAPSHOT)
@@ -78,7 +78,7 @@ public class VersionComparatorTest {
 
    @Test(dataProvider = SUCCESS_MAJOR_SNAPSHOT)
    public void testSatisfiesConditionMajorSnapshotSuccess(String condition) throws Exception {
-      assertThat(VersionComparator.forVersion(MAJOR_VERSION_SNAPSHOT).satisfies(condition)).as(DESCRIPTION, MAJOR_VERSION_SNAPSHOT, " ", condition).isTrue();
+      assertThat(VersionComparator.forVersion(null, MAJOR_VERSION_SNAPSHOT).satisfies(condition)).as(DESCRIPTION, MAJOR_VERSION_SNAPSHOT, " ", condition).isTrue();
    }
 
 }

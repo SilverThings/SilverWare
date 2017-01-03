@@ -4,11 +4,11 @@ import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
 import io.silverware.microservices.providers.http.HttpServerMicroserviceProvider;
+import io.silverware.microservices.providers.http.invoker.internal.HttpServiceHandle;
 import io.silverware.microservices.silver.CdiSilverService;
 import io.silverware.microservices.silver.HttpInvokerSilverService;
 import io.silverware.microservices.silver.HttpServerSilverService;
 import io.silverware.microservices.silver.cluster.Invocation;
-import io.silverware.microservices.silver.cluster.LocalServiceHandle;
 import io.silverware.microservices.util.BootUtil;
 import io.silverware.microservices.util.Utils;
 
@@ -32,7 +32,6 @@ import java.util.Map;
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class HttpInvokerMicroserviceProviderTest {
-   private static final String VERSION = "1.0.0";
 
    private HttpInvokerSilverService httpInvokerSilverService = null;
 
@@ -62,18 +61,19 @@ public class HttpInvokerMicroserviceProviderTest {
       con.setDoOutput(true);
       con.connect();
 
-      final MicroserviceMetaData metaData = new MicroserviceMetaData("sumService", SumService.class, Collections.emptySet(), Collections.emptySet(), VERSION, VERSION);
+      final MicroserviceMetaData metaData = new MicroserviceMetaData("sumService", SumService.class, Collections.emptySet(), Collections.emptySet(), null, null);
       JsonWriter jsonWriter = new JsonWriter(con.getOutputStream());
       jsonWriter.write(metaData);
 
       Assert.assertEquals(con.getResponseMessage(), "OK");
       JsonReader jsonReader = new JsonReader(con.getInputStream());
-      final List<LocalServiceHandle> handles = (List<LocalServiceHandle>) jsonReader.readObject();
+      final List<HttpServiceHandle> handles = (List<HttpServiceHandle>) jsonReader.readObject();
       Assert.assertEquals(handles.size(), 1);
 
       con.disconnect();
 
-      final LocalServiceHandle handle = handles.get(0);
+      final HttpServiceHandle handle = handles.get(0);
+      Utils.waitForCDIProvider(bootUtil.getContext());
       long l = (Long) handle.invoke(bootUtil.getContext(), "sum", new Class[] { short.class, int.class }, new Object[] { (short) 3, 4 });
       Assert.assertEquals(l, 7L);
 

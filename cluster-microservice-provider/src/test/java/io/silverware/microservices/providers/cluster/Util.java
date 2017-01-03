@@ -20,7 +20,6 @@
 package io.silverware.microservices.providers.cluster;
 
 import io.silverware.microservices.providers.cluster.internal.RemoteServiceHandleStoreTest;
-import io.silverware.microservices.silver.cluster.LocalServiceHandle;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,8 +31,8 @@ import java.util.Set;
  * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
 public class Util {
-   public static LocalServiceHandle createHandle(String host) {
-      return new LocalServiceHandle(host, RemoteServiceHandleStoreTest.META_DATA, new Object());
+   public static RemoteServiceHandle createHandle(int handle) {
+      return new RemoteServiceHandle(org.jgroups.util.UUID.randomUUID(), 1, null, RemoteServiceHandleStoreTest.META_DATA);
    }
 
    public static <T> Set<T> createSetFrom(T... components) {

@@ -67,4 +67,12 @@ public class MicroserviceSearchResponse implements Serializable {
    public Integer getHandle() {
       return handle;
    }
+
+   @Override
+   public String toString() {
+      return "MicroserviceSearchResponse{" +
+            "handle=" + handle +
+            ", result=" + result +
+            '}';
+   }
 }

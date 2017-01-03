@@ -20,7 +20,6 @@
 package io.silverware.microservices;
 
 import io.silverware.microservices.providers.MicroserviceProvider;
-import io.silverware.microservices.silver.HttpServerSilverService;
 import io.silverware.microservices.silver.ProvidingSilverService;
 import io.silverware.microservices.silver.SilverService;
 import io.silverware.microservices.silver.cluster.LocalServiceHandle;
@@ -36,6 +35,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +53,8 @@ public class Context {
     * Logger.
     */
    private static final Logger log = LogManager.getLogger(Context.class);
+
+   private static final AtomicInteger COUNTER = new AtomicInteger();
 
    /**
     * Property key where a registry with Microservice providers is.
@@ -68,25 +72,29 @@ public class Context {
    public static final String MICROSERVICES = "silverware.microservices";
 
    /**
+    * Property key where a registry with local Microservices is.
+    */
+   public static final String WELD_NAME = "silverware.weld.name";
+
+   /**
     * Global properties.
     */
-   private final HashMap<String, Object> properties = new HashMap<>();
+   private final Map<String, Object> properties = new HashMap<>();
 
    /**
     * Providers registry.
     */
-   private final Map<String, MicroserviceProvider> providers = new HashMap<>();
+   private final Map<String, MicroserviceProvider> providers = new ConcurrentHashMap<>();
 
    /**
     * Local Microservices registry.
     */
-   private final Set<MicroserviceMetaData> microservices = new HashSet<>();
+   private final Set<MicroserviceMetaData> microservices = ConcurrentHashMap.newKeySet();
 
    /**
     * Handles created for incoming service queries.
     */
-   private final List<LocalServiceHandle> inboundHandles = new ArrayList<>();
-
+   private final List<LocalServiceHandle> localHandles = new ArrayList<>();
 
    /**
     * store remote microservices
@@ -99,8 +107,8 @@ public class Context {
    public Context() {
       properties.put(MICROSERVICE_PROVIDERS_REGISTRY, providers);
       properties.put(MICROSERVICES, microservices);
+      properties.put(WELD_NAME, "Silverware-Weld" + COUNTER.incrementAndGet());
       remoteServiceHandlesStore = new RemoteServiceHandlesStore();
-
    }
 
    /**
@@ -124,7 +132,8 @@ public class Context {
    /**
     * Adds a Microservice to the registry.
     *
-    * @param metaData Description of the service to be registered.
+    * @param metaData
+    *       Description of the service to be registered.
     */
    public void registerMicroservice(final MicroserviceMetaData metaData) {
       microservices.add(metaData);
@@ -140,10 +149,20 @@ public class Context {
    }
 
    /**
+    * @param predicate
+    *       - lambda which is tested against microservices metadata
+    * @return all Microservices which fulfils predicate
+    */
+   public MicroserviceMetaData getSingleMetaDataForPredicate(Predicate<MicroserviceMetaData> predicate) {
+      return microservices.stream().filter(predicate).findFirst().orElse(null);
+   }
+
+   /**
     * Looks up Microservices based on the provided meta-data query.
     * All providers are asked to look up all possible services including local and remote.
     *
-    * @param metaData Meta-data query.
+    * @param metaData
+    *       Meta-data query.
     * @return A set of Microservices instances that meets the query.
     */
    public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
@@ -157,7 +176,8 @@ public class Context {
     * Looks up Microservices based on the provided meta-data query.
     * Only local Microservices are searched.
     *
-    * @param metaData Meta-data query.
+    * @param metaData
+    *       Meta-data query.
     * @return A set of Microservices instances that meets the query.
     */
    public Set<Object> lookupLocalMicroservice(final MicroserviceMetaData metaData) {
@@ -172,7 +192,8 @@ public class Context {
     * Usually ancestors of {@link SilverService} are used for the query.
     * The first class from the registry that meets the query is returned.
     *
-    * @param clazz An interface or class the implementation of which we are looking for.
+    * @param clazz
+    *       An interface or class the implementation of which we are looking for.
     * @return The appropriate Microservice provider if it exists, null otherwise.
     */
    public SilverService getProvider(final Class<? extends SilverService> clazz) {
@@ -189,7 +210,8 @@ public class Context {
     * Gets all providers based on the interface or class specification.
     * Usually ancestors of {@link SilverService} are used for the query.
     *
-    * @param clazz An interface or class the implementation of which we are looking for.
+    * @param clazz
+    *       An interface or class the implementation of which we are looking for.
     * @return A set of appropriate Microservice providers if they exists, an empty set otherwise.
     */
    public Set<SilverService> getAllProviders(final Class<? extends SilverService> clazz) {
@@ -200,34 +222,37 @@ public class Context {
     * Makes that there are handles created for all the local services that meet the given the query.
     * Only local Microservices are searched as we cannot created inbound handles for remote Microservices
     * (we do not want to just pass through calls).
+    * Also multiple MicroserviceMetadata which are not equal can resolve to same proxy.
     *
-    * @param metaData The query for which to look up the service handles.
+    * @param metaData
+    *       The query for which to look up the service handles.
     * @return A list of {@link LocalServiceHandle Service Handles} that meet the specified query.
     */
-   public List<LocalServiceHandle> assureHandles(final MicroserviceMetaData metaData) {
-      List<LocalServiceHandle> result = inboundHandles.stream().filter(serviceHandle -> serviceHandle.getMetaData().equals(metaData)).collect(Collectors.toList());
-      Set<Object> microservices = lookupLocalMicroservice(metaData);
-      Set<Object> haveHandles = result.stream().map(LocalServiceHandle::getProxy).collect(Collectors.toSet());
-      microservices.removeAll(haveHandles);
+   public List<LocalServiceHandle> assureLocalHandles(final MicroserviceMetaData metaData) {
 
-      microservices.forEach(microservice -> {
-         final String host = properties.get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" + properties.get(HttpServerSilverService.HTTP_SERVER_PORT);
-         final LocalServiceHandle handle = new LocalServiceHandle(host, metaData, microservice);
-         result.add(handle);
-         inboundHandles.add(handle);
-      });
+      List<LocalServiceHandle> validHandles = localHandles.stream().filter(handle -> metaData.equals(handle.getMetaData())).collect(Collectors.toList());
+      if (validHandles.isEmpty()) {
+         Set<Object> foundProxies = lookupLocalMicroservice(metaData);
+         foundProxies.forEach(proxy -> {
+            final LocalServiceHandle handle = new LocalServiceHandle(metaData, proxy);
+            localHandles.add(handle);
+            validHandles.add(handle);
+         });
 
-      return result;
+      }
+
+      return validHandles;
    }
 
    /**
     * Gets the {@link LocalServiceHandle} for the given handle number.
     *
-    * @param handle The handle number.
+    * @param handle
+    *       The handle number.
     * @return The {@link LocalServiceHandle} with the given handle number.
     */
-   public LocalServiceHandle getInboundServiceHandle(final int handle) {
-      return inboundHandles.stream().filter(serviceHandle -> serviceHandle.getHandle() == handle).findFirst().get();
+   public LocalServiceHandle getLocalServiceHandle(final int handle) {
+      return localHandles.stream().filter(serviceHandle -> serviceHandle.getHandle() == handle).findFirst().orElse(null);
    }
 
    /**

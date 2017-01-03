@@ -26,6 +26,7 @@ import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.providers.cdi.MicroserviceContext;
 import io.silverware.microservices.providers.cdi.util.AnnotationUtil;
 import io.silverware.microservices.providers.cdi.util.VersionResolver;
+import io.silverware.microservices.util.Utils;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,7 +34,6 @@ import org.apache.logging.log4j.Logger;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -73,6 +73,7 @@ public class MicroservicesCDIExtension implements Extension {
     * Microservices context.
     */
    private final Context context;
+   private final String weldName;
 
    /**
     * List of created {@link MicroserviceProxyBean} instances.
@@ -81,6 +82,7 @@ public class MicroservicesCDIExtension implements Extension {
 
    public MicroservicesCDIExtension(final Context context) {
       this.context = context;
+      this.weldName = String.valueOf(context.getProperties().get(Context.WELD_NAME));
    }
 
    /**
@@ -109,7 +111,7 @@ public class MicroservicesCDIExtension implements Extension {
       // Create a registry of microservices
       if (isMicroserviceBean(bean)) {
          final Microservice annotation = bean.getBeanClass().getAnnotation(Microservice.class);
-         final String microserviceName = !annotation.value().isEmpty() ? annotation.value() : bean.getBeanClass().getSimpleName();
+         final String microserviceName = !annotation.value().isEmpty() ? annotation.value() : Utils.toLowerCamelCase(bean.getBeanClass().getSimpleName());
 
          this.context.registerMicroservice(getMicroserviceMetaData(microserviceName, bean));
       }
@@ -185,7 +187,7 @@ public class MicroservicesCDIExtension implements Extension {
     *       CDI Event instance.
     */
    public void afterBeanDiscovery(@Observes final AfterBeanDiscovery afterEvent) {
-      afterEvent.addContext(new MicroserviceContext());
+      afterEvent.addContext(new MicroserviceContext(weldName));
 
       this.microserviceProxyBeans.forEach(proxyBean -> {
          log.trace("Registering client proxy bean for bean service {}. Microservice type is {}.", proxyBean.getMicroserviceName(), proxyBean.getServiceInterface().getName());
@@ -215,8 +217,7 @@ public class MicroservicesCDIExtension implements Extension {
     * @return Microservice meta-data.
     */
    private MicroserviceMetaData getMicroserviceMetaData(final String microserviceName, final Bean<?> bean) {
-      return VersionResolver.createMicroserviceMetadata(microserviceName, bean.getBeanClass(), bean.getQualifiers(), new HashSet<>(
-            Arrays.asList(bean.getBeanClass().getAnnotations())));
+      return VersionResolver.getInstance().createMicroserviceMetadataForBeans(microserviceName, bean.getBeanClass(), bean.getQualifiers(), bean.getBeanClass().getAnnotations());
    }
 
    /**

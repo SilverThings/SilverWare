@@ -73,11 +73,13 @@ public class JgroupsMessageReceiver extends ReceiverAdapter implements RequestHa
 
    @Override
    public void receive(final Message msg) {
-      log.error("This method is for user option to send messages!");
       try {
          handle(msg);
-      } catch (Exception e) {
-         throw new SilverWareClusteringException(PROCESSING_ERROR, e);
+      } catch (Exception exception) {
+         if (!(exception instanceof SilverWareClusteringException)) {
+            throw new SilverWareClusteringException(PROCESSING_ERROR, exception);
+         }
+         throw (SilverWareClusteringException) exception;
       }
    }
 
@@ -90,17 +92,26 @@ public class JgroupsMessageReceiver extends ReceiverAdapter implements RequestHa
 
    @Override
    public Object handle(Message msg) throws Exception {
-      if (msg.getSrc() != null && msg.getSrc().equals(myAddress)) {
-         log.error("Skipping message sent from this node.");
-         throw new SilverWareClusteringException(RECIPIENT_SAME_AS_SENDER);
-      }
-      Object content = msg.getObject();
-      Responder responder = this.responders.get(content.getClass());
-      if (responder != null) {
-         return responder.processMessage(msg);
-      } else {
-         log.error("Unexpected content type : {} and object :  {} ", content.getClass(), content);
-         throw new SilverWareClusteringException(UNEXPECTED_CONTENT, content.getClass().toString());
+      try {
+         if (msg.getSrc() != null && msg.getSrc().equals(myAddress)) {
+            log.error("Skipping message sent from this node.");
+            throw new SilverWareClusteringException(RECIPIENT_SAME_AS_SENDER);
+         }
+
+         Object content = msg.getObject();
+
+         Responder responder = this.responders.get(content.getClass());
+         if (responder != null) {
+            return responder.processMessage(msg);
+         } else {
+            log.error("Unexpected content type : {} and object :  {} ", content.getClass(), content);
+            throw new SilverWareClusteringException(UNEXPECTED_CONTENT, content.getClass().toString());
+         }
+      } catch (Exception e) {
+         SilverWareClusteringException runtimeException = new SilverWareClusteringException(PROCESSING_ERROR, e);
+         log.error("Error processing request: ", runtimeException);
+         throw runtimeException;
+
       }
 
    }

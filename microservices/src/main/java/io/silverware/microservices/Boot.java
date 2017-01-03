@@ -74,10 +74,6 @@ public final class Boot {
 
       log.info("Goodbye.");
       logFlush(); // this is needed for Ctrl+C termination
-      // if we had clean up everything. Why should we end with non-zero code?
-      if (Boolean.parseBoolean(String.valueOf(initialContext.getProperties().get(SHUTDOWN_HOOK)))) {
-         System.exit(0);
-      }
    }
 
    /**
@@ -97,12 +93,15 @@ public final class Boot {
 
    /**
     * Load custom properties from filepath
-    * @param propertiesFile file with properties which will be loaded
+    *
+    * @param propertiesFile
+    *       file with properties which will be loaded
     * @return Properties from given file path
     */
 
    private static Properties loadProperties(final File propertiesFile) {
       log.info("Loading configuration from file {}.", propertiesFile.getAbsolutePath());
+
       Properties props = new Properties();
       try (FileInputStream fis = new FileInputStream(propertiesFile)) {
          props.load(fis);

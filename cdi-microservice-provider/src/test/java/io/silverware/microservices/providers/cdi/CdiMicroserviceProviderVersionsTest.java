@@ -40,6 +40,8 @@ import javax.inject.Inject;
 public class CdiMicroserviceProviderVersionsTest {
 
    private static final Semaphore semaphore = new Semaphore(0);
+   public static final String VERSION_1 = "1.1.1";
+   public static final String VERSION_2 = "2.2.2";
    private static String result = "";
 
    @Test
@@ -54,7 +56,7 @@ public class CdiMicroserviceProviderVersionsTest {
       Assert.assertEquals(result, "hello2bye1");
 
       platform.interrupt();
-      platform.join();
+      platform.join(1);
    }
 
    @Microservice("basic")
@@ -62,10 +64,12 @@ public class CdiMicroserviceProviderVersionsTest {
 
       @Inject
       @MicroserviceReference
+      @MicroserviceVersion(api = VERSION_2)
       private HelloVersion2 micro1;
 
       @Inject
       @MicroserviceReference
+      @MicroserviceVersion(implementation = VERSION_1)
       private ByeVersion1 micro2;
 
       public void eventObserver(@Observes MicroservicesStartedEvent event) {
@@ -75,18 +79,16 @@ public class CdiMicroserviceProviderVersionsTest {
       }
    }
 
-   @MicroserviceVersion(api = "2.2.2")
    public interface HelloVersion2 {
       String hello();
    }
 
-   @MicroserviceVersion(api = "1.1.1")
    public interface ByeVersion1 {
       String bye();
    }
 
    @Microservice
-   @MicroserviceVersion(implementation = "1.1.1")
+   @MicroserviceVersion(implementation = VERSION_1, api = VERSION_1)
    public static class Version1MicroBean implements HelloVersion2, ByeVersion1 {
 
       @Override
@@ -101,7 +103,7 @@ public class CdiMicroserviceProviderVersionsTest {
    }
 
    @Microservice
-   @MicroserviceVersion(implementation = "2.2.2")
+   @MicroserviceVersion(implementation = VERSION_2, api = VERSION_2)
    public static class Version2MicroBean implements HelloVersion2, ByeVersion1 {
 
       @Override
