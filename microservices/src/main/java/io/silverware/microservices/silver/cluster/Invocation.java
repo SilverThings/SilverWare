@@ -21,11 +21,11 @@ package io.silverware.microservices.silver.cluster;
 
 import io.silverware.microservices.Context;
 import io.silverware.microservices.SilverWareException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
@@ -112,23 +112,19 @@ public class Invocation implements Serializable {
    /**
     * Invokes a method with given context
     *
-    * @param context context which will be used to invoke method
+    * @param context
+    *       context which will be used to invoke method
     * @return result of the invocation
-    * @throws Exception when some error occurs
+    * @throws Exception
+    *       when some error occurs
     */
    public Object invoke(final Context context) throws Exception {
-      if (log.isTraceEnabled()) {
-         log.trace("Invoking Microservice with invocation {}.", toString());
-      }
-
-      final LocalServiceHandle serviceHandle = context.getInboundServiceHandle(handle);
-
+      log.trace("Invoking Microservice with invocation {}.", this);
+      final LocalServiceHandle serviceHandle = context.getLocalServiceHandle(handle);
       if (serviceHandle == null) {
          throw new SilverWareException(String.format("Handle no. %d. No such handle found.", getHandle()));
       }
-
-      final Method method = serviceHandle.getProxy().getClass().getDeclaredMethod(getMethod(), paramTypes);
-      return method.invoke(serviceHandle.getProxy(), params);
+      return serviceHandle.invoke(context, this.method, this.paramTypes, this.params);
    }
 
 }

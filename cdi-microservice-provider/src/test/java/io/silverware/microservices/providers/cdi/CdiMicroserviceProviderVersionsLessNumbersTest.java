@@ -54,7 +54,7 @@ public class CdiMicroserviceProviderVersionsLessNumbersTest {
       Assert.assertEquals(result, "hello2bye1");
 
       platform.interrupt();
-      platform.join();
+      platform.join(0);
    }
 
    @Microservice("advanced")
@@ -62,10 +62,12 @@ public class CdiMicroserviceProviderVersionsLessNumbersTest {
 
       @Inject
       @MicroserviceReference
+      @MicroserviceVersion(api = "^2")
       private HelloVersion2Less micro1;
 
       @Inject
       @MicroserviceReference
+      @MicroserviceVersion(implementation = "~1")
       private ByeVersion1Less micro2;
 
       public void eventObserver(@Observes MicroservicesStartedEvent event) {
@@ -75,18 +77,16 @@ public class CdiMicroserviceProviderVersionsLessNumbersTest {
       }
    }
 
-   @MicroserviceVersion(api = "^2")
    public interface HelloVersion2Less {
       String hello();
    }
 
-   @MicroserviceVersion(api = "~1")
    public interface ByeVersion1Less {
       String bye();
    }
 
    @Microservice
-   @MicroserviceVersion(implementation = "1.6")
+   @MicroserviceVersion(implementation = "1.6", api = "1.6")
    public static class Version1LessMicroBeanLess implements HelloVersion2Less, ByeVersion1Less {
 
       @Override
@@ -101,7 +101,7 @@ public class CdiMicroserviceProviderVersionsLessNumbersTest {
    }
 
    @Microservice
-   @MicroserviceVersion(implementation = "2.4-SNAPSHOT")
+   @MicroserviceVersion(implementation = "2.4-SNAPSHOT", api = "2.4-SNAPSHOT")
    public static class Version2LessLessMicroBean implements HelloVersion2Less, ByeVersion1Less {
 
       @Override

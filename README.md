@@ -23,16 +23,14 @@ We achieve easy services monitoring through JMX by incorporating Jolokia.
 
 Enabling the following technologies in on our near-term roadmap. 
 
-* __CDI__ - _WORKS_ - Enables development of business code using simple java classes and injection. Integrates well with Camel.
+* [__CDI__](https://github.com/SilverThings/SilverWare/wiki/CDI-Microservice-Provider) - _WORKS_ - Enables development of business code using simple java classes and injection. Integrates well with Camel.
 * __Camel__ - _WORKS_ - Enables automatic startup of Camel routes and components in both Java classes and XML files. Also friends with CDI.
-* __REST__ - _PoC WORKS_ - It is possible to expose a CDI microservice via the REST interface. However, this is just a basic version, uses 
-  only JSON and no custom URL or parameters manipulation. Improvements are on the way!
+* [__REST__](https://github.com/SilverThings/SilverWare/wiki/http-server-microservice-provider) - _WORKS_ - It is possible to expose a CDI microservice via the REST interface.  
 * __Monitoring__ - _NOT TESTED_ - Theoreticaly completed, but not verified with an external monitoring console.
 * __ActiveMQ__ - _WORKS_ - Integration between CDI, Camel and ActiveMQ messaging. Microservices should be able to become an ultimate consumer and 
   producer of messges.
 * __Vert.x__ - _WORKS_ - Verticles should be deployed as standalone microservices as well.
-* __Clustering__ - _COMING SOON_ - It should be possible to call other microservice in a cluster transparently. There is a preliminary implementation for CDI but this
-  has never been tested. Also, it should be possible to share any messages of any of the integrated components in a cluster.
+* __Clustering__ - _WORKS_ - It is possible to call other microservice in a cluster transparently. 
 * __Languages__ - _PLANNED_ - Support of development of microservices in other JVM enabled languages.
 * __Transaction__ - _PLANNED_ - Integration with Narayana.
 * __Security__ - _PLANNED_ - Possible integration with Apiman.

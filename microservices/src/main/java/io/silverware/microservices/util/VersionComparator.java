@@ -21,8 +21,12 @@ package io.silverware.microservices.util;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+import io.silverware.microservices.MicroserviceMetaData;
+
 import com.vdurmont.semver4j.Semver;
 import com.vdurmont.semver4j.SemverException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Adapter for a Java Sem-Ver
@@ -38,31 +42,27 @@ import com.vdurmont.semver4j.SemverException;
  */
 public class VersionComparator {
 
+   private static final Logger log = LogManager.getLogger(VersionComparator.class);
+
    private final Semver semVersion;
 
    private VersionComparator(String version) {
-      try {
-
-         if (isNullOrEmpty(version)) {
-            this.semVersion = null;
-         } else {
+      if (isNullOrEmpty(version)) {
+         this.semVersion = null;
+      } else {
             /*
               build version must be appended to x.y.z format number otherwise the comparision wont work.
               here we are creating correct string for comparision.
              */
-            Semver builtVersion = new Semver(version, Semver.SemverType.NPM);
-            if (builtVersion.getMinor() == null && builtVersion.getPatch() == null) {
-               int indexOfMinorVersion = ("" + builtVersion.getMajor()).length();
-               version = buildVersionWithPatch(version, indexOfMinorVersion, ".0.0");
-            } else if (builtVersion.getPatch() == null) {
-               int indexOfPatchVersion = ("." + builtVersion.getMinor() + builtVersion.getMajor()).length();
-               version = buildVersionWithPatch(version, indexOfPatchVersion, ".0");
-            }
-            this.semVersion = new Semver(version, Semver.SemverType.NPM);
+         Semver builtVersion = new Semver(version, Semver.SemverType.NPM);
+         if (builtVersion.getMinor() == null && builtVersion.getPatch() == null) {
+            int indexOfMinorVersion = ("" + builtVersion.getMajor()).length();
+            version = buildVersionWithPatch(version, indexOfMinorVersion, ".0.0");
+         } else if (builtVersion.getPatch() == null) {
+            int indexOfPatchVersion = ("." + builtVersion.getMinor() + builtVersion.getMajor()).length();
+            version = buildVersionWithPatch(version, indexOfPatchVersion, ".0");
          }
-
-      } catch (SemverException e) {
-         throw new IllegalArgumentException(e);
+         this.semVersion = new Semver(version, Semver.SemverType.NPM);
       }
    }
 
@@ -71,12 +71,19 @@ public class VersionComparator {
     *
     * @param version
     *       semVersion for which object should be created when or empty provided then it won't satisfy any expression
+    * @param metaData
+    *       metadata which are compared - used just for logging
     * @return created object
     * @throws IllegalArgumentException
     *       when the format of the semVersion is wrong
     */
-   public static VersionComparator forVersion(String version) {
-      return new VersionComparator(version);
+   public static VersionComparator forVersion(MicroserviceMetaData metaData, String version) {
+      try {
+         return new VersionComparator(version);
+      } catch (SemverException e) {
+         //         log.error("Wrong version in metadata: " + metaData, e);
+         return new VersionComparator(null);
+      }
    }
 
    /**
@@ -89,11 +96,8 @@ public class VersionComparator {
     *       when the format of a expression is wrong
     */
    public boolean satisfies(String expression) {
-      if (isNullOrEmpty(expression)) {
+      if (isNullOrEmpty(expression) || semVersion == null) {
          return true;
-      }
-      if (semVersion == null) {
-         return false;
       }
       try {
          return semVersion.satisfies(expression);

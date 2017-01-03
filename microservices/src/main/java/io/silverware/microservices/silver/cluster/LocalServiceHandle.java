@@ -21,45 +21,31 @@ package io.silverware.microservices.silver.cluster;
 
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
-import io.silverware.microservices.silver.HttpInvokerSilverService;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Holds a handle to a microservice implementation.
- * Can keep a reference to real Microservice implementation in the case of a local Microservice,
- * otherwise it holds a remote proxy.
- * Can act as a Http Invoker client to invoke the remote Microservice.
+ * Keeps a reference to real Microservice implementation in the case of a local Microservice,
  *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ * @author Slavomír Krupa (slavomir.krupa@gmail.com)
  */
-// TODO: 9/8/16 Remove htpp invoker - it should be in separated object
 public class LocalServiceHandle implements ServiceHandle {
 
    private static final transient AtomicInteger handleSource = new AtomicInteger(0);
 
    private final int handle;
 
-   private final String host;
-
    private final MicroserviceMetaData query;
 
-   private final transient Object service;
+   private final transient Object proxy;
 
-   public LocalServiceHandle(final String host, final MicroserviceMetaData query, final Object service) {
+   public LocalServiceHandle(final MicroserviceMetaData query, final Object proxy) {
       this.handle = handleSource.getAndIncrement();
-      this.host = host;
       this.query = query;
-      this.service = service;
-   }
-
-   public ServiceHandle withProxy(final Object proxy) {
-      return new LocalServiceHandle(host, query, proxy);
+      this.proxy = proxy;
    }
 
    public int getHandle() {
@@ -68,12 +54,12 @@ public class LocalServiceHandle implements ServiceHandle {
 
    @Override
    public Object getProxy() {
-      return service;
+      return proxy;
    }
 
    @Override
    public String getHost() {
-      return host;
+      return "LOCAL";
    }
 
    public MicroserviceMetaData getMetaData() {
@@ -94,45 +80,41 @@ public class LocalServiceHandle implements ServiceHandle {
       if (handle != that.handle) {
          return false;
       }
-      if (host != null ? !host.equals(that.host) : that.host != null) {
-         return false;
-      }
-
       return query.equals(that.query);
    }
 
    @Override
    public int hashCode() {
       int result = handle;
-      result = 31 * result + (host != null ? host.hashCode() : 0);
       result = 31 * result + query.hashCode();
       return result;
    }
 
    @Override
    public String toString() {
-      return "ServiceHandle{" + "handle=" + handle + ", host='" + host + '\'' + ", query=" + query + ", service=" + service + '}';
+      return "LocalServiceHandle{" + "handle=" + handle + ", query=" + query + ", proxy=" + proxy + '}';
    }
 
+   /**
+    * Context is not used
+    *
+    * @param context
+    *       Local microservice context
+    * @param methodName
+    *       name of the method to be invoked
+    * @param paramTypes
+    *       classes of parameters
+    * @param params
+    *       parameters of method called
+    * @return result of the invocation
+    * @throws Exception
+    *       in case of any error
+    */
    @Override
-   public Object invoke(final Context context, final String method, final Class[] paramTypes, final Object[] params) throws Exception {
-      String urlBase = "http://" + host + "/" + context.getProperties().get(HttpInvokerSilverService.INVOKER_URL) + "/invoke";
+   public Object invoke(final Context context, final String methodName, final Class[] paramTypes, final Object[] params) throws Exception {
+      final Method method = proxy.getClass().getDeclaredMethod(methodName, paramTypes);
+      return method.invoke(proxy, params);
 
-      HttpURLConnection con = (HttpURLConnection) new URL(urlBase).openConnection();
-      con.setRequestMethod("POST");
-      con.setDoInput(true);
-      con.setDoOutput(true);
-      con.connect();
-
-      Invocation invocation = new Invocation(handle, method, paramTypes, params);
-      JsonWriter jsonWriter = new JsonWriter(con.getOutputStream());
-      jsonWriter.write(invocation);
-      JsonReader jsonReader = new JsonReader(con.getInputStream());
-      Object response = jsonReader.readObject();
-
-      con.disconnect();
-
-      return response;
    }
 
 }

@@ -23,7 +23,6 @@ import io.silverware.microservices.Context;
 import io.silverware.microservices.SilverWareException;
 import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.providers.http.resteasy.SilverwareResourceFactory;
-import io.silverware.microservices.silver.CdiSilverService;
 import io.silverware.microservices.silver.HttpServerSilverService;
 import io.silverware.microservices.silver.http.ServletDescriptor;
 import io.silverware.microservices.util.Utils;
@@ -131,11 +130,12 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
             }
             this.server.start(builder);
             this.server.deploy(deploymentInfo());
-            log.info("Started http server at {}:{}/{}{} ",
+            log.info("Started http server at {}:{}{}/{} ",
                   readProperty(HTTP_SERVER_ADDRESS),
                   readProperty(HTTP_SERVER_PORT),
-                  readProperty(HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX),
-                  readProperty(HTTP_SERVER_REST_CONTEXT_PATH));
+                  readProperty(HTTP_SERVER_REST_CONTEXT_PATH),
+                  readProperty(HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX)
+            );
             this.deployed = true;
 
             while (!Thread.currentThread().isInterrupted()) {
@@ -156,7 +156,8 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
 
    private DeploymentInfo deploymentInfo() throws InterruptedException {
       final ResteasyDeployment resteasyDeployment = new ResteasyDeployment();
-      waitForCDIProvider();
+      Utils.waitForCDIProvider(context);
+
       resteasyDeployment.setResourceFactories(resourceFactories());
       final DeploymentInfo deploymentInfo = this.server.undertowDeployment(resteasyDeployment,
             String.valueOf(this.context.getProperties().get(HTTP_SERVER_REST_SERVLET_MAPPING_PREFIX)))
@@ -172,17 +173,6 @@ public class HttpServerMicroserviceProvider implements MicroserviceProvider, Htt
                .setConfidentialPortManager(exchange -> sslPort());
       }
       return deploymentInfo;
-   }
-
-   /**
-    * Waits until {@link CdiSilverService} is deployed, thus all Microservices have been registered to {@link Context}.
-    */
-   private void waitForCDIProvider() throws InterruptedException {
-      while (this.context.getProvider(
-            CdiSilverService.class) == null || !((CdiSilverService) this.context.getProvider(CdiSilverService.class))
-            .isDeployed()) {
-         Thread.sleep(200);
-      }
    }
 
    /**

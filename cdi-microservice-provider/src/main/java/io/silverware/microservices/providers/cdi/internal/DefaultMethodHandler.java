@@ -53,12 +53,11 @@ public class DefaultMethodHandler extends MicroserviceMethodHandler {
    protected DefaultMethodHandler(final MicroserviceProxyBean proxyBean, final InjectionPoint injectionPoint) throws Exception {
       this.proxyBean = proxyBean;
       this.injectionPoint = injectionPoint;
-
       final Set<Annotation> qualifiers = proxyBean.getQualifiers().stream()
                                                   .filter(qualifier -> !matches(qualifier, MicroserviceReference.class))
                                                   .collect(Collectors.toSet());
-      final MicroserviceMetaData metaData = VersionResolver.createMicroserviceMetadata(proxyBean.getMicroserviceName(), proxyBean.getServiceInterface(), qualifiers, injectionPoint.getAnnotated().getAnnotations());
-
+      final MicroserviceMetaData metaData = VersionResolver.getInstance()
+                                                           .createMicroserviceMetadataForInjectionPoint(proxyBean.getMicroserviceName(), proxyBean.getServiceInterface(), qualifiers, injectionPoint.getAnnotated().getAnnotations());
       this.lookupStrategy = LookupStrategyFactory.getStrategy(proxyBean.getContext(), metaData, injectionPoint.getAnnotated().getAnnotations());
    }
 

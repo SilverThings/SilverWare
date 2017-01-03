@@ -19,6 +19,9 @@
  */
 package io.silverware.microservices.providers.cluster;
 
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.INVOCATION_EXCEPTION;
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.PROCESSING_ERROR;
+
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.providers.cluster.internal.JgroupsMessageSender;
@@ -27,8 +30,7 @@ import io.silverware.microservices.providers.cluster.internal.message.request.Mi
 import io.silverware.microservices.providers.cluster.internal.message.response.MicroserviceRemoteCallResponse;
 import io.silverware.microservices.silver.cluster.Invocation;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyFactory;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jgroups.Address;
@@ -36,8 +38,8 @@ import org.jgroups.Address;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.INVOCATION_EXCEPTION;
-import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.PROCESSING_ERROR;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
 
 /**
  * This class represent remote handle which allows invocation remote services
@@ -90,6 +92,12 @@ public class RemoteServiceHandle implements ServiceHandle, MethodHandler {
          return toString();
       } else if ("hashCode".equals(method) && paramCount == 0) {
          return this.hashCode();
+      } else if ("finalize".equals(method) && paramCount == 0) {
+         try {
+            this.finalize();
+         } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+         }
       } else if ("equals".equals(method) && paramCount == 1) {
          return this.equals(params[0]);
       } else if ("getClass".equals(method) && paramCount == 0) {

@@ -56,7 +56,7 @@ public class ClusterMicroserviceProviderTest {
 
    @Test
    public void testLookupMicroservice() throws Exception {
-      Set<ServiceHandle> mockHandles = Util.createSetFrom(Util.createHandle("1"), Util.createHandle("2"));
+      Set<ServiceHandle> mockHandles = Util.createSetFrom(Util.createHandle(1), Util.createHandle(2));
       Set<Object> services = Util.createSetFrom(new Object(), new Object());
 
       new Expectations() {{

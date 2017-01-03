@@ -155,35 +155,34 @@ public final class MicroserviceMetaData implements Serializable {
    }
 
    @Override
-   public boolean equals(Object o) {
+   public boolean equals(final Object o) {
       if (this == o) {
          return true;
       }
-      if (o == null || getClass() != o.getClass()) {
+      if (!(o instanceof MicroserviceMetaData)) {
          return false;
       }
 
-      MicroserviceMetaData that = (MicroserviceMetaData) o;
+      final MicroserviceMetaData that = (MicroserviceMetaData) o;
 
-      if (!name.equals(that.name)) {
+      if (!getName().equals(that.getName())) {
          return false;
       }
-      if (!type.equals(that.type)) {
+      if (!getType().equals(that.getType())) {
          return false;
       }
-      if (qualifiers != null ? !qualifiers.equals(that.qualifiers) : that.qualifiers != null) {
+      if (getQualifiers() != null ? !getQualifiers().equals(that.getQualifiers()) : that.getQualifiers() != null) {
          return false;
       }
-      return (annotations != null ? !annotations.equals(that.annotations) : that.annotations != null);
-
+      return getAnnotations() != null ? getAnnotations().equals(that.getAnnotations()) : that.getAnnotations() == null;
    }
 
    @Override
    public int hashCode() {
-      int result = name.hashCode();
-      result = 31 * result + type.hashCode();
-      result = 31 * result + (qualifiers != null ? qualifiers.hashCode() : 0);
-      result = 31 * result + (annotations != null ? annotations.hashCode() : 0);
+      int result = getName().hashCode();
+      result = 31 * result + getType().hashCode();
+      result = 31 * result + (getQualifiers() != null ? getQualifiers().hashCode() : 0);
+      result = 31 * result + (getAnnotations() != null ? getAnnotations().hashCode() : 0);
       return result;
    }
 
@@ -197,11 +196,24 @@ public final class MicroserviceMetaData implements Serializable {
     * Compares api version from query with a implementation version of a this object resolve whether it satisfies.
     *
     * @param query
-    *       other metada object which specify verion
+    *       other metada object which specify version
     * @return boolean representing whether this object satisfies a query
     */
    public boolean satisfies(MicroserviceMetaData query) {
-      return equals(query) && VersionComparator.forVersion(this.implVersion).satisfies(query.apiVersion);
+      return equals(query) &&
+            satisfiesJustVersion(query);
+   }
+
+   /**
+    * Compares api version from query with a implementation version of a this object resolve whether it satisfies.
+    *
+    * @param query
+    *       other metada object which specify version
+    * @return boolean representing whether this object satisfies just version comparision
+    */
+   public boolean satisfiesJustVersion(MicroserviceMetaData query) {
+      return VersionComparator.forVersion(query, this.implVersion).satisfies(query.implVersion)
+            && VersionComparator.forVersion(query, this.apiVersion).satisfies(query.apiVersion);
    }
 
    /**

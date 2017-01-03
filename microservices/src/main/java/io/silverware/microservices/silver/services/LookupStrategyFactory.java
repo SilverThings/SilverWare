@@ -22,7 +22,7 @@ package io.silverware.microservices.silver.services;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.InvocationPolicy;
-import io.silverware.microservices.silver.services.lookup.RoundRobinLookupStrategy;
+import io.silverware.microservices.silver.services.lookup.FirstFoundLocalLookupStrategy;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -72,7 +72,7 @@ public class LookupStrategyFactory {
       }
 
       if (strategy == null) {
-         strategy = new RoundRobinLookupStrategy();
+         strategy = new FirstFoundLocalLookupStrategy();
          strategy.initialize(context, metaData, options);
       }
 

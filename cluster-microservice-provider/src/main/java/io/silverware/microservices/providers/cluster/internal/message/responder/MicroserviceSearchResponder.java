@@ -56,7 +56,7 @@ public class MicroserviceSearchResponder extends AbstractResponder<MicroserviceM
    @Override
    MicroserviceSearchResponse doProcessMessage(Address source, MicroserviceMetaData query) {
       try {
-         List<LocalServiceHandle> localServiceHandles = context.assureHandles(query);
+         List<LocalServiceHandle> localServiceHandles = context.assureLocalHandles(query);
          List<LocalServiceHandle> serviceHandles = filterVersionCompatible(localServiceHandles, query);
 
          if (serviceHandles.size() > 1) {
@@ -64,12 +64,10 @@ public class MicroserviceSearchResponder extends AbstractResponder<MicroserviceM
             return new MicroserviceSearchResponse(MULTIPLE_IMPLEMENTATIONS_FOUND);
          }
          if (serviceHandles.isEmpty()) {
-            if (log.isTraceEnabled()) {
-               log.trace("No services found for metadata: {} ", query);
-            }
+            log.trace("No services found for metadata: {} ", query);
             return new MicroserviceSearchResponse(localServiceHandles.isEmpty() ? NOT_FOUND : WRONG_VERSION);
-         } else if (log.isTraceEnabled()) {
-            log.trace("{} services found for {}", serviceHandles.size(), query);
+         } else {
+            log.trace("{} services found for {}", serviceHandles, query);
          }
          return new MicroserviceSearchResponse(serviceHandles.get(0).getHandle(), FOUND);
       } catch (Throwable e) {
