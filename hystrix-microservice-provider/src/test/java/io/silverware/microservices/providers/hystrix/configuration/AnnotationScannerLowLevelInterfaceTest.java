@@ -68,6 +68,8 @@ public class AnnotationScannerLowLevelInterfaceTest extends AnnotationScannerTes
    private static final String REQUEST_LOG_ENABLED = "false";
 
    private static final String CORE_SIZE = "10";
+   private static final String MAXIMUM_SIZE = "20";
+   private static final String ALLOW_MAXIMUM_SIZE_TO_DIVERGE_FROM_CORE_SIZE = "true";
    private static final String KEEP_ALIVE_TIME_MINUTES = "5";
    private static final String MAX_QUEUE_SIZE = "20";
    private static final String QUEUE_SIZE_REJECTION_THRESHOLD = "42";
@@ -171,6 +173,8 @@ public class AnnotationScannerLowLevelInterfaceTest extends AnnotationScannerTes
 
       assertions = new SoftAssertions();
       assertions.assertThat(threadPoolProperties).containsEntry(ThreadPoolProperties.CORE_SIZE, CORE_SIZE);
+      assertions.assertThat(threadPoolProperties).containsEntry(ThreadPoolProperties.MAXIMUM_SIZE, MAXIMUM_SIZE);
+      assertions.assertThat(threadPoolProperties).containsEntry(ThreadPoolProperties.ALLOW_MAXIMUM_SIZE_TO_DIVERGE_FROM_CORE_SIZE, ALLOW_MAXIMUM_SIZE_TO_DIVERGE_FROM_CORE_SIZE);
       assertions.assertThat(threadPoolProperties).containsEntry(ThreadPoolProperties.KEEP_ALIVE_TIME_MINUTES, KEEP_ALIVE_TIME_MINUTES);
       assertions.assertThat(threadPoolProperties).containsEntry(ThreadPoolProperties.MAX_QUEUE_SIZE, MAX_QUEUE_SIZE);
       assertions.assertThat(threadPoolProperties).containsEntry(ThreadPoolProperties.METRICS_ROLLING_STATS_NUM_BUCKETS, METRICS_ROLLING_STATS_NUM_BUCKETS);
@@ -349,6 +353,8 @@ public class AnnotationScannerLowLevelInterfaceTest extends AnnotationScannerTes
             },
             threadPoolProperties = {
                   @HystrixProperty(name = ThreadPoolProperties.CORE_SIZE, value = CORE_SIZE),
+                  @HystrixProperty(name = ThreadPoolProperties.MAXIMUM_SIZE, value = MAXIMUM_SIZE),
+                  @HystrixProperty(name = ThreadPoolProperties.ALLOW_MAXIMUM_SIZE_TO_DIVERGE_FROM_CORE_SIZE, value = ALLOW_MAXIMUM_SIZE_TO_DIVERGE_FROM_CORE_SIZE),
                   @HystrixProperty(name = ThreadPoolProperties.KEEP_ALIVE_TIME_MINUTES, value = KEEP_ALIVE_TIME_MINUTES),
                   @HystrixProperty(name = ThreadPoolProperties.MAX_QUEUE_SIZE, value = MAX_QUEUE_SIZE),
                   @HystrixProperty(name = ThreadPoolProperties.METRICS_ROLLING_STATS_NUM_BUCKETS, value = METRICS_ROLLING_STATS_NUM_BUCKETS),
