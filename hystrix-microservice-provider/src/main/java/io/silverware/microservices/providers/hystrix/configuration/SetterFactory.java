@@ -211,6 +211,11 @@ public class SetterFactory {
          setter.withMaximumSize(Integer.parseInt(maximumSize));
       }
 
+      String allowMaximumSizeToDivergeFromCoreSize = threadPoolProperties.get(ThreadPoolProperties.ALLOW_MAXIMUM_SIZE_TO_DIVERGE_FROM_CORE_SIZE);
+      if (allowMaximumSizeToDivergeFromCoreSize != null) {
+         setter.withAllowMaximumSizeToDivergeFromCoreSize(Boolean.parseBoolean(allowMaximumSizeToDivergeFromCoreSize));
+      }
+
       String keepAliveTimeMinutes = threadPoolProperties.get(ThreadPoolProperties.KEEP_ALIVE_TIME_MINUTES);
       if (keepAliveTimeMinutes != null) {
          setter.withKeepAliveTimeMinutes(Integer.parseInt(keepAliveTimeMinutes));

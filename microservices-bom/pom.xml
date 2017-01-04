@@ -77,7 +77,7 @@
       <version.assertj>3.5.2</version.assertj>
       <version.resteasy>3.0.19.Final</version.resteasy>
       <version.sem.ver>2.0.1</version.sem.ver>
-      <version.hystrix>1.5.8</version.hystrix>
+      <version.hystrix>1.5.9</version.hystrix>
       <version.mockito>2.2.22</version.mockito>
       <java.level>1.8</java.level>
    </properties>
