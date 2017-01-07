@@ -25,7 +25,8 @@ Enabling the following technologies in on our near-term roadmap.
 
 * [__CDI__](https://github.com/SilverThings/SilverWare/wiki/CDI-Microservice-Provider) - _WORKS_ - Enables development of business code using simple java classes and injection. Integrates well with Camel.
 * __Camel__ - _WORKS_ - Enables automatic startup of Camel routes and components in both Java classes and XML files. Also friends with CDI.
-* [__REST__](https://github.com/SilverThings/SilverWare/wiki/http-server-microservice-provider) - _WORKS_ - It is possible to expose a CDI microservice via the REST interface.  
+* [__REST__](https://github.com/SilverThings/SilverWare/wiki/http-server-microservice-provider) - _WORKS_ - It is possible to expose a CDI microservice via the REST interface.
+* [__Hystrix__](https://github.com/SilverThings/SilverWare/wiki/Hystrix-Microservice-Provider) - _WORKS_ - Fault tolerance mechanisms can be easily configured by annotations.
 * __Monitoring__ - _NOT TESTED_ - Theoreticaly completed, but not verified with an external monitoring console.
 * __ActiveMQ__ - _WORKS_ - Integration between CDI, Camel and ActiveMQ messaging. Microservices should be able to become an ultimate consumer and 
   producer of messges.
@@ -38,3 +39,5 @@ Enabling the following technologies in on our near-term roadmap.
 ## How Does It Work?
 
 Just have a look on [our quickstarts](https://github.com/SilverThings/SilverWare-Demos)! It is very easy, just a few maven goals and you have your first service running.
+
+You can also find some useful information on our [Wiki pages](https://github.com/SilverThings/SilverWare/wiki) where the concepts of microservice providers are described.
