@@ -1,0 +1,7 @@
+rule "Check Drools"
+when
+   $droolsCheck : io.silverware.microservices.providers.drools.DroolsCheck()
+then
+   org.apache.logging.log4j.LogManager.getLogger().info("Rule executed. Drools is working!");
+   $droolsCheck.setRuleExecuted(true);
+end

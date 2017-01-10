@@ -72,7 +72,7 @@
       <version.vertx>3.2.0</version.vertx>
       <version.jsonio>4.3.0</version.jsonio>
       <version.beanutils>1.9.2</version.beanutils>
-      <version.drools>6.3.0.Final</version.drools>
+      <version.drools>6.5.0.Final</version.drools>
       <version.jmockit>1.29</version.jmockit>
       <version.assertj>3.5.2</version.assertj>
       <version.resteasy>3.0.19.Final</version.resteasy>
@@ -336,13 +336,10 @@
          </dependency>
          <dependency>
             <groupId>org.drools</groupId>
-            <artifactId>drools-core</artifactId>
+            <artifactId>drools-bom</artifactId>
             <version>${version.drools}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.drools</groupId>
-            <artifactId>drools-compiler</artifactId>
-            <version>${version.drools}</version>
+            <type>pom</type>
+            <scope>import</scope>
          </dependency>
          <dependency>
             <groupId>org.jboss.resteasy</groupId>

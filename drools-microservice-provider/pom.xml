@@ -5,33 +5,35 @@
       <artifactId>silverware-parent</artifactId>
       <version>2.1-SNAPSHOT</version>
    </parent>
+
    <artifactId>drools-microservice-provider</artifactId>
    <packaging>jar</packaging>
    <name>Drools Microservices Provider</name>
+
    <dependencies>
+      <!-- internal -->
       <dependency>
          <groupId>io.silverware</groupId>
          <artifactId>microservices</artifactId>
       </dependency>
-	   <dependency>
-	      <groupId>org.drools</groupId>
-	      <artifactId>drools-core</artifactId>
-      </dependency>
+
+      <!-- external -->
       <dependency>
          <groupId>org.drools</groupId>
          <artifactId>drools-compiler</artifactId>
       </dependency>
+
+      <!-- test -->
       <dependency>
          <groupId>io.silverware</groupId>
          <artifactId>cdi-microservice-provider</artifactId>
          <scope>test</scope>
       </dependency>
-      <!--dependency>
-         <groupId>org.drools.examples.kie-project-from-classpath</groupId>
-         <artifactId>kjar</artifactId>
-         <version>0.0.1-SNAPSHOT</version>
+      <dependency>
+         <groupId>org.assertj</groupId>
+         <artifactId>assertj-core</artifactId>
          <scope>test</scope>
-      </dependency-->
+      </dependency>
    </dependencies>
    <build>
       <plugins>
