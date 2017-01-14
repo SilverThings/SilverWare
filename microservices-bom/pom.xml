@@ -385,6 +385,18 @@
       </dependencies>
    </dependencyManagement>
    <build>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <groupId>com.versioneye</groupId>
+               <artifactId>versioneye-maven-plugin</artifactId>
+               <version>3.5.1</version>
+               <configuration>
+                  <apiKey>YOUR_SECRET_API_KEY</apiKey>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
    </build>
    <profiles>
       <profile>
