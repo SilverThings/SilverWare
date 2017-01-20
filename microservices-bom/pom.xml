@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+      xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <groupId>io.silverware</groupId>
    <artifactId>microservices-bom</artifactId>
@@ -51,34 +51,36 @@
       </repository>
    </distributionManagement>
    <properties>
-      <version.maven.gpg.plugin>1.5</version.maven.gpg.plugin>
+      <version.maven.gpg.plugin>1.6</version.maven.gpg.plugin>
 
       <version.reflections>0.9.10</version.reflections>
-      <version.log4j>2.5</version.log4j>
-      <version.testng>6.9.10</version.testng>
-      <version.apache.camel>2.16.1</version.apache.camel>
-      <version.slf4j>1.7.13</version.slf4j>
+      <version.log4j>2.7</version.log4j>
+      <version.testng>6.10</version.testng>
+      <version.apache.camel>2.18.1</version.apache.camel>
+      <version.slf4j>1.7.22</version.slf4j>
       <version.weld>2.4.1.Final</version.weld>
       <version.ejb.api>3.0</version.ejb.api>
       <version.jboss.logging>3.3.0.Final</version.jboss.logging>
-      <version.jgroups>3.6.6.Final</version.jgroups>
+      <version.jgroups>3.6.12.Final</version.jgroups>
       <version.commons.cli>1.3.1</version.commons.cli>
-      <version.commons.lang>3.4</version.commons.lang>
-      <version.findbugs>1.3.2</version.findbugs>
-      <version.javassist>3.20.0-GA</version.javassist>
-      <version.undertow>1.4.4.Final</version.undertow>
-      <version.jolokia>1.3.2</version.jolokia>
-      <version.jackson>2.6.4</version.jackson>
-      <version.vertx>3.2.0</version.vertx>
-      <version.jsonio>4.3.0</version.jsonio>
-      <version.beanutils>1.9.2</version.beanutils>
+      <version.commons.lang>3.5</version.commons.lang>
+      <version.findbugs>2.0.1</version.findbugs>
+      <version.javassist>3.21.0-GA</version.javassist>
+      <version.undertow>1.4.8.Final</version.undertow>
+      <version.jolokia>1.3.5</version.jolokia>
+      <version.jackson>2.7.8</version.jackson>
+      <version.vertx>3.3.3</version.vertx>
+      <version.jsonio>4.9.6</version.jsonio>
+      <version.beanutils>1.9.3</version.beanutils>
       <version.drools>6.5.0.Final</version.drools>
-      <version.jmockit>1.29</version.jmockit>
+      <version.jmockit>1.30</version.jmockit>
       <version.assertj>3.5.2</version.assertj>
-      <version.resteasy>3.0.19.Final</version.resteasy>
+      <version.resteasy>3.1.0.Final</version.resteasy>
       <version.sem.ver>2.0.1</version.sem.ver>
       <version.hystrix>1.5.9</version.hystrix>
-      <version.mockito>2.2.22</version.mockito>
+      <version.mockito>2.6.3</version.mockito>
+      <version.activemq>5.14.3</version.activemq>
+      <version.activemq.artemis>1.5.1</version.activemq.artemis>
       <java.level>1.8</java.level>
    </properties>
    <dependencyManagement>
@@ -152,6 +154,21 @@
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>${version.reflections}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-all</artifactId>
+            <version>${version.activemq}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jms-client</artifactId>
+            <version>${version.activemq.artemis}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jms-server</artifactId>
+            <version>${version.activemq.artemis}</version>
          </dependency>
          <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -268,7 +285,7 @@
             <version>${version.commons.lang}</version>
          </dependency>
          <dependency>
-            <groupId>net.sourceforge.findbugs</groupId>
+            <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
             <version>${version.findbugs}</version>
             <scope>provided</scope>
@@ -306,6 +323,11 @@
          </dependency>
          <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${version.jackson}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${version.jackson}</version>
          </dependency>
@@ -327,6 +349,16 @@
          <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
+            <version>${version.vertx}</version>
+         </dependency>
+         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-lang-groovy</artifactId>
+            <version>${version.vertx}</version>
+         </dependency>
+         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-lang-js</artifactId>
             <version>${version.vertx}</version>
          </dependency>
          <dependency>

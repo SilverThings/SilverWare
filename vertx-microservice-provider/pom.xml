@@ -16,7 +16,6 @@
    <properties>
       <version.gmaven>1.5</version.gmaven>
       <version.groovy>2.4.6</version.groovy>
-      <version.vertx.extension>3.2.0</version.vertx.extension>
    </properties>
 
    <dependencies>
@@ -31,12 +30,10 @@
       <dependency>
          <groupId>io.vertx</groupId>
          <artifactId>vertx-lang-groovy</artifactId>
-         <version>${version.vertx.extension}</version>
       </dependency>
       <dependency>
          <groupId>io.vertx</groupId>
          <artifactId>vertx-lang-js</artifactId>
-         <version>${version.vertx.extension}</version>
          <scope>test</scope>
       </dependency>
       <dependency>

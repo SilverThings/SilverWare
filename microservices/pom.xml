@@ -22,6 +22,10 @@
          <artifactId>json-io</artifactId>
       </dependency>
       <dependency>
+         <groupId>com.google.code.findbugs</groupId>
+         <artifactId>annotations</artifactId>
+      </dependency>
+      <dependency>
          <groupId>com.vdurmont</groupId>
          <artifactId>semver4j</artifactId>
       </dependency>

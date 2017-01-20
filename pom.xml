@@ -124,11 +124,6 @@
          <artifactId>testng</artifactId>
          <scope>test</scope>
       </dependency>
-      <dependency>
-         <groupId>net.sourceforge.findbugs</groupId>
-         <artifactId>annotations</artifactId>
-         <scope>provided</scope>
-      </dependency>
    </dependencies>
    <build>
       <plugins>

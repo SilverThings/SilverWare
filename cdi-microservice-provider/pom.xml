@@ -22,24 +22,8 @@
          <artifactId>weld-se</artifactId>
       </dependency>
       <dependency>
-         <groupId>javax.ejb</groupId>
-         <artifactId>ejb-api</artifactId>
-      </dependency>
-      <dependency>
          <groupId>org.javassist</groupId>
          <artifactId>javassist</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>io.vertx</groupId>
-         <artifactId>vertx-core</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>io.vertx</groupId>
-         <artifactId>vertx-web</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>commons-beanutils</groupId>
-         <artifactId>commons-beanutils</artifactId>
       </dependency>
       <dependency>
          <groupId>org.jmockit</groupId>

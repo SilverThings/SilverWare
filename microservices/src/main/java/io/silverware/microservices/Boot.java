@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2015 the original author or authors.
+ * Copyright (C) 2015 - 2017 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,12 +40,14 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * Main class to boot the Microservices platforms.
  *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DM_EXIT", justification = "This class is allowed to terminate the JVM.")
+@SuppressFBWarnings(value = "DM_EXIT", justification = "This class is allowed to terminate the JVM.")
 public final class Boot {
 
    private static final Logger log = LogManager.getLogger(Boot.class);
