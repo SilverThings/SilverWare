@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <groupId>io.silverware</groupId>
    <artifactId>silverware-parent</artifactId>
@@ -276,8 +276,11 @@
                   <processEndTag>-----------------------------------------------------------------------/</processEndTag>
                   <sectionDelimiter> 
                   </sectionDelimiter>
+                  <projectName>SilverWare</projectName>
                   <organizationName>the original author or authors.</organizationName>
                   <licenseName>apache_v2</licenseName>
+                  <failOnMissingHeader>true</failOnMissingHeader>
+                  <inceptionYear>2015</inceptionYear>
                   <roots>
                      <root>src/main/java</root>
                      <root>src/test/java</root>
