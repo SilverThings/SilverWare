@@ -1,8 +1,8 @@
 /*
  * -----------------------------------------------------------------------\
  * SilverWare
- *  
- * Copyright (C) 2015 - 2016 the original author or authors.
+ *
+ * Copyright (C) 2016 - 2017 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import io.netty.util.internal.StringUtil;
 
 /**
  * This class is used for resolving of api and implementation versions.
@@ -176,7 +174,7 @@ public final class VersionResolver {
       Class[] interfaces = clazz.getInterfaces();
       List<String> versions = Arrays.stream(interfaces)
                                     .map(i -> resolveVersionFromAnnotations(Arrays.stream(i.getAnnotations()), lambda))
-                                    .filter(v -> !StringUtil.isNullOrEmpty(v))
+                                    .filter(v -> v != null && !v.isEmpty())
                                     .collect(toList());
       if (versions.size() > 1) {
          throw new IllegalArgumentException(String.format(MORE_MICROSERVICE_VERSIONS_FOUND, clazz.getName()));
