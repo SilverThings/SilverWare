@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,16 @@
 package io.silverware.microservices.providers.cdi.internal;
 
 import io.silverware.microservices.Context;
-import io.silverware.microservices.annotations.MicroserviceScoped;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 /**
@@ -62,39 +63,22 @@ public class MicroserviceProxyBean implements Bean {
     */
    private final Set<Annotation> qualifiers;
 
-   /**
-    * CDI bean annotations. Can specify invocation strategy, results caching etc.
-    */
-   private final Set<Annotation> annotations;
-
-   /**
-    * The dynamic proxy bean instance created from the supplied {@link #serviceInterface}.
-    */
-   private final Object proxyBean;
+   private final BeanManager beanManager;
 
    /**
     * Public constructor.
     *
-    * @param microserviceName
-    *       The name of the ESB Service being proxied to.
-    * @param proxyInterface
-    *       The proxy Interface.
-    * @param qualifiers
-    *       The CDI bean qualifiers. Copied from the injection point.
-    * @param annotations
-    *       Annotations from the source code at tha injection point.
+    * @param beanManager
+    *       bean manager
     * @param context
     *       SilverWare context in which we run.
     */
-   public MicroserviceProxyBean(final String microserviceName, final Class<?> proxyInterface, final Set<Annotation> qualifiers, final Set<Annotation> annotations, final Context context) {
+   public MicroserviceProxyBean(final String microserviceName, final Class<?> serviceInterface, final Set<Annotation> qualifiers, final BeanManager beanManager, final Context context) {
       this.microserviceName = microserviceName;
-      this.serviceInterface = proxyInterface;
+      this.serviceInterface = serviceInterface;
+      this.qualifiers = qualifiers;
+      this.beanManager = beanManager;
       this.context = context;
-
-      this.qualifiers = new HashSet<>(qualifiers);
-      this.annotations = annotations;
-
-      proxyBean = MicroserviceProxy.getProxy(this);
    }
 
    /**
@@ -117,7 +101,7 @@ public class MicroserviceProxyBean implements Bean {
 
    @Override
    public Set<Type> getTypes() {
-      final Set<Type> types = new HashSet<Type>();
+      final Set<Type> types = new HashSet<>();
       types.add(serviceInterface);
 
       if (!serviceInterface.isInterface()) {
@@ -132,10 +116,6 @@ public class MicroserviceProxyBean implements Bean {
    @Override
    public Set<Annotation> getQualifiers() {
       return qualifiers;
-   }
-
-   public Set<Annotation> getAnnotations() {
-      return annotations;
    }
 
    @Override
@@ -170,12 +150,13 @@ public class MicroserviceProxyBean implements Bean {
 
    @Override
    public Class<? extends Annotation> getScope() {
-      return MicroserviceScoped.class;
+      return Dependent.class;
    }
 
    @Override
    public Object create(final CreationalContext creationalContext) {
-      return proxyBean;
+      InjectionPoint injectionPoint = (InjectionPoint) beanManager.getInjectableReference(new MetadataInjectionPoint(this), creationalContext);
+      return MicroserviceProxyFactory.createProxy(this, injectionPoint);
    }
 
    @Override
@@ -199,7 +180,7 @@ public class MicroserviceProxyBean implements Bean {
             ", context=" + context +
             ", serviceInterface=" + serviceInterface +
             ", qualifiers=" + qualifiers +
-            ", proxyBean=" + proxyBean +
             '}';
    }
+
 }

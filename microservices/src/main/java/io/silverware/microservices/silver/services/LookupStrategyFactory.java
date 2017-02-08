@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ package io.silverware.microservices.silver.services;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.InvocationPolicy;
-import io.silverware.microservices.silver.services.lookup.LocalLookupStrategy;
+import io.silverware.microservices.silver.services.lookup.FirstFoundLocalLookupStrategy;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,9 +39,19 @@ public class LookupStrategyFactory {
    /**
     * Logger.
     */
-   private static Logger log = LogManager.getLogger(LookupStrategyFactory.class);
+   private static final Logger log = LogManager.getLogger(LookupStrategyFactory.class);
 
-   @SuppressWarnings("checkstyle:JavadocMethod")
+   /**
+    * Returns strategy based on given parameters
+    *
+    * @param context
+    *       silverware context
+    * @param metaData
+    *       - metadata for microservice
+    * @param options
+    *       - other options
+    * @return strategy
+    */
    public static LookupStrategy getStrategy(final Context context, final MicroserviceMetaData metaData, final Set<Annotation> options) {
       LookupStrategy strategy = null;
 
@@ -62,7 +72,7 @@ public class LookupStrategyFactory {
       }
 
       if (strategy == null) {
-         strategy = new LocalLookupStrategy();
+         strategy = new FirstFoundLocalLookupStrategy();
          strategy.initialize(context, metaData, options);
       }
 

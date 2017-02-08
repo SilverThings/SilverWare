@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,13 @@
  */
 package io.silverware.microservices.providers.cdi;
 
-import org.jboss.weld.bootstrap.api.helpers.RegistrySingletonProvider;
+import io.silverware.microservices.annotations.MicroserviceScoped;
+
 import org.jboss.weld.context.AbstractManagedContext;
 import org.jboss.weld.context.beanstore.BeanStore;
 import org.jboss.weld.context.beanstore.HashMapBeanStore;
-import io.silverware.microservices.annotations.MicroserviceScoped;
 
 import java.lang.annotation.Annotation;
-import javax.enterprise.context.ApplicationScoped;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -37,10 +36,6 @@ public class MicroserviceContext extends AbstractManagedContext {
 
    public MicroserviceContext(String contextId) {
       super(contextId, false);
-   }
-
-   public MicroserviceContext() {
-      this(RegistrySingletonProvider.STATIC_INSTANCE);
    }
 
    @Override

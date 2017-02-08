@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,23 +36,16 @@ public interface CdiSilverService extends ProvidingSilverService {
     */
    String CDI_CONTAINER = "silverware.cdi.container";
 
-   /**
-    * Port on which the CDI REST interface should listen.
-    */
-   String CDI_REST_PORT = "silverware.cdi.rest.port";
-
-   /**
-    * Host on which the CDI REST interface should listen.
-    */
-   String CDI_REST_HOST = "silverware.cdi.rest.host";
-
    boolean isDeployed();
 
    /**
-    * Looks up the given bean type in CDI. The particular implementation is dependant on the underlying service provider.
+    * Looks up the given bean type in CDI. The particular implementation is dependant on the underlying service
+    * provider.
     *
-    * @param type The type to search for.
-    * @param <T> Type of the bean to return.
+    * @param type
+    *       The type to search for.
+    * @param <T>
+    *       Type of the bean to return.
     * @return Bean of the requested type.
     */
    <T> T findByType(final Class<T> type);

@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,13 @@
  */
 package io.silverware.microservices.annotations;
 
-import javax.inject.Qualifier;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import javax.inject.Qualifier;
 
 /**
  * Microservice reference.
@@ -39,14 +36,14 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 @Qualifier
-@Target({ TYPE, FIELD, PARAMETER, METHOD })
+@Target({ FIELD })
 @Retention(RUNTIME)
 @Documented
 public @interface MicroserviceReference {
 
-    /**
+   /**
     * Get the name of the Microservice that should be injected.
-    * 
+    *
     * @return The name of the Microservice to be injected.
     */
    String value() default "";

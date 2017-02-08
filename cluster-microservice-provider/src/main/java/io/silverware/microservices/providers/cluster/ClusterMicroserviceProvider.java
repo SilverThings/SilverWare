@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 - 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,30 +19,46 @@
  */
 package io.silverware.microservices.providers.cluster;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.ReceiverAdapter;
-import org.jgroups.View;
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.INITIALIZATION_ERROR;
+import static io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException.SilverWareClusteringError.JGROUPS_ERROR;
+import static java.util.Collections.emptySet;
+
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.providers.MicroserviceProvider;
-import io.silverware.microservices.providers.cluster.internal.HttpServiceProxy;
+import io.silverware.microservices.providers.cluster.internal.JgroupsMessageReceiver;
+import io.silverware.microservices.providers.cluster.internal.JgroupsMessageSender;
+import io.silverware.microservices.providers.cluster.internal.exception.SilverWareClusteringException;
+import io.silverware.microservices.providers.cluster.internal.message.KnownImplementation;
+import io.silverware.microservices.providers.cluster.internal.message.response.MicroserviceSearchResponse;
+import io.silverware.microservices.providers.cluster.internal.util.FutureListenerHelper;
 import io.silverware.microservices.silver.ClusterSilverService;
+import io.silverware.microservices.silver.cluster.RemoteServiceHandlesStore;
 import io.silverware.microservices.silver.cluster.ServiceHandle;
 import io.silverware.microservices.util.Utils;
 
+import com.google.common.base.Stopwatch;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jgroups.Address;
+import org.jgroups.JChannel;
+import org.jgroups.blocks.MessageDispatcher;
+import org.jgroups.util.Rsp;
+import org.jgroups.util.RspList;
+
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
+ * This provider provides a remote method invocation via JGroups.
+ *
+ * @author Slavomir Krupa (slavomir.krupa@gmail.com)
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
 public class ClusterMicroserviceProvider implements MicroserviceProvider, ClusterSilverService {
@@ -50,19 +66,21 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
    private static final Logger log = LogManager.getLogger(ClusterMicroserviceProvider.class);
 
    private Context context;
+   private RemoteServiceHandlesStore remoteServiceHandlesStore;
+   private Map<MicroserviceMetaData, Set<Address>> alreadyQueriedAddresses = new ConcurrentHashMap<>();
+
+   private JgroupsMessageSender sender;
+   private MessageDispatcher messageDispatcher;
+   private Long timeout = 500L;
    private JChannel channel;
-   private ChannelReceiver receiver;
-   private Map<MicroserviceMetaData, Set<ServiceHandle>> outboundHandles = new ConcurrentHashMap<>();
-   private Queue<MicroserviceMetaData> toLookup = new ConcurrentLinkedQueue<>();
 
    @Override
    public void initialize(final Context context) {
       this.context = context;
-
+      this.remoteServiceHandlesStore = context.getRemoteServiceHandlesStore();
       context.getProperties().putIfAbsent(CLUSTER_GROUP, "SilverWare");
       context.getProperties().putIfAbsent(CLUSTER_CONFIGURATION, "udp.xml");
-
-      receiver = new ChannelReceiver();
+      context.getProperties().putIfAbsent(CLUSTER_LOOKUP_TIMEOUT, timeout);
    }
 
    @Override
@@ -73,80 +91,92 @@ public class ClusterMicroserviceProvider implements MicroserviceProvider, Cluste
    @Override
    public void run() {
       try {
+         final Stopwatch stopwatch = Stopwatch.createStarted();
+
+         // get jgroups configuration
+         final String clusterGroup = (String) this.context.getProperties().get(CLUSTER_GROUP);
+         final String clusterConfiguration = (String) this.context.getProperties().get(CLUSTER_CONFIGURATION);
+         this.timeout = Long.valueOf(this.context.getProperties().get(CLUSTER_LOOKUP_TIMEOUT).toString());
          log.info("Hello from Cluster microservice provider!");
-
-         channel = new JChannel((String) context.getProperties().get(CLUSTER_CONFIGURATION));
-         channel.setReceiver(receiver);
-
-         channel.connect((String) context.getProperties().get(CLUSTER_GROUP));
-
-         channel.send(new Message(null, "Holáryjou!"));
-
-         try {
-            while (!Thread.currentThread().isInterrupted()) {
-               MicroserviceMetaData metaData = toLookup.poll();
-               if (metaData != null) {
-                  channel.getView().forEach(address -> {
-                     try {
-                        List<ServiceHandle> handles = metaData.query(context, address.toString());
-                        Set<ServiceHandle> localHandles = handles.stream().map(serviceHandle -> serviceHandle.withProxy(HttpServiceProxy.getProxy(context, serviceHandle))).collect(Collectors.toSet());
-
-                        if (outboundHandles.containsKey(metaData)) {
-                           outboundHandles.get(metaData).addAll(localHandles);
-                        } else {
-                           outboundHandles.put(metaData, localHandles);
-                        }
-                     } catch (Exception e) {
-                        log.info(String.format("Unable to lookup Microservice %s at host %s:", metaData.toString(), address.toString()), e);
-                     }
-                  });
-               } else {
-                  Thread.sleep(100);
-               }
-            }
-         } catch (InterruptedException ie) {
-            Utils.shutdownLog(log, ie);
-         } finally {
-            channel.close();
-         }
+         log.info("Loading cluster configuration from: {} ", clusterConfiguration);
+         channel = new JChannel(clusterConfiguration);
+         JgroupsMessageReceiver receiver = new JgroupsMessageReceiver(KnownImplementation.initializeReponders(context), remoteServiceHandlesStore);
+         this.messageDispatcher = new MessageDispatcher(channel, receiver, receiver, receiver);
+         this.sender = new JgroupsMessageSender(this.messageDispatcher);
+         channel.setDiscardOwnMessages(true);
+         log.info("Setting cluster group: {} ", clusterGroup);
+         Utils.waitForCDIProvider(context);
+         channel.connect(clusterGroup);
+         receiver.setMyAddress(channel.getAddress());
+         stopwatch.stop();
+         log.info("Initialization of ClusterMicroserviceProvider took {} ms. ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
       } catch (Exception e) {
-         log.error("Cluster microservice provider failed: ", e);
+         log.error("Cluster microservice initialization failed.", e);
+         throw new SilverWareClusteringException(INITIALIZATION_ERROR, e);
+      }
+
+      try {
+         while (!Thread.currentThread().isInterrupted()) {
+            Thread.sleep(2000);
+
+         }
+      } catch (final Exception e) {
+         // expected end of platform
+      } finally {
+         log.info("Bye from Cluster microservice provider!");
+         try {
+            this.messageDispatcher.close();
+            this.channel.close();
+
+         } catch (IOException e) {
+            throw new SilverWareClusteringException(JGROUPS_ERROR, "Unexpected error while closing MessageDispatcher", e);
+         }
       }
    }
 
    @Override
    public Set<Object> lookupMicroservice(final MicroserviceMetaData metaData) {
-      toLookup.add(metaData);
-      return outboundHandles.get(metaData).stream().map(ServiceHandle::getService).collect(Collectors.toSet());
+      try {
+         Set<Address> addressesForMetadata = alreadyQueriedAddresses.getOrDefault(metaData, new HashSet<>());
+         this.sender.sendToClusterAsync(metaData, addressesForMetadata,
+               new FutureListenerHelper<MicroserviceSearchResponse>(rspList -> {
+                  try {
+                     RspList<MicroserviceSearchResponse> responseRspList = rspList.get(10, TimeUnit.SECONDS);
+                     log.info("Response retrieved!  {}", responseRspList);
+                     Collection<Rsp<MicroserviceSearchResponse>> result = responseRspList.values();
+                     if (log.isTraceEnabled()) {
+                        log.trace("Size of a responses is : {} ", responseRspList.getResults().size());
+                     }
+                     result.stream().filter(Rsp::hasException).forEach(rsp -> log.error("Exception was thrown during lookup on node: " + rsp.getSender(), rsp.getException()));
+
+                     Set<ServiceHandle> remoteServiceHandles = result.stream()
+                                                                     .filter(rsp -> rsp.wasReceived() && !rsp.hasException() && rsp.getValue().getResult().canBeUsed())
+                                                                     .map((rsp) -> new RemoteServiceHandle(rsp.getSender(), rsp.getValue().getHandle(), sender, metaData))
+                                                                     .collect(Collectors.toSet());
+                     // this is to save jgroups traffic for a given metadata
+                     addressesForMetadata.addAll(responseRspList.values().stream().map(Rsp::getSender).collect(Collectors.toSet()));
+                     alreadyQueriedAddresses.put(metaData, addressesForMetadata);
+                     this.remoteServiceHandlesStore.addHandles(metaData, remoteServiceHandles);
+                  } catch (Throwable e) {
+                     log.error("Error while looking up microservices.", e);
+                  }
+
+               }));
+         // If this is first query for the metadata we should wait for a response
+         if (addressesForMetadata.isEmpty() && !sender.isEmptyCluster()) {
+            Thread.sleep(timeout);
+         }
+
+         return this.remoteServiceHandlesStore.getServices(metaData);
+      } catch (Throwable e) {
+         log.error("Error while looking up microservices.", e);
+         return emptySet();
+      }
    }
 
    @Override
    public Set<Object> lookupLocalMicroservice(final MicroserviceMetaData metaData) {
-      return new HashSet<>();
+      return emptySet();
    }
 
-   private class ChannelReceiver extends ReceiverAdapter {
-      @Override
-      public void receive(final Message msg) {
-         log.info("Received message " + msg);
-      }
-
-      @Override
-      public void viewAccepted(final View view) {
-         Set<String> availableNodes = new HashSet<>();
-         view.forEach(address -> availableNodes.add(address.toString()));
-
-         outboundHandles.forEach((metaData, serviceHandles) -> {
-            Set<ServiceHandle> toBeRemoved = new HashSet<>();
-
-            toBeRemoved.addAll(
-                  serviceHandles.stream().filter(serviceHandle ->
-                     availableNodes.contains(serviceHandle.getHost())
-                  ).collect(Collectors.toSet()));
-            serviceHandles.removeAll(toBeRemoved);
-         });
-
-         log.info("View accepted " + view);
-      }
-   }
 }

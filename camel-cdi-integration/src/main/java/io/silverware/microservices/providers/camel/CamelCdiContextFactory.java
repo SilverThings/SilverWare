@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 - 2017 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import io.silverware.microservices.silver.CdiSilverService;
 import io.silverware.microservices.util.Utils;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.cdi.internal.CamelContextMap;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,8 +61,7 @@ public class CamelCdiContextFactory implements CamelContextFactory {
          if (cdiSilverService.isDeployed()) {
             log.info("CDI SilverService connected successfully!");
 
-            CamelContextMap camelContextMap = cdiSilverService.findByType(CamelContextMap.class);
-            return camelContextMap.getCamelContext("camel-1");
+            return cdiSilverService.findByType(CamelContext.class);
          } else {
             log.warn("CDI deployment took to long, trying to continue.");
          }

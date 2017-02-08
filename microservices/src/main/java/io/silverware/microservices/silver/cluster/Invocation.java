@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import io.silverware.microservices.SilverWareException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.lang.reflect.Method;
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -34,9 +34,9 @@ import java.util.Arrays;
  *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-public class Invocation {
+public class Invocation implements Serializable {
 
-   private static Logger log = LogManager.getLogger(Invocation.class);
+   private static final Logger log = LogManager.getLogger(Invocation.class);
 
    private final int handle;
 
@@ -109,20 +109,22 @@ public class Invocation {
       return "Invocation{" + "handle=" + handle + ", method='" + method + '\'' + ", paramTypes=" + Arrays.toString(paramTypes) + ", params=" + Arrays.toString(params) + '}';
    }
 
-   @SuppressWarnings("checkstyle:JavadocMethod")
+   /**
+    * Invokes a method with given context
+    *
+    * @param context
+    *       context which will be used to invoke method
+    * @return result of the invocation
+    * @throws Exception
+    *       when some error occurs
+    */
    public Object invoke(final Context context) throws Exception {
-      if (log.isTraceEnabled()) {
-         log.trace("Invoking Microservice with invocation {}.", toString());
-      }
-
-      final ServiceHandle serviceHandle = context.getInboundServiceHandle(handle);
-
+      log.trace("Invoking Microservice with invocation {}.", this);
+      final LocalServiceHandle serviceHandle = context.getLocalServiceHandle(handle);
       if (serviceHandle == null) {
          throw new SilverWareException(String.format("Handle no. %d. No such handle found.", getHandle()));
       }
-
-      final Method method = serviceHandle.getService().getClass().getDeclaredMethod(getMethod(), paramTypes);
-      return method.invoke(serviceHandle.getService(), params);
+      return serviceHandle.invoke(context, this.method, this.paramTypes, this.params);
    }
 
 }

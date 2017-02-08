@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,9 +153,6 @@ public class ActiveMQAnnotationTest {
          session.close();
          session1.close();
          session2.close();
-
-         semaphore.release();
-
       }
 
       private void receiveMessage11(MessageConsumer consumer) throws JMSException {
@@ -188,7 +185,7 @@ public class ActiveMQAnnotationTest {
       public void observer(@Observes StartTestEvent event) throws Exception {
          log.info("Hello from " + this.getClass().getSimpleName());
 
-         Queue queue = jmsContext.createQueue("jms20JNDIQueue");
+         Queue queue = jmsContext.createQueue("jms20AnnotationQueue");
 
          JMSProducer jmsProducer1 = jmsContext1.createProducer();
          JMSProducer jmsProducer2 = jmsContext2.createProducer();
@@ -202,9 +199,6 @@ public class ActiveMQAnnotationTest {
          receiveMessage20(jmsConsumer);
 
          jmsConsumer.close();
-
-         semaphore.release();
-
       }
 
       private void receiveMessage20(JMSConsumer consumer) throws JMSException {

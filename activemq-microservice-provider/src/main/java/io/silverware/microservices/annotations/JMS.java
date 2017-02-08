@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import javax.jms.JMSContext;
+import javax.naming.spi.InitialContextFactory;
 
 /**
  * @author <a href="mailto:stefankomartin6@gmail.com">Martin Štefanko</a>
@@ -71,8 +72,16 @@ public @interface JMS {
     * Only from JMS 2.0
     * Returns the session mode for this {@link JMSContext}
     *
-    * @since JMS 2.0
     * @return the session mode of the {@link JMSContext}
+    * @since JMS 2.0
     */
    int sessionMode() default ActiveMQConstants.DEFAULT_SESSION_TYPE;
+
+   /**
+    * Returns the initial context factory used for this injection
+    *
+    * @return the initial context factory for this injection
+    */
+   Class<? extends InitialContextFactory> initialContextFactory() default
+           org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory.class;
 }

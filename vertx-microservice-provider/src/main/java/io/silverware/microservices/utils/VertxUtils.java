@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ import javax.xml.validation.Validator;
 /**
  * @author <a href="mailto:stefankomartin6@gmail.com">Martin Štefanko</a>
  */
-public class VertxUtils {
+public abstract class VertxUtils {
 
    private static final Logger log = LogManager.getLogger(VertxUtils.class);
 

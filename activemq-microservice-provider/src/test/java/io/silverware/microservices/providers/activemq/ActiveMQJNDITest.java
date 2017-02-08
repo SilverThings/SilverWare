@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,9 +154,6 @@ public class ActiveMQJNDITest {
          session.close();
          session1.close();
          session2.close();
-
-         semaphore.release();
-
       }
 
       private void receiveMessage11(MessageConsumer consumer) throws JMSException {
@@ -202,7 +199,6 @@ public class ActiveMQJNDITest {
          receiveMessage20(jmsConsumer);
 
          jmsConsumer.close();
-
       }
 
       private void receiveMessage20(JMSConsumer consumer) throws JMSException {

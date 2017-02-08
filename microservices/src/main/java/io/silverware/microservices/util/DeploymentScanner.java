@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,7 +163,7 @@ public class DeploymentScanner {
     * @return All available classes of the given subtype.
     */
    @SuppressWarnings("unchecked")
-   public Set lookupSubtypes(final Class clazz) {
+   public <T> Set<Class<? extends T>> lookupSubtypes(final Class<T> clazz) {
       return reflections.getSubTypesOf(clazz);
       /*final Set s1 = reflections.getSubTypesOf(clazz);
       final Set s2 = Sets.newHashSet(ReflectionUtils.forNames(

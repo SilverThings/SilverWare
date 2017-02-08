@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
  * -----------------------------------------------------------------------/
  */
 package io.silverware.microservices;
+
+import static io.silverware.microservices.Executor.SHUTDOWN_HOOK;
 
 import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.util.BootUtil;
@@ -61,7 +63,8 @@ public class BootTest {
 
    @Test
    public void testFullBoot() throws InterruptedException {
-      Boot.main();
+
+      Boot.main("-D" + SHUTDOWN_HOOK + "=false");
 
       Assert.assertTrue(semaphore.tryAcquire(50, TimeUnit.SECONDS), "Timed-out while waiting for platform startup.");
 

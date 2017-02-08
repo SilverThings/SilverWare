@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,6 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
    @Override
    public void initialize(final Context context) {
       this.context = context;
-      HttpInvokerServlet.setContext(context);
-
       context.getProperties().putIfAbsent(INVOKER_URL, "invoker");
    }
 
@@ -60,7 +58,8 @@ public class HttpInvokerMicroserviceProvider implements MicroserviceProvider, Ht
    public void run() {
       try {
          log.info("Hello from Http Invoker microservice provider!");
-
+         Utils.waitForCDIProvider(context);
+         HttpInvokerServlet.setContext(context);
          try {
             if (log.isDebugEnabled()) {
                log.debug("Waiting for the Http Microservice provider.");

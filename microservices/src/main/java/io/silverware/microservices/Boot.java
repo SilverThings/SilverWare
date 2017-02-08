@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 - 2017 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
  * -----------------------------------------------------------------------/
  */
 package io.silverware.microservices;
+
+import static io.silverware.microservices.Executor.SHUTDOWN_HOOK;
 
 import io.silverware.microservices.util.Utils;
 
@@ -38,12 +40,14 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * Main class to boot the Microservices platforms.
  *
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
  */
-@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DM_EXIT", justification = "This class is allowed to terminate the JVM.")
+@SuppressFBWarnings(value = "DM_EXIT", justification = "This class is allowed to terminate the JVM.")
 public final class Boot {
 
    private static final Logger log = LogManager.getLogger(Boot.class);
@@ -56,15 +60,16 @@ public final class Boot {
     *
     * Uses Executor Microservice Provider as a boot hook.
     *
-    * @param args Any additional properties can be specified at the command line via -Dprop=value.
+    * @param args
+    *       Any additional properties can be specified at the command line via -Dprop=value.
     */
    public static void main(final String... args) {
       preMainConfig();
 
       log.info("=== Welcome to SilverWare ===");
-
+      final Context initialContext = getInitialContext(args);
       try {
-         Executor.bootHook(getInitialContext(args));
+         Executor.bootHook(initialContext);
       } catch (InterruptedException ie) {
          Utils.shutdownLog(log, ie);
       }
@@ -77,6 +82,7 @@ public final class Boot {
     * Performs some quick system settings for a smooth run.
     */
    private static void preMainConfig() {
+      System.setProperty("java.net.preferIPv4Stack", "true");
       Thread.currentThread().setName(Executor.THREAD_PREFIX + Executor.MAIN_THREAD);
    }
 
@@ -88,27 +94,21 @@ public final class Boot {
    }
 
    /**
-    * Load custom properties from file on a classpath.
+    * Load custom properties from filepath
     *
-    * @return Properties from silverware.properties when present on a classpath.
+    * @param propertiesFile
+    *       file with properties which will be loaded
+    * @return Properties from given file path
     */
-   private static Properties loadProperties() {
-      Properties props = new Properties();
-      try {
-         props.load(Boot.class.getResourceAsStream("silverware.properties"));
-      } catch (NullPointerException | IOException ioe) {
-         log.info("No configuration property file available. Using default values.");
-      }
-
-      return props;
-   }
 
    private static Properties loadProperties(final File propertiesFile) {
+      log.info("Loading configuration from file {}.", propertiesFile.getAbsolutePath());
+
       Properties props = new Properties();
       try (FileInputStream fis = new FileInputStream(propertiesFile)) {
          props.load(fis);
       } catch (IOException ioe) {
-         log.warn("Cannot read configuration property file %s.", propertiesFile.getAbsolutePath());
+         log.warn("Cannot read configuration property file {}.", propertiesFile.getAbsolutePath());
       }
 
       return props;
@@ -117,7 +117,8 @@ public final class Boot {
    /**
     * Creates initial context pre-filled with system properties, command line arguments, custom property file and default property file.
     *
-    * @param args Command line arguments.
+    * @param args
+    *       Command line arguments.
     * @return Initial context pre-filled with system properties, command line arguments, custom property file and default property file.
     */
    @SuppressWarnings("static-access")
@@ -140,10 +141,10 @@ public final class Boot {
          if (commandLine.hasOption(PROPERTY_FILE_LETTER)) {
             final File propertiesFile = new File(commandLine.getOptionValue(PROPERTY_FILE_LETTER));
             if (propertiesFile.exists()) {
-               final Properties props = loadProperties();
+               final Properties props = loadProperties(propertiesFile);
                props.forEach((key, val) -> contextProperties.putIfAbsent(key.toString(), val));
             } else {
-               log.error("Specified property file %s does not exists.", propertiesFile.getAbsolutePath());
+               log.error("Specified property file {} does not exists.", propertiesFile.getAbsolutePath());
             }
          }
       } catch (ParseException pe) {
@@ -151,12 +152,7 @@ public final class Boot {
          new HelpFormatter().printHelp("SilverWare usage:", options);
          System.exit(1);
       }
-
-      // now add in default properties from silverware.properties on a classpath
-      loadProperties().forEach((key, val) -> contextProperties.putIfAbsent(key.toString(), val));
-
-      context.getProperties().put(Executor.SHUTDOWN_HOOK, "true");
-
+      contextProperties.putIfAbsent(SHUTDOWN_HOOK, "true");
       return context;
    }
 }

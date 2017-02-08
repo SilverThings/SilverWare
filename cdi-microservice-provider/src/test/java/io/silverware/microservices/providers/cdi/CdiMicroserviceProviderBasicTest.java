@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,24 @@
  */
 package io.silverware.microservices.providers.cdi;
 
+import io.silverware.microservices.annotations.Guarded;
 import io.silverware.microservices.annotations.Microservice;
 import io.silverware.microservices.annotations.MicroserviceReference;
 import io.silverware.microservices.util.BootUtil;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.PostConstruct;
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
 
 /**
  * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
@@ -58,9 +62,11 @@ public class CdiMicroserviceProviderBasicTest {
 
       //testMicroserviceB = (TestMicroserviceB) CdiMicroserviceProvider.getMicroserviceProxy(bootUtil.getContext(), TestMicroserviceB.class);
 
-      Assert.assertTrue(semaphore.tryAcquire(10, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
+      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
       Assert.assertTrue(postConstructCalled);
-      Assert.assertEquals(result, "micrononame");
+      Assert.assertEquals(result, "micrononameguarded");
+
+      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for interceptor.");
 
       platform.interrupt();
       platform.join();
@@ -88,6 +94,10 @@ public class CdiMicroserviceProviderBasicTest {
       @MicroserviceReference("noNameMicroBean")
       private TestMicro noNameMicroBean;
 
+      @Inject
+      @MicroserviceReference("guardedMicroservice")
+      private TestMicro guardedMicroservice;
+
       public TestMicroserviceB() {
          log.info("MicroServiceB constructor");
       }
@@ -104,6 +114,7 @@ public class CdiMicroserviceProviderBasicTest {
          log.info("Hello from B to Micro " + testMicroBean.getClass().getName());
          result += testMicroBean.hello();
          result += noNameMicroBean.hello();
+         result += guardedMicroservice.hello();
          semaphore.release();
       }
    }
@@ -149,4 +160,28 @@ public class CdiMicroserviceProviderBasicTest {
       }
    }
 
+   @Microservice
+   public static class GuardedMicroservice implements TestMicro {
+
+      @Override
+      @Guarded
+      public String hello() {
+         log.info("guarded microservice");
+
+         return "guarded";
+      }
+   }
+
+   @Guarded @Interceptor
+   public static class Guard {
+
+      @AroundInvoke
+      public Object intercept(InvocationContext invocationContext) throws Exception {
+         log.info("intercepted");
+
+         semaphore.release();
+
+         return invocationContext.proceed();
+      }
+   }
 }

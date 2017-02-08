@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * PerfCake
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,16 @@ package io.silverware.microservices.providers.http.invoker.internal;
 import io.silverware.microservices.Context;
 import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.silver.HttpInvokerSilverService;
+import io.silverware.microservices.silver.HttpServerSilverService;
 import io.silverware.microservices.silver.cluster.Invocation;
-import io.silverware.microservices.silver.cluster.ServiceHandle;
+import io.silverware.microservices.silver.cluster.LocalServiceHandle;
 
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
 
 import java.io.IOException;
 import java.util.List;
-
+import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -42,9 +43,11 @@ import javax.servlet.http.HttpServletResponse;
 public class HttpInvokerServlet extends HttpServlet {
 
    private static Context context;
+   private static String url;
 
    public static void setContext(final Context ctx) {
       context = ctx;
+      url = ctx.getProperties().get(HttpServerSilverService.HTTP_SERVER_ADDRESS) + ":" + ctx.getProperties().get(HttpServerSilverService.HTTP_SERVER_PORT);
    }
 
    @Override
@@ -58,9 +61,10 @@ public class HttpInvokerServlet extends HttpServlet {
       if (req.getRequestURI().endsWith(HttpInvokerSilverService.QUERY_COMMAND)) {
          final JsonReader jsonReader = new JsonReader(req.getInputStream());
          final MicroserviceMetaData metaData = (MicroserviceMetaData) jsonReader.readObject();
-         final List<ServiceHandle> handles = context.assureHandles(metaData);
+         final List<LocalServiceHandle> localHandles = context.assureLocalHandles(metaData);
+         List<HttpServiceHandle> httpServiceHandles = localHandles.stream().map(h -> new HttpServiceHandle(url, h.getHandle())).collect(Collectors.toList());
          final JsonWriter jsonWriter = new JsonWriter(resp.getOutputStream());
-         jsonWriter.write(handles);
+         jsonWriter.write(httpServiceHandles);
       } else if (req.getRequestURI().endsWith(HttpInvokerSilverService.INVOKE_COMMAND)) {
          final JsonReader jsonReader = new JsonReader(req.getInputStream());
          final Invocation invocation = (Invocation) jsonReader.readObject();

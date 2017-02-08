@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.inject.Qualifier;
@@ -57,7 +58,7 @@ public class CdiMicroserviceProviderQualifiersTest {
       CdiMicroserviceProviderTestUtil.waitForBeanManager(bootUtil);
 
       Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for platform startup.");
-      Assert.assertEquals(result, "normalmock");
+      Assert.assertEquals(result, "normalmockbez");
 
       platform.interrupt();
       platform.join();
@@ -76,9 +77,15 @@ public class CdiMicroserviceProviderQualifiersTest {
       @Mock
       private QualifierMicro micro2;
 
+      @Inject
+      @MicroserviceReference
+      @Default
+      private QualifierMicro micro3;
+
       public void eventObserver(@Observes MicroservicesStartedEvent event) {
          result += micro1.hello();
          result += micro2.hello();
+         result += micro3.hello();
 
          semaphore.release();
       }
@@ -105,6 +112,15 @@ public class CdiMicroserviceProviderQualifiersTest {
       @Override
       public String hello() {
          return "mock";
+      }
+   }
+
+   @Microservice
+   public static class BezMockQualifierMicroBean implements QualifierMicro {
+
+      @Override
+      public String hello() {
+         return "bez";
       }
    }
 

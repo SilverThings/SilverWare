@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2015 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@
  * -----------------------------------------------------------------------/
  */
 package io.silverware.microservices.util;
+
+import io.silverware.microservices.Context;
+import io.silverware.microservices.silver.CdiSilverService;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,13 +49,15 @@ public class Utils {
    /**
     * Maximum number of attempts to wait for an URL to become available.
     */
-   private static final int MAX_HTTP_TRIES = 60;
+   private static final int MAX_WAIT_TRIES = 60;
 
    /**
     * Logs a shutdown message with the given exception.
     *
-    * @param log A logger where to log the message to.
-    * @param ie An exception causing the shutdown.
+    * @param log
+    *       A logger where to log the message to.
+    * @param ie
+    *       An exception causing the shutdown.
     */
    public static void shutdownLog(final Logger log, final InterruptedException ie) {
       log.info("Execution interrupted, exiting.");
@@ -64,16 +69,19 @@ public class Utils {
    /**
     * Waits for the URL to become available.
     *
-    * @param urlString The URL to check for.
-    * @param code The expected HTTP response code.
+    * @param urlString
+    *       The URL to check for.
+    * @param code
+    *       The expected HTTP response code.
     * @return Returns true if the URL was available, false otherwise.
-    * @throws Exception When it was not possible to check the URL.
+    * @throws Exception
+    *       When it was not possible to check the URL.
     */
    public static boolean waitForHttp(String urlString, int code) throws Exception {
       final URL url = new URL(urlString);
       int lastCode = -1;
 
-      for (int i = 0; i < MAX_HTTP_TRIES; ++i) {
+      for (int i = 0; i < MAX_WAIT_TRIES; ++i) {
          try {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.connect();
@@ -96,11 +104,33 @@ public class Utils {
    }
 
    /**
+    * This methods wait for CDI providers to startup
+    *
+    * @param context
+    *       context where the provider will be stored
+    * @throws InterruptedException
+    *       if thread was interrupted during sleep
+    */
+   public static void waitForCDIProvider(Context context) throws InterruptedException {
+
+      for (int i = 0; i < MAX_WAIT_TRIES; ++i) {
+         if (context.getProvider(CdiSilverService.class) != null && ((CdiSilverService) context.getProvider(CdiSilverService.class)).isDeployed()) {
+            return;
+         }
+         Thread.sleep(200);
+      }
+      throw new RuntimeException("Cdi provider was not started");
+
+   }
+
+   /**
     * Completely reads the content of the given URL as a string.
     *
-    * @param urlString The URL to read from.
+    * @param urlString
+    *       The URL to read from.
     * @return The content of the given URL.
-    * @throws IOException When it was not possible to read from the URL.
+    * @throws IOException
+    *       When it was not possible to read from the URL.
     */
    public static String readFromUrl(String urlString) throws IOException {
       return new Scanner(new URL(urlString).openStream(), "UTF-8").useDelimiter("\\A").next();
@@ -109,10 +139,13 @@ public class Utils {
    /**
     * Gets the manifest entry for the given class.
     *
-    * @param clazz The class I want to obtain entry for.
-    * @param entryName The name of the entry to obtain.
+    * @param clazz
+    *       The class I want to obtain entry for.
+    * @param entryName
+    *       The name of the entry to obtain.
     * @return The entry from manifest, null if there is no such entry or the manifest file does not exists.
-    * @throws IOException When it was not possible to get the manifest file.
+    * @throws IOException
+    *       When it was not possible to get the manifest file.
     */
    public static String getManifestEntry(final Class clazz, final String entryName) throws IOException {
       Enumeration<URL> resources = clazz.getClassLoader().getResources("META-INF/MANIFEST.MF");
@@ -131,45 +164,10 @@ public class Utils {
    }
 
    /**
-    * Gets the class implementation version from manifest.
-    *
-    * @param clazz The class I want to obtain version of.
-    * @return The class specification version from manifest, null if there is no version information present or the manifest file does not exists.
-    */
-   public static String getClassImplVersion(final Class clazz) {
-      try {
-         return getManifestEntry(clazz, "Implementation-Version");
-      } catch (IOException ioe) {
-         if (log.isDebugEnabled()) {
-            log.debug("Cannot obtain version for class {}.", clazz.getName());
-         }
-      }
-
-      return null;
-   }
-
-   /**
-    * Gets the class specification version from manifest.
-    *
-    * @param clazz The class I want to obtain version of.
-    * @return The class specification version from manifest, null if there is no version information present or the manifest file does not exists.
-    */
-   public static String getClassSpecVersion(final Class clazz) {
-      try {
-         return getManifestEntry(clazz, "Specification-Version");
-      } catch (IOException ioe) {
-         if (log.isDebugEnabled()) {
-            log.debug("Cannot obtain version for class {}.", clazz.getName());
-         }
-      }
-
-      return null;
-   }
-
-   /**
     * Do the best to sleep for the given time. Ignores {@link InterruptedException}.
     *
-    * @param ms The number of milliseconds to sleep for.
+    * @param ms
+    *       The number of milliseconds to sleep for.
     */
    public static void sleep(final long ms) {
       try {
@@ -177,5 +175,9 @@ public class Utils {
       } catch (InterruptedException ie) {
          // ignored
       }
+   }
+
+   public static String toLowerCamelCase(String upperCamelCase) {
+      return upperCamelCase.substring(0, 1).toLowerCase() + upperCamelCase.substring(1);
    }
 }

@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import io.silverware.microservices.MicroserviceMetaData;
 import io.silverware.microservices.annotations.JMS;
 import io.silverware.microservices.enums.ConnectionType;
 import io.silverware.microservices.internal.ConnectionProvider;
+import io.silverware.microservices.utils.InitialContextProvider;
 import io.silverware.microservices.providers.MicroserviceProvider;
 import io.silverware.microservices.silver.ActiveMQSilverService;
 import io.silverware.microservices.util.Utils;
@@ -63,9 +64,14 @@ public class ActiveMQMicroserviceProvider implements MicroserviceProvider, Activ
    private Context context;
 
    /**
-    * javax.naming.Context for JNDI
+    * javax.naming.Context for initial factory initialization
     */
    private InitialContext initialContext;
+
+   /**
+    * javax.naming.Context for JNDI
+    */
+   private InitialContext defaultJNDIInitialContext;
 
    /**
     * map of already initialized instances of {@link ConnectionProvider}
@@ -96,13 +102,15 @@ public class ActiveMQMicroserviceProvider implements MicroserviceProvider, Activ
 
          log.info("Invalid or no JNDI configuration file found on the classpath: ", ne);
          log.info("Creating default initial context factory " + ActiveMQInitialContextFactory.class.getSimpleName() + "...");
-         initialContext = createDefaultArtemisInitialContext(ActiveMQInitialContextFactory.class);
+         initialContext = InitialContextProvider.createInitialContext(ActiveMQInitialContextFactory.class);
       }
 
       if (initialContext == null) {
          //the provider cannot run without the initial context
          log.error("Cannot run the " + this.getClass().getSimpleName() + "without the " + InitialContext.class.getSimpleName());
          return;
+      } else {
+         defaultJNDIInitialContext = InitialContextProvider.createInitialContext(initialContext);
       }
 
       //try to locate the default connection factory in the JNDI and create the default connection
@@ -169,23 +177,14 @@ public class ActiveMQMicroserviceProvider implements MicroserviceProvider, Activ
       return Collections.emptySet();
    }
 
-   private InitialContext createDefaultArtemisInitialContext(Class initialContextFactoryClass) {
-      log.info("Creating default " + InitialContext.class.getSimpleName() + " with " +
-              initialContextFactoryClass.getSimpleName());
+   private InitialContext getInitialContext(JMS jmsAnnotation) {
 
-      Properties properties = new Properties();
-      properties.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, initialContextFactoryClass.getName());
-
-      InitialContext result = null;
-
-      //note that this merges the other provided JNDI elements
-      try {
-         result = new InitialContext(properties);
-      } catch (NamingException ne) {
-         log.error("Cannot create default initial context", ne);
+      if (jmsAnnotation.initialContextFactory().equals(ActiveMQInitialContextFactory.class)) {
+         //not specified, return default initial context
+         return defaultJNDIInitialContext;
       }
 
-      return result;
+      return InitialContextProvider.createInitialContext(jmsAnnotation.initialContextFactory());
    }
 
    private void initDefaultConnectionFactory() {
@@ -209,20 +208,31 @@ public class ActiveMQMicroserviceProvider implements MicroserviceProvider, Activ
 
       ConnectionProvider provider = null;
 
-      if (jmsAnnotation != null && !jmsAnnotation.serverUri().isEmpty()) {
-         String uri = jmsAnnotation.serverUri();
-         provider = connectionProviders.get(uri);
+      if (jmsAnnotation != null) {
 
-         if (provider == null) {
-            //create new provider
-            provider = new ConnectionProvider(uri, createConnectionFactoryForURI(uri));
-            connectionProviders.put(uri, provider);
+         //initialize initial context factory
+         initialContext = getInitialContext(jmsAnnotation);
+
+         if (initialContext == null) {
+            log.error("Cannot inject without a valid initial context");
+            return provider;
          }
-      } else {
-         provider = connectionProviders.get(ActiveMQConstants.DEFAULT_CONNECTION);
+
+         if (!jmsAnnotation.serverUri().isEmpty()) {
+            String uri = jmsAnnotation.serverUri();
+            provider = connectionProviders.get(uri);
+
+            if (provider == null) {
+               //create new provider
+               provider = new ConnectionProvider(uri, createConnectionFactoryForURI(uri));
+               connectionProviders.put(uri, provider);
+            }
+
+            return provider;
+         }
       }
 
-      return provider;
+      return connectionProviders.get(ActiveMQConstants.DEFAULT_CONNECTION);
    }
 
    private Connection getConnectionForConnectionType(ConnectionProvider provider, ConnectionType type) {
@@ -319,7 +329,7 @@ public class ActiveMQMicroserviceProvider implements MicroserviceProvider, Activ
       log.info("Creating connection factory for the URI: " + uri);
       ConnectionFactory factory = null;
 
-      if (addPropertyToContext(ActiveMQConstants.CONNECTION_FACTORY, uri)) {
+      if (addUriToContext(uri)) {
          try {
             factory = lookupJNDIConnectionFactory();
          } catch (NamingException ne) {
@@ -330,13 +340,17 @@ public class ActiveMQMicroserviceProvider implements MicroserviceProvider, Activ
       return factory;
    }
 
-   private boolean addPropertyToContext(String name, Object value) {
+   private boolean addUriToContext(String uri) {
       try {
          Properties properties = new Properties();
          properties.putAll(initialContext.getEnvironment());
-         properties.put(name, value);
 
-         initialContext.close();
+         //Artemis
+         properties.put(ActiveMQConstants.CONNECTION_FACTORY, uri);
+
+         //ActiveMQ
+         properties.put(ActiveMQConstants.PROVIDER_URL, uri);
+
          initialContext = new InitialContext(properties);
          return true;
       } catch (NamingException ne) {

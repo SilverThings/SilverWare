@@ -2,7 +2,7 @@
  * -----------------------------------------------------------------------\
  * SilverWare
  *  
- * Copyright (C) 2010 - 2013 the original author or authors.
+ * Copyright (C) 2016 the original author or authors.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,144 +19,200 @@
  */
 package io.silverware.microservices.providers.rest;
 
-import io.silverware.microservices.annotations.Gateway;
-import io.silverware.microservices.annotations.Microservice;
-import io.silverware.microservices.annotations.MicroserviceReference;
-import io.silverware.microservices.annotations.ParamName;
-import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
-import io.silverware.microservices.providers.rest.annotation.JsonService;
-import io.silverware.microservices.providers.rest.api.RestService;
-import io.silverware.microservices.util.BootUtil;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.jboss.weld.environment.se.WeldContainer;
-import org.testng.Assert;
+import org.assertj.core.api.Assertions;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import io.silverware.microservices.annotations.Microservice;
+import io.silverware.microservices.annotations.MicroserviceReference;
+import io.silverware.microservices.providers.cdi.CdiMicroserviceProvider;
+import io.silverware.microservices.providers.http.HttpServerMicroserviceProvider;
+import io.silverware.microservices.providers.http.SilverWareURI;
+import io.silverware.microservices.providers.rest.annotation.ServiceConfiguration;
+import io.silverware.microservices.silver.HttpServerSilverService;
+import io.silverware.microservices.util.BootUtil;
 
 /**
- * @author <a href="mailto:marvenec@gmail.com">Martin Večeřa</a>
+ * Created by rkoubsky on 10/5/16.
  */
 public class RestClientMicroserviceProviderTest {
-
    private static final Logger log = LogManager.getLogger(RestClientMicroserviceProviderTest.class);
+   private Map<String, Object> platformProperties;
+   private Client client;
+   private Thread platform;
+   private SilverWareURI silverWareURI;
 
-   private static final Semaphore semaphore = new Semaphore(0);
-   private static String result;
-   private static MagicBox box;
-
-   @Test
-   public void restClientMicroserviceProviderTest() throws Exception {
+   @BeforeClass
+   public void setUpPlatforn() throws InterruptedException {
       final BootUtil bootUtil = new BootUtil();
-      final Thread platform = bootUtil.getMicroservicePlatform(this.getClass().getPackage().getName(), CdiMicroserviceProvider.class.getPackage().getName());
-      platform.start();
+      this.platformProperties = bootUtil.getContext().getProperties();
+      this.platformProperties.put(HttpServerSilverService.HTTP_SERVER_PORT, 8282);
 
-      waitForBeanManager(bootUtil);
-      final WeldContainer container = (WeldContainer) bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.CDI_CONTAINER);
-      container.event().select(StartTestEvent.class).fire(new StartTestEvent());
+      this.platform = bootUtil.getMicroservicePlatform(
+            this.getClass().getPackage().getName(),
+            CdiMicroserviceProvider.class.getPackage().getName(),
+            HttpServerMicroserviceProvider.class.getPackage().getName());
+      this.platform.start();
+      this.silverWareURI = new SilverWareURI(this.platformProperties);
 
-      Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.MINUTES), "Timed-out while waiting for the camel route deployment."); // wait for the route to be deployed
-      Assert.assertEquals(result, "Hello Pepa");
-
-      Assert.assertEquals(box.getF(), 2.3f);
-      Assert.assertEquals((short) box.getS(), (short) 3);
-
-      platform.interrupt();
-      platform.join();
-   }
-
-   public static void waitForBeanManager(final BootUtil bootUtil) throws InterruptedException {
-      Object beanManager = null;
-      while (beanManager == null) {
-         beanManager = bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.BEAN_MANAGER);
+      while (bootUtil.getContext().getProperties().get(CdiMicroserviceProvider.BEAN_MANAGER) == null) {
          Thread.sleep(200);
       }
+      log.info("Waiting for HTTP server provider.");
+      TimeUnit.SECONDS.sleep(1);
+      this.client = ClientBuilder.newClient();
    }
 
-   public static class StartTestEvent {
-
+   @AfterClass
+   public void tearDown() throws InterruptedException {
+      this.client.close();
+      this.platform.interrupt();
+      this.platform.join();
    }
 
+   @Test
+   public void restServiceTest() throws InterruptedException {
+      Assertions.assertThat(this.client
+            .target(this.silverWareURI.httpREST() + "/client_service/hello").request()
+            .get(String.class)).as("Rest service call should return 'Hello from backend service!'")
+            .isEqualTo("Hello from backend service!");
+   }
+
+   @Test
+   public void restServicePathParamTest() throws InterruptedException {
+      Assertions.assertThat(this.client
+            .target(this.silverWareURI.httpREST() + "/client_service/hello/5").request()
+            .get(String.class)).as("Rest service call should return 'Hello from backend service with path param=5'")
+            .isEqualTo("Hello from backend service with path param=5");
+   }
+
+   @Test
+   public void restServiceReadEntityTest() throws InterruptedException {
+      Assertions.assertThat(this.client
+            .target(this.silverWareURI.httpREST() + "/client_service/book/title").request()
+            .get(String.class)).as("Rest service call should return book title 'Java in Action'")
+            .isEqualTo("Java in Action");
+   }
+
+   @Path("client_service")
    @Microservice
-   public static class RestClientMicroservice {
-
+   public static class ClientService {
       @Inject
       @MicroserviceReference
-      @JsonService(endpoint = "http://localhost:8081/rest/RestEndpointMicroservice")
-      private RestService restEndpointMicroservice;
+      @ServiceConfiguration(endpoint = "http://localhost:8282/silverware/rest/backend_service")
+      BackendServiceClient restService;
 
-      public void eventObserver(@Observes StartTestEvent event) {
-         log.info("Invoking injected service using REST and JSON...");
+      @Path("hello")
+      @GET
+      public String hello() {
+         return this.restService.hello();
+      }
 
-         try {
-            Thread.sleep(1000); // give rest gateway a chance to properly start
-            result = (String) restEndpointMicroservice.call("hello", Collections.singletonMap("name", "Pepa"));
+      @Path("hello/{id}")
+      @GET
+      public String helloWithParam(@PathParam("id") final int id) {
+         return this.restService.getPathParam(id);
+      }
 
-            final Map<String, Object> params = new HashMap<>();
-            params.put("s", (short) 3);
-            params.put("f", 2.3f);
-            box = (MagicBox) restEndpointMicroservice.call("castMagic", params);
-         } catch (Exception e) {
-            log.error("Unable to call REST service: ", e);
-         }
+      @Path("book/title")
+      @GET
+      public String getTitle() {
+         return this.restService.getBook().getTitle();
+      }
+   }
 
-         semaphore.release();
+   /**
+    * This is an arbitrary REST service which can be implemented in any language and located anywhere in the Internet.
+    * In this test, the Rest service is implemented in Java and is deployed in SilverWare.
+    */
+   @Microservice
+   @Path("backend_service")
+   public static class BackendService {
+      @Path("hello")
+      @GET
+      @Produces("text/plain")
+      public String hello() {
+         return "Hello from backend service!";
+      }
+
+      @Path("hello/{id}")
+      @GET
+      @Produces("text/plain")
+      public String getPathParam(@PathParam("id") final int id) {
+         return "Hello from backend service with path param=" + id;
+      }
+
+      @Path("book")
+      @GET
+      @Produces(MediaType.APPLICATION_JSON)
+      public Response getBook() {
+         return Response.ok(new Book("Java in Action")).build();
       }
    }
 
    @Microservice
-   @Gateway
-   public static class RestEndpointMicroservice {
+   public interface BackendServiceClient {
+      @Path("hello")
+      @GET
+      @Produces("text/plain")
+      public String hello();
 
-      public String hello(@ParamName("name") final String name) {
-         return "Hello " + name;
-      }
+      @Path("hello/{id}")
+      @GET
+      @Produces("text/plain")
+      public String getPathParam(@PathParam("id") final int id);
 
-      public MagicBox castMagic(@ParamName("s") final Short s, @ParamName("f") final Float f) {
-         final MagicBox box = new MagicBox();
-
-         box.setS(s);
-         box.setF(f);
-
-         return box;
-      }
+      @Path("book")
+      @GET
+      @Produces(MediaType.APPLICATION_JSON)
+      public Book getBook();
    }
 
-   public static class MagicBox implements Serializable {
-      private Short s = Short.MAX_VALUE;
-      private Float f = Float.MAX_VALUE;
+   public static class Book {
+      private final String title;
 
-      public Short getS() {
-         return s;
+      public Book(@JsonProperty("title") final String title) {
+         this.title = title;
       }
 
-      public void setS(final Short s) {
-         this.s = s;
-      }
-
-      public Float getF() {
-         return f;
-      }
-
-      public void setF(final Float f) {
-         this.f = f;
+      public String getTitle() {
+         return this.title;
       }
 
       @Override
-      public String toString() {
-         return "MagicBox{" +
-               "s=" + s +
-               ", f=" + f +
-               '}';
+      public boolean equals(final Object o) {
+         if (this == o) {
+            return true;
+         }
+         if (o == null || getClass() != o.getClass()) {
+            return false;
+         }
+
+         final Book book = (Book) o;
+
+         return this.title.equals(book.title);
+
+      }
+
+      @Override
+      public int hashCode() {
+         return this.title.hashCode();
       }
    }
 }
