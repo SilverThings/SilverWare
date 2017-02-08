@@ -5,7 +5,7 @@
    <parent>
       <artifactId>silverware-parent</artifactId>
       <groupId>io.silverware</groupId>
-      <version>2.1-SNAPSHOT</version>
+      <version>3.0</version>
    </parent>
    <modelVersion>4.0.0</modelVersion>
 
@@ -104,6 +104,5 @@
          </plugin>
       </plugins>
    </build>
-
 
 </project>
