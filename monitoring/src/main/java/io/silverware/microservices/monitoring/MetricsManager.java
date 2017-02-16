@@ -19,13 +19,14 @@
  */
 package io.silverware.microservices.monitoring;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -65,8 +66,7 @@ public class MetricsManager {
    /**
     * Method responsible for adding new time to values collection and also updating min, max, avg and count metrics.
     *
-    * @param elapsedTime
-    *       runtime of microservice method.
+    * @param elapsedTime runtime of microservice method.
     */
    public void addTime(BigDecimal elapsedTime) {
 
@@ -83,15 +83,16 @@ public class MetricsManager {
       final BigDecimal minTime = metrics.getMinTime();
       final BigDecimal maxTime = metrics.getMaxTime();
 
+      if (elapsedTime.compareTo(maxTime) == 1) {
+         metrics.setMaxTime(elapsedTime);
+      }
+      if (elapsedTime.compareTo(minTime) == -1 || count.compareTo(BigDecimal.ZERO) == 0) {
+         metrics.setMinTime(elapsedTime);
+      }
+
       metrics.incrementCount();
 
       metrics.setAverageTime((averageTime.multiply(count).add(elapsedTime)).divide(count.add(BigDecimal.ONE), BigDecimal.ROUND_HALF_UP));
-
-      if (elapsedTime.compareTo(maxTime) >= 1) {
-         metrics.setMaxTime(elapsedTime);
-      } else {
-         metrics.setMinTime(elapsedTime);
-      }
    }
 
    /**
